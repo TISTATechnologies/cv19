@@ -1,0 +1,10 @@
+!.env.sample
+!.env.aws.sample
+.env*
+
+/build/
+/data/schemaspy/*.jar
+
+__*
+*.log
+/node_modules

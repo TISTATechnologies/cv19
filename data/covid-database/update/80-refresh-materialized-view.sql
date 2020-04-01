@@ -1,0 +1,1 @@
+../init/80-refresh-materialized-view.sql

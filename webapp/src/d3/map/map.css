@@ -1,0 +1,57 @@
+.legend-header {
+  font: bold 16px sans-serif;
+  fill: white;
+}
+
+.d3Legend {
+  color: white;
+  display: flex;
+}
+
+.x-axis {
+  /* stroke: #eee; */
+}
+
+.tooltip {
+  background: rgba(16, 16, 16, 0.9);
+  color: white;
+  border-radius: 10px;
+  position: absolute;
+  max-width: 150px;
+  padding: 5px;
+  transition: visibility 0.13s ease-out, opacity 0.13s ease-out;
+  box-shadow: 3px 3px rgba(33, 33, 33, 0.33);
+}
+
+.county:hover {
+  stroke-width: 0.5px;
+  stroke-opacity: 1;
+  transition: all 0.3s ease-out;
+  opacity: 1;
+}
+
+.active {
+  stroke-width: 0.5px;
+  stroke-opacity: 1;
+  transition: all 0.3s ease-out;
+  opacity: 1;
+  stroke: white;
+}
+
+.legend-square {
+  flex: 1;
+  min-width: 50px;
+  padding: 0.2em;
+  color: rgba(16, 16, 16, 0.9);
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: 500;
+}
+
+.legend-square:nth-last-child(2) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.legend-square:last-child {
+  color: rgba(255, 255, 255, 0.9);
+}

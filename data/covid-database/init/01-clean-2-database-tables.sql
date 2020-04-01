@@ -1,0 +1,10 @@
+-- SET search_path TO api;
+DROP TABLE IF EXISTS covid_info_link;
+DROP TABLE IF EXISTS covid_data_link;
+DROP TABLE IF EXISTS covid_data;
+DROP TABLE IF EXISTS region_population;
+DROP TABLE IF EXISTS zip_to_fips;
+DROP TABLE IF EXISTS region;
+DROP TABLE IF EXISTS state;
+DROP TABLE IF EXISTS country;
+DROP TABLE IF EXISTS covid_data_source;

@@ -1,0 +1,38 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "codeceptjs": "^2.6.1",
+    "dotenv": "^8.2.0",
+    "nightmare": "^3.0.2",
+    "pg": "^8.0.2",
+    "selenium-webdriver": "^4.0.0-alpha.7",
+    "webdriverio": "^6.0.18"
+  },
+  "devDependencies": {
+    "jest": "^25.4.0"
+  },
+  "scripts": {
+    "clean": "rm -rf ./output; rm -rf ./build",
+    "clean:all": "npm run clean; rm -rf ./node_modules",
+    "generate": "./helpers/db-helper.js",
+    "test:webapp": "codeceptjs run",
+    "test:api": "jest ./tests/api/test-api.js",
+    "test:all": "npm run test:api && npm run test:webapp",
+    "test:special-zips": "./scripts/run-special-zips-tests.sh",
+    "test": "./scripts/run-multiple-tests.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "jest": {
+    "testMatch": [
+      "<rootDir>/tests/api/test-*.js"
+    ]
+  }
+}

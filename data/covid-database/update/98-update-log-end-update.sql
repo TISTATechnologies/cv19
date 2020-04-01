@@ -1,0 +1,1 @@
+INSERT INTO _log(message) SELECT concat('Database "', CURRENT_SCHEMA(), '" updated');
