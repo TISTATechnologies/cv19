@@ -34,7 +34,7 @@ def get_buildtime_from_page(page_text):
             date_str = page_text[start:start + 19]
             return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
         elif len(page_text) < 50:
-            return datetime.strptime(page_text.strip()[0:19], "%Y-%m-%dT%H:%M:%S")
+            return datetime.strptime(page_text.split('\n')[0].strip()[0:19], "%Y-%m-%dT%H:%M:%S")
     except Exception as ex:
         print(f'Error parse datetime: {ex}')
     return None
@@ -49,10 +49,11 @@ def get_buildtimes_from_url(url):
 
 
 def get_buildtimes_for_domain(name):
-    page1_time = get_buildtimes_from_url(f'https://{name}')
-    page2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/')
-    ver1_time = get_buildtimes_from_url(f'https://{name}/_version.txt?ts=${int(time.time())}')
-    ver2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/_version.txt?ts=${int(time.time())}')
+    ts = int(time.time())
+    page1_time = get_buildtimes_from_url(f'https://{name}/?ts=${ts}')
+    page2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/?ts=${ts}')
+    ver1_time = get_buildtimes_from_url(f'https://{name}/_version.txt?ts=${ts}')
+    ver2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/_version.txt?ts=${ts}')
     diff = max([(page1_time - ver1_time).total_seconds(),
                 (page2_time - ver2_time).total_seconds(),
                 (page1_time - page2_time).total_seconds()])
@@ -67,6 +68,7 @@ def get_buildtimes_for_domain(name):
 def main():
     get_buildtimes_for_domain('innovation-dev.tistatech.com')
     res = get_buildtimes_for_domain('innovation-demo.tistatech.com') \
+        + get_buildtimes_for_domain('innovation-internal.tistatech.com') \
         + get_buildtimes_for_domain('innovation.tistatech.com')
     return 0
 

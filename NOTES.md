@@ -4,7 +4,8 @@ Main datasets with Covid-19:
 * https://usafacts.org/visualizations/coronavirus-covid-19-spread-map/
 * https://github.com/nytimes/covid-19-data
 * https://covid-19.datasettes.com/ -> https://github.com/simonw/covid-19-datasette
-
+* https://coronavirus.jhu.edu/us-map
+* https://coronavirus.maryland.gov/
 
 USA - States and territories official list:
 * https://www.loc.gov/law/help/guide/states.php

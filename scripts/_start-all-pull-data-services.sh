@@ -43,8 +43,8 @@ title "Pull executive news links" && \
 ./services/executive-news/pull-executive-news.py && \
 title "Pull data from the CovidTracking dataset" && \
 ./services/covidtracking/pull-covidtracking-data.py $@ && \
-title "Refresh data in the database" && \
-yes yes | ./scripts/_migrate_database.sh refresh-data && \
+# title "Refresh data in the database" && \
+# yes yes | ./scripts/_migrate_database.sh refresh-data && \
 title "Pull data from the JHU dataset" && \
 ./services/jhu/pull-jhu-data.py $@ && \
 title "Refresh data in the database" && \

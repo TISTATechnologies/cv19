@@ -11,9 +11,10 @@ SELECT
   cd.geo_lat,
   cd.geo_long,
   cd.note,
-  cd.source_updated::TIMESTAMP::DATE as date,
+  cd.datetime::TIMESTAMP::DATE as date,
   cd.source_updated as datetime,
   cd.updated,
+  cd.source_updated,
   cd.source_location as source_location,
   c.name AS country_name,
   s.name AS state_name,
@@ -51,8 +52,10 @@ SELECT
   cd.deaths,
   cd.recovered,
   cd.active,
+  cd.geo_lat,
+  cd.geo_long,
   cd.note,
-  cd.source_updated::TIMESTAMP::DATE as date,
+  cd.datetime::TIMESTAMP::DATE as date,
   cd.source_updated as datetime,
   CASE
     WHEN (r.type is null and cd.state_id is null) THEN c.name

@@ -96,14 +96,15 @@ def pull_data_by_day(day):
                  last_update, geo_lat, geo_long, source_location, unique_key,
                  confirmed, deaths, recovered, active
                  ) = values
+                collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
                 sql = ''.join([
                     'covid_data ',
                     '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
-                    'geo_lat, geo_long, source_location, source_updated, unique_key) ',
-                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
+                    'geo_lat, geo_long, source_location, source_updated, unique_key, datetime) ',
+                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
                 values = (SOURCE_ID, country_id, state_id, fips,
                           confirmed, deaths, recovered, active,
-                          geo_lat, geo_long, source_location, last_update, unique_key)
+                          geo_lat, geo_long, source_location, last_update, unique_key, collected_time)
                 res = db.insert(sql, values)
                 log.info(f'Item={idx:05}: Success insert item into the database: {values}')
                 db.commit()

@@ -78,6 +78,7 @@ CREATE TABLE covid_data (
     geo_lat DECIMAL,
     geo_long DECIMAL,
     note TEXT,
+    datetime TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     updated TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     source_location TEXT,
@@ -97,6 +98,7 @@ COMMENT ON COLUMN covid_data.created IS 'When the record was created in our syst
 COMMENT ON COLUMN covid_data.updated IS 'When the record was updated in our system';
 COMMENT ON COLUMN covid_data.source_location IS 'Physical location name: hospital, county, and etc.';
 COMMENT ON COLUMN covid_data.source_updated IS 'Datetime from the source system';
+COMMENT ON COLUMN covid_data.datetime IS 'Data collected on this date and time';
 
 CREATE TABLE covid_data_link (
     id SERIAL PRIMARY KEY,
@@ -123,3 +125,18 @@ CREATE UNIQUE INDEX covid_info_link_uniq
         COALESCE(zip, ''), COALESCE(url, ''), COALESCE(published, '2000-01-01'));
 COMMENT ON COLUMN covid_info_link.published IS 'When the link or document was created on the web server';
 COMMENT ON COLUMN covid_info_link.created IS 'When the record about the link was created in the database';
+
+CREATE TABLE special_locations (
+    id SERIAL PRIMARY KEY,
+    group_name TEXT NOT NULL,
+    country_id TEXT NOT NULL,
+    state_id TEXT,
+    fips TEXT,
+    name TEXT,
+    description TEXT,
+    value TEXT,
+    FOREIGN KEY (country_id) REFERENCES country (id),
+    FOREIGN KEY (state_id, country_id) REFERENCES state (id, country_id)
+);
+CREATE UNIQUE INDEX special_locations_uniq
+    ON special_locations (group_name, country_id, COALESCE(state_id, ''), COALESCE(fips, ''));

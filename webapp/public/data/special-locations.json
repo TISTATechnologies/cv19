@@ -1,0 +1,11 @@
+[
+  {
+    "group_name": "TEMPL",
+    "country_id": "US",
+    "state_id": "DC",
+    "fips": "20001",
+    "name": "District of Columbia",
+    "description": "Example special location",
+    "value": "99"
+  }
+]

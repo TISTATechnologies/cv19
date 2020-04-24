@@ -44,9 +44,10 @@ def load_json_data(url):
 
 
 def pull_data_by_day(day):
+    filter_day = day.strftime("%Y%m%d")
     log.info(f'Start pull information - day={day}')
-    states_url = f'http://covidtracking.com/api/states/daily?date={day.strftime("%Y%m%d")}'
-    us_url = f'http://covidtracking.com/api/us/daily?date={day.strftime("%Y%m%d")}'
+    states_url = f'http://covidtracking.com/api/v1/states/daily.json?date={filter_day}'
+    us_url = f'http://covidtracking.com/api/v1/us/daily.json?date={filter_day}'
     idx = -1
     counter_items_added = 0
     counter_items_duplicate = 0
@@ -61,8 +62,10 @@ def pull_data_by_day(day):
         log.debug(f'Found {len(state_items)} items')
         for row in state_items:
             try:
-                idx += 1
                 log.debug(f'Parse row [{idx:5}]: {row}')
+                if str(row.get('date')) != filter_day:
+                    continue                # skip old data
+                idx += 1
                 country_id = 'US'
                 if 'states' in row and 'fips' not in row:
                     state_id = None
@@ -80,14 +83,16 @@ def pull_data_by_day(day):
                 source_location = None
                 last_update = Converter.parse_datetime(row['dateChecked'])
                 unique_key = f'{SOURCE_ID:04o}' + hashlib.md5(f'{country_id}{state_id}{fips}{last_update}'.encode()).hexdigest()
+                collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
                 sql = ''.join([
                     'covid_data ',
                     '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
-                    'geo_lat, geo_long, source_location, source_updated, unique_key) ',
-                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
+                    'geo_lat, geo_long, source_location, source_updated, unique_key, datetime) ',
+                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
                 values = (SOURCE_ID, country_id, state_id, fips,
                           confirmed, deaths, recovered, active,
-                          geo_lat, geo_long, source_location, last_update, unique_key)
+                          geo_lat, geo_long, source_location, last_update, unique_key, collected_time)
+
                 res = db.insert(sql, values)
                 log.info(f'Item={idx:05}: Success insert item into the database: {values}')
                 db.commit()

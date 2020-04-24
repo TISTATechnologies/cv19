@@ -1,0 +1,2 @@
+group_name,country_id,state_id,fips,name,description,value
+TEMPL,US,DC,20001,District of Columbia,Example special location,99

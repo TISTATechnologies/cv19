@@ -4,6 +4,7 @@ echo "------------------------------------------------"
 echo "Build webapp and publish it to the AWS S3 bucket"
 echo "------------------------------------------------"
 . ./scripts/load.env
+echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"
 cd webapp
 npm install && \
 npm run build && \
