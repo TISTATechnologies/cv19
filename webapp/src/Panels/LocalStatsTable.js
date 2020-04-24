@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Hidden from "@material-ui/core/Hidden";
@@ -145,6 +145,11 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
   const lastUpdated = new Date(updated);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    console.log(`%cStats Table render:${level}`, "color: orange");
+  });
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -269,7 +274,7 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
         }}
       >
         {sources.map((source) => (
-          <ListItem>
+          <ListItem key={source.url}>
             <Link
               target="_blank"
               rel="noopener noreferrer"

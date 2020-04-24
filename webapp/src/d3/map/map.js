@@ -1,38 +1,120 @@
 import CountyMap from "./gz_2010_us_050_00_20m.json";
 import StateMap from "./gz_2010_us_040_00_20m.json";
+// import EmpCounties from "./employeeCounties";
 import * as d3 from "d3";
 
-const countyGeo = CountyMap.features.map(x => ({
+const countyGeo = CountyMap.features.map((x) => ({
   ...x,
-  fips: x.properties.STATE + x.properties.COUNTY
+  fips: x.properties.STATE + x.properties.COUNTY,
 }));
-const stateGeo = StateMap.features.map(x => ({
+const stateGeo = StateMap.features.map((x) => ({
   ...x,
-  fips: x.properties.STATE
+  fips: x.properties.STATE,
 }));
+
+const bigFormat = new Intl.NumberFormat("en", {});
+
+const bivarColors = [
+  "#ffffff",
+  "#e4acac",
+  "#c85a5a",
+  "#b0d5df",
+  "#ad9ea5",
+  "#985356",
+  "#64acbe",
+  "#627f8c",
+  "#574249",
+];
+let confirmedColor = d3
+  .scaleSequentialLog(d3.interpolateYlOrRd)
+  .domain([10, 1000])
+  .unknown("#999")
+  .nice();
+
+let ratioColor = d3
+  .scaleSequentialLog(d3.interpolateBuPu)
+  .domain([10, 1000])
+  .unknown("#999")
+  .nice();
+
+let assocCountScale = d3.scaleThreshold().domain([20, 50]).range(d3.range(3));
+
+let ratioImpactScale = d3
+  .scaleThreshold()
+  .domain([500, 1000])
+  .range(d3.range(3));
+
+let associateImpactColor = (value) => {
+  if (!value || !value[0] | !value[1]) return "#999";
+  let [a, b] = value;
+  let left = ratioImpactScale(b);
+  let right = assocCountScale(a);
+  return bivarColors[left + right * 3];
+};
 
 function showToolTip(d, i) {
   const t = d3.select(".tooltip");
-  let { fips, confirmed, deaths, location_name, population } = d;
-  let rate = "NO DATA";
-  const x = d3.event.pageX
+  const x = d3.event.pageX;
   const ttWidth = 150;
   const xAdjust = x + ttWidth + 25 < window.innerWidth ? x + 25 : x - 150;
-  if (typeof population !== "number") population = "NO DATA";
-  if (typeof confirmed !== "number") confirmed = "NO DATA";
-  if (typeof deaths !== "number") deaths = "NO DATA";
-  if (confirmed / population) rate = Math.ceil((confirmed / population) * 1e5);
-  t.html(`<div><strong>${d.properties.NAME}</strong></div>
-    <div>Confirmed: ${confirmed}</div>
-    <div>Deaths: ${deaths}</div>
-    `);
+  t.html(buildTooltipText(d));
   t.style("top", `${d3.event.pageY - 15}px`)
     .style("left", `${xAdjust}px`)
     .style("visibility", "visible")
     .style("opacity", "1");
-  console.dir();
 }
 
+function buildTooltipText({
+  population,
+  properties,
+  confirmed,
+  deaths,
+  count,
+  associateImpact,
+  aRate,
+  active,
+}) {
+  let string = "";
+  if (!Number.isNaN(Number.parseInt(population, 10))) {
+    string += `<div class='tooltip-population'>Pop: ${bigFormat.format(
+      population
+    )}</div>`;
+  } else {
+    string += "NO DATA";
+  }
+  if (!Number.isNaN(Number.parseInt(count, 10))) {
+    string += `<hr/><div>TISTA Assoc.: ${bigFormat.format(count)}</div>`;
+    // string += `<div>RATIO.: ${bigFormat.format(associateImpact)}</div>`;
+  }
+  if (!Number.isNaN(Number.parseInt(confirmed, 10))) {
+    string += `<hr/><div class='tooltip-confirmed'>Confirmed: ${bigFormat.format(
+      confirmed
+    )}</div>`;
+    if (confirmed / population) {
+      let cRate = Math.ceil((confirmed / population) * 1e5);
+      string += `<div>per 100k: ${bigFormat.format(cRate)}</div>`;
+    }
+  }
+  if (!Number.isNaN(Number.parseInt(deaths, 10))) {
+    string += `<hr/><div class='tooltip-deaths'>Deaths: ${bigFormat.format(
+      deaths
+    )}</div>`;
+    if (deaths / population) {
+      let dRate = Math.ceil((deaths / population) * 1e5);
+      string += `<div>per 100k: ${bigFormat.format(dRate)}</div>`;
+    }
+  }
+  if (!Number.isNaN(Number.parseInt(active, 10))) {
+    string += `<hr/><div class='tooltip-active'>Active: ${bigFormat.format(
+      active
+    )}</div>`;
+    if (active / population) {
+      let aRate = Math.ceil((active / population) * 1e5);
+      string += `<div>per 100k: ${bigFormat.format(aRate)}</div>`;
+    }
+  }
+  return `<div><strong>${properties.NAME}</strong></div>${string}`;
+}
 
 function hideToolTip() {
   const t = d3
@@ -61,26 +143,37 @@ function joinTables(lookupTable, mainTable, lookupKey, mainKey, select) {
 }
 
 const projection = d3.geoAlbersUsa();
+// Create GeoPath function that uses built-in D3 functionality to turn
+// lat/lon coordinates into screen coordinates
+const geoPath = d3.geoPath().projection(projection);
 
 function initMap(width = 950, height = 300) {
-  console.log(`%cINIT MAP `, 'color: limegreen');
+  console.log(`%cINIT MAP `, "color: limegreen");
+
   const svg = d3
     .selectAll("section")
     .append("svg")
     .attr("width", width)
     .attr("height", height)
-    .attr("class", "d3Map")
-    .attr("style", "background-color:steelblue");
+    .attr("class", "d3Map");
 
   const legend = d3
     .selectAll("section")
     .append("div")
-    .attr("class", "d3Legend")
-    // .attr("style", "position: absolute")
+    .attr("class", "legend-holder")
+    .append("div")
+    .attr("class", "d3Legend");
+
+  const bivLegend = d3
+    .selectAll(".legend-holder")
+    .append("div")
+    .attr("class", "d3BivLegend");
+  // .attr("style", "position: absolute")
 
   const g = svg.append("g");
   const counties = g.append("g").attr("class", "counties");
   const states = g.append("g").attr("class", "states");
+  const circles = g.append("g").attr("class", "circles");
   const tooltip = d3
     .select("section")
     .append("div")
@@ -88,12 +181,56 @@ function initMap(width = 950, height = 300) {
     .attr("y", 30)
     .style("visibility", "hidden")
     .style("opacity", "0");
+
+  states
+    .selectAll("path")
+    .data(stateGeo)
+    .join("path")
+    .attr("d", geoPath)
+    .attr("fill", "none")
+    .attr("stroke", "#222");
 }
 
-function drawMap(width = 950, height = 300, location = {}, countyHeat) {
-  // Create SVG
+function getAllMapData(countyHeat, EmpCounties) {
+  console.log(`%cGet ALL MAP DATA`, "color: orange");
+  console.log(`%c${!!EmpCounties}`, "color: orange");
   let finalCounty;
+  if (countyHeat.length) {
+    finalCounty = joinTables(countyHeat, countyGeo, "fips", "fips", (g, h) => ({
+      ...g,
+      confirmed: h !== undefined ? h.confirmed : undefined,
+      active: h !== undefined ? h.active : undefined,
+      recovered: h !== undefined ? h.recovered : undefined,
+      deaths: h !== undefined ? h.deaths : undefined,
+      population: h !== undefined ? h.population : undefined,
+      geo_lat: h !== undefined ? h.geo_lat : undefined,
+      geo_long: h !== undefined ? h.geo_long : undefined,
+      ratio: h !== undefined ? (h.confirmed / h.population) * 1e5 : undefined,
+    }));
+    if (EmpCounties) {
+      finalCounty = joinTables(
+        EmpCounties,
+        finalCounty,
+        "fips",
+        "fips",
+        (g, h) => ({
+          ...g,
+          count: h !== undefined ? h.value : undefined,
+          associateRatio:
+            h !== undefined ? (h.value * g.ratio) / 1e3 : undefined,
+        })
+      );
+    }
+  } else {
+    finalCounty = countyGeo;
+  }
+  return finalCounty;
+}
 
+function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
+  console.log(`%cDRAW MAP: ${myMap} `, "color: magenta");
+
+  // Create SVG
   const svg = d3
     .selectAll(".d3Map")
     .attr("width", width)
@@ -104,73 +241,86 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat) {
   const g = svg.select("g");
   const counties = g.select(".counties");
   const states = g.select(".states");
+  const circles = g.select(".circles");
   const tooltip = d3.select(".tooltip");
 
-  let color = d3
-    .scaleSequentialLog(d3.interpolateYlOrRd)
-    .domain([10, 1000])
-    .unknown("#ccc")
-    .nice();
+  const confirmed = countyHeat.map((x) => x.confirmed || 1); // log domain can't be 0
+  const confirmedExtend = d3.extent(confirmed);
+  confirmedColor = confirmedColor.domain(confirmedExtend);
 
-  if (countyHeat.length) {
-    const confirmed = countyHeat.map(x => x.confirmed || 1); // log domain can't be 0
-    const confirmedExtend = d3.extent(confirmed);
-    color = color.domain(confirmedExtend);
-    finalCounty = joinTables(countyHeat, countyGeo, "fips", "fips", (g, h) => ({
-      ...g,
-      confirmed: h !== undefined ? h.confirmed : null,
-      active: h !== undefined ? h.active : null,
-      recovered: h !== undefined ? h.recovered : null,
-      deaths: h !== undefined ? h.deaths : null,
-      population: h !== undefined ? h.population : null
-    }));
-  } else {
-    finalCounty = countyGeo;
-  }
+  const ratio = countyHeat.map((x) => x.ratio || 1); // log domain can't be 0
+  const ratioExtend = d3.extent(ratio);
+  ratioColor = ratioColor.domain(ratioExtend);
 
-  // Create GeoPath function that uses built-in D3 functionality to turn
-  // lat/lon coordinates into screen coordinates
-  const geoPath = d3.geoPath().projection(projection);
   // Append empty placeholder g element to the SVG
   // g will contain geometry elements
+  let currentColorFunction = confirmedColor;
+  let scaleValues;
+  switch (myMap) {
+    case "ratio":
+      currentColorFunction = ratioColor;
+      scaleValues = "log";
+      break;
+    case "associateImpact":
+      currentColorFunction = confirmedColor;
+      scaleValues = "linear";
+      break;
+    default:
+      currentColorFunction = confirmedColor;
+      scaleValues = "log";
+  }
+
+  const colorFunction = (d) => {
+    switch (myMap) {
+      case "ratio":
+        return ratioColor(d.ratio);
+      case "associateImpact":
+        return associateImpactColor([d.count, d.ratio]);
+      case "confirmed":
+      default:
+        return confirmedColor(d.confirmed);
+    }
+  };
+
+  const t = d3.transition().duration(400);
 
   // Classic D3... Select non-existent elements, bind the data, append the elements, and apply attributes
   counties
     .selectAll("path")
-    .data(finalCounty)
+    .data(countyHeat, (d) => d.fips)
     .join("path")
-    .attr("fill", d => color(d.confirmed))
-    .attr("opacity", "0.9")
-    .attr("stroke", "slategray")
-    .attr("d", geoPath)
-    .attr("stroke-opacity", 0.2)
-    .attr("stroke-linejoin", "round")
-    .attr("class", d => `fips${d.fips} county`)
+    .attr("class", (d) => `fips${d.fips} county`)
     .on("mouseout", hideToolTip)
-    .on("mousemove", showToolTip);
-
-  states
-    .selectAll("path")
-    .data(stateGeo)
-    .join("path")
+    .on("mousemove", showToolTip)
+    .attr("stroke-linejoin", "round")
     .attr("d", geoPath)
-    .attr("fill", "none")
-    .attr("stroke", "#666");
+    .transition(t)
+    .delay((d, i) => (i % 10) * 50)
+    .attr("fill", colorFunction)
+    .attr("opacity", "0.9")
+    .attr("stroke", "#444")
+    .attr("stroke-opacity", 0.2);
 
-  const zoom = d3
-    .zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", zoomed);
+  const zoom = d3.zoom().scaleExtent([1, 15]).on("zoom", zoomed);
 
   function drawLocation(location) {
     counties
       .select(`.fips${location.fips}`)
       .attr("opacity", "1")
-      .attr("stroke", "black")
-      .attr("stroke-width", 0.5)
-      .attr("stroke-opacity", 1);
+      .attr("stroke", "#00BCD4")
+      .attr("stroke-width", 0.7)
+      .attr("stroke-opacity", 1)
+      .attr("class", "active");
   }
+  function zoomToUsa() {
+    const moveX = Math.min(0, width / 2);
+    const moveY = Math.min(0, height / 2);
 
+    svg
+      .transition()
+      .duration(750)
+      .call(zoom.transform, d3.zoomIdentity.translate(moveX, moveY).scale(1));
+  }
   function toLocation(location) {
     // console.log(`%cTransition? ${location.location_name}`, "color: lime");
     const [x, y] = projection([location.geo_long, location.geo_lat]);
@@ -199,91 +349,139 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat) {
   if (location.geo_lat) {
     toLocation(location);
     drawLocation(location);
+  } else {
+    zoomToUsa();
   }
 
-  betterLegend({
-    div: d3.select(".d3Legend"),
-    width,
-    height: 20,
-    colorScale: color
-  });
+  if (myMap !== "associateImpact") {
+    d3.select(".d3BivLegend").style("visibility", "hidden");
+    d3.select(".d3Legend").style("visibility", "visible");
+    betterLegend({
+      div: d3.select(".d3Legend"),
+      width,
+      height: 20,
+      colorScale: currentColorFunction,
+      scaleValues,
+    });
+  } else {
+    d3.select(".d3BivLegend").style("visibility", "visible");
+    d3.select(".d3Legend").style("visibility", "hidden");
+    bivarLegend({
+      div: d3.select(".d3BivLegend"),
+    });
+  }
+  // Might use for employee concentration
+  function drawCircles({ group, colorScale, data }) {
+    let adjustedData = [];
+    if (myMap === "associateImpact") {
+      adjustedData = data
+        .filter((d) => d.geo_lat && d.geo_long && d.count)
+        .map((d) => {
+          const [x, y] = projection([d.geo_long, d.geo_lat]);
+          return { x, y, count: d.count, confirmed: d.confirmed };
+        });
+    }
+
+    const squareScale = d3.scaleSqrt().domain([1, 200]).range([2, 30]);
+    group
+      .selectAll("circle")
+      .data(adjustedData)
+      .join("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => squareScale(d.count))
+      .style("fill", (d) => colorScale(d.confirmed))
+      .style("stroke", (d) => colorScale(d.confirmed))
+      .attr("fill-opacity", 0.2)
+      .attr("stroke-opacity", 0.5)
+      .attr("stroke-width", 0.5);
+  }
 }
 
 // LEGEND
-function createLegend({ div, width, height, colorScale }) {
-  const margin = { top: 5, right: 5, bottom: 5, left: 5 };
-  const barHeight = 20;
-  const liarsData = [width];
+function betterLegend({
+  div,
+  width,
+  height,
+  colorScale,
+  scaleValues = "linear",
+}) {
+  let data;
+  let steps;
+  let textTransform;
+  if (scaleValues === "log") {
+    steps = Math.ceil(Math.log10(d3.max(colorScale.domain()))) || 4;
+    data = Array(steps)
+      .fill(0)
+      .map((x, i) => 10 ** (i + 1));
+    textTransform = (d) => `${d3.format("~s")(d / 10)} - ${d3.format("~s")(d)}`;
+  } else {
+    steps = Math.ceil(d3.max(colorScale.domain()) / 10) || 4;
+    data = Array(steps + 1)
+      .fill(0)
+      .map((x, i) => 10 * i);
+    textTransform = (d) => `${d3.format("~s")(d)}`;
+  }
+
+  const checkContrast = (color) => {
+    const hsl = d3.hsl(color);
+    let L = hsl.l;
+    if (L > 0.5) return "#000000";
+    return "#ffffff";
+  };
+  const t = d3.transition().duration(1000).ease(d3.easeLinear);
 
   div
-    .selectAll("h6")
-    .data(liarsData)
-    .join("h6")
-    .text("Cases per county")
-    .attr("class", "legend-header")
-    .attr("style", `transform: translateY(-130px)`);
-
-  const svg = div.select("svg").attr("width", width);
-  svg.append("defs");
-  const defs = svg.select("defs");
-
-  const axisScale = d3
-    .scaleLog()
-    .domain(colorScale.domain())
-    .range([margin.left, width - margin.right]);
-
-  const linearGradient = defs
-    .append("linearGradient")
-    .attr("id", "linear-gradient");
-
-  linearGradient
-    .selectAll("stop")
-    .data(
-      colorScale.ticks().map((t, i, n) => ({
-        offset: `${(100 * i) / n.length}%`,
-        color: colorScale(t)
-      }))
+    .selectAll("div")
+    .data(data, (d, i) => i)
+    .join(
+      (enter) =>
+        enter
+          .append("div")
+          .attr("background", "#999")
+          .style("color", "#999")
+          .attr("class", "legend-square")
+          .call((me) =>
+            me
+              .transition(t)
+              .style("background", (d) => colorScale(d))
+              .style("color", (d) => checkContrast(colorScale(d)))
+          ),
+      (update) =>
+        update.call((me) =>
+          me
+            .transition(t)
+            .style("background", (d) => colorScale(d))
+            .style("color", (d) => checkContrast(colorScale(d)))
+        )
     )
-    .enter()
-    .append("stop")
-    .attr("offset", d => d.offset)
-    .attr("stop-color", d => d.color);
-
-  svg
-    .selectAll("g")
-    .data(liarsData)
-    .join("g")
-    .attr("class", `x-axis`)
-    .attr("transform", `translate(0,${margin.top + barHeight * 3})`)
-    .call(
-      d3
-        .axisBottom()
-        .scale(axisScale)
-        .tickSize(-barHeight)
-        .ticks(4, ".1s")
-    );
-
-  svg
-    .selectAll("rect")
-    .data(liarsData)
-    .join("rect")
-    .attr(
-      "transform",
-      `translate(${margin.left},${margin.top + barHeight * 2})`
-    )
-    .attr("width", d => d - margin.right - margin.left)
-    .attr("height", barHeight)
-    .style("fill", "url(#linear-gradient)");
+    .text(textTransform)
+    .transition(t)
+    .delay((d, i) => i * 100);
 }
 
-function betterLegend({ div, width, height, colorScale }) {
-  div.selectAll("div")
-  .data([1,10,1e3,1e4,1e5])
-  .join("div")
-  .attr('class', 'legend-square')
-  .style('background', d => colorScale(d))
-  // .style('transform', (d,i) => `translateX(${i*(width/5)}px)`)
-  .text(d => `${d3.format('.1s')(d)} - ${d3.format('.1s')(d*10)}`)
+function bivarLegend({ div }) {
+  const k = 25;
+  const data = d3.cross(d3.range(3), d3.range(3), (i, j) => ({
+    x: i * k,
+    y: (2 - j) * k,
+    fill: bivarColors[j * 3 + i],
+  }));
+  console.dir(data);
+  div
+    .selectAll("div")
+    .data(data)
+    .join("div")
+    .style("top", (d) => `-${d.x}px`)
+    .style("left", (d) => `${d.y}px`)
+    .style("width", `${k}px`)
+    .style("height", `${k}px`)
+    .style("background", (d) => d.fill)
+    .style("position", "absolute")
+    .text("");
+
+  div.append("div").text("Associates").attr("class", "assoc");
+  div.append("div").text("Cases/100k").attr("class", "cases");
 }
 
-export {drawMap, initMap};
+export { drawMap, initMap, getAllMapData };

@@ -4,7 +4,22 @@
     <meta charset="utf-8" />
     <meta buildtime="%REACT_APP_BUILD_TIME%" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="preconnect" href="https://nominatim.openstreetmap.org">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_ANALYTICS_KEY%"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "%REACT_APP_GOOGLE_ANALYTICS_KEY%");
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -42,5 +57,4 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
-
 </html>

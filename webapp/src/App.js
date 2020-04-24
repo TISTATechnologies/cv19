@@ -1,4 +1,10 @@
-import React, { Suspense, useState, useEffect } from "react";
+import React, {
+  Suspense,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import useGeolocation from "react-hook-geolocation";
 import Grid from "@material-ui/core/Grid";
 import Container from "@material-ui/core/Container";
@@ -6,7 +12,6 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import InputBase from "@material-ui/core/InputBase";
-import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import MyLocationIcon from "@material-ui/icons/MyLocation";
 import SearchIcon from "@material-ui/icons/Search";
@@ -47,6 +52,10 @@ import Logo from "./resources/tista-logo-1.png";
 const UsaMap = React.lazy(() => import("./Panels/UsaMap"));
 const Feed = React.lazy(() => import("./Panels/Feed"));
 const LocalStatsTable = React.lazy(() => import("./Panels/LocalStatsTable"));
+
+const fallback = <LinearProgress />;
+const emptyObject = {}
+const emptyArray = [];
 
 const useStyles = makeStyles((theme) => ({
   logo: {
@@ -136,7 +145,7 @@ function App() {
   const { pathname = " " } = useLocation();
   const [myState, setMyState] = useState("");
   const [loadingZip, setLoadingZip] = useState(false);
-  const [headlines, setHeadlines] = useState([]);
+  const [headlines, setHeadlines] = useState(emptyArray);
   const [level, setLevel] = useState("usa");
   const [localUsa, setLocalUsa] = useLocalStorage("usaStats", defaultUsa);
   const [usaStats, setUsaStats] = useState(localUsa);
@@ -145,11 +154,9 @@ function App() {
     defaultStates
   );
   const [stateStats, setStateStats] = useState(localState);
-  const [localCounty, setLocalCounty] = useLocalStorage("countyStats", [{}]);
-  const [countyStats, setCountyStats] = useState(localCounty);
-  const [localZip, setLocalZip] = useLocalStorage("zipLocation", "");
-  const [location, setLocation] = useState(localZip);
-  const debouncedLocation = useDebounce(location, 750);
+  const [countyStats, setCountyStats] = useState([emptyObject]);
+  const [location, setLocation] = useState("");
+  const debouncedLocation = useDebounce(location, 500);
   const [updateLocation, setUpdateLocation] = useState(false);
   const [canUseGeo, setCanUseGeo] = useLocalStorage("canUseGeo", false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -162,8 +169,20 @@ function App() {
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
   const [firstSearch, setFirstSearch] = useLocalStorage("firstSearch", true);
-  const [sources, setSources] = useState([]);
+  const [sources, setSources] = useState(emptyArray);
   const geoLocation = useGeolocation();
+
+  const goToLevel = useCallback(
+    (lvl) => {
+      setLevel(lvl);
+      setLocation("");
+      if (lvl === "usa") {
+        setMyState("");
+        history.push("");
+      }
+    },
+    [history]
+  );
 
   useEffect(() => {
     setLocalNoticeOpen(noticeOpen);
@@ -172,8 +191,9 @@ function App() {
   // USA
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching USA`, "color: cyan");
       const { data, error } = await fetchDataFromUSA();
-      if (data.message) {
+      if (data & data.message) {
         setErrorMessage(error);
         setSnackOpen(true);
       } else if (data && data.length) {
@@ -197,8 +217,9 @@ function App() {
   // STATE
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching STATE`, "color: cyan");
       const { data, error } = await fetchDataFromState();
-      if (data.message) {
+      if (data & data.message) {
         setErrorMessage(error);
         setSnackOpen(true);
       }
@@ -223,12 +244,13 @@ function App() {
   // COUNTY
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching COUNTY`, "color: cyan");
       const { data, error } = await fetchDataFromZip(debouncedLocation);
       if (error) {
         setErrorMessage(error);
         setSnackOpen(true);
       }
-      if (data.message) {
+      if (data & data.message) {
         setErrorMessage(error);
         setSnackOpen(true);
       } else if (data && data.length) {
@@ -248,21 +270,28 @@ function App() {
       setLoadingZip(true);
       f();
     }
-  }, [debouncedLocation, history]);
+  }, [debouncedLocation, goToLevel, history]);
+
+
+ useEffect(() => {
+   console.log(`%c${countyStats}`, 'color: salmon');
+ },[countyStats])
 
   useEffect(() => {
-    setLocation(pathname.slice(1));
-  }, [pathname]);
-
-  useEffect(() => {
-    setLocalCounty(countyStats);
-  }, [countyStats, setLocalCounty]);
+    const pathLocation = pathname.slice(1);
+    if (pathLocation) {
+      setLocation(pathLocation);
+    } else {
+      goToLevel("usa");
+    }
+  }, [goToLevel, pathname]);
 
   // ZIP
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching ZIP`, "color: cyan");
       const { data, error } = await findLocationData(geoLocation);
-      if (data.message) {
+      if (data && data.message) {
         setErrorMessage(error);
         setSnackOpen(true);
       } else if (data) {
@@ -271,7 +300,7 @@ function App() {
         setSnackOpen(true);
       } else {
         setCanUseGeo(false);
-        setErrorMessage(error);
+        setErrorMessage("Cannot find location.");
         setSnackOpen(true);
       }
     };
@@ -281,13 +310,10 @@ function App() {
     }
   }, [geoLocation, canUseGeo, setCanUseGeo, updateLocation]);
 
-  useEffect(() => {
-    setLocalZip(debouncedLocation);
-  }, [debouncedLocation, setLocalZip]);
-
   // FEED
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching FEED`, "color: cyan");
       const { data, error } = await fetchStateHeadlines(myState);
       if (data && data.message) {
         setErrorMessage(data.message);
@@ -306,6 +332,7 @@ function App() {
   // Data sources
   useEffect(() => {
     const f = async () => {
+      console.log(`%cFetching sources`, "color: cyan");
       const { data, error } = await fetchDataSources();
       if (data && data.message) {
         setErrorMessage(data.message);
@@ -332,13 +359,8 @@ function App() {
     }
   };
 
-  const goToLevel = (lvl) => {
-    setLevel(lvl);
-    setLocation("");
-    if (lvl === "usa") setMyState("");
-  };
-
   const handleLocationChange = (e) => {
+    console.log(`%c${e.target.value}`, "color: pink");
     setLocation(e.target.value);
   };
 
@@ -352,7 +374,42 @@ function App() {
     setErrorMessage("");
   };
 
-  const fallback = <LinearProgress />;
+  // const MemoFeed = useMemo();
+  // const MemoMap = useMemo();
+  const MemoStatsUsa = useMemo(
+    () => (
+      <LocalStatsTable
+        sources={sources}
+        data={usaStats[0]}
+        getFlag
+        level={"usa"}
+      />
+    ),
+    [sources, usaStats]
+  );
+  const MemoStatsState = useMemo(
+    () => (
+      <LocalStatsTable
+        sources={sources}
+        data={stateStats.find(
+          (x) => x.state_name === countyStats[0].state_name
+        )}
+        getFlag
+        level={"state"}
+      />
+    ),
+    [sources, stateStats, countyStats]
+  );
+  const MemoStatsCounty = useMemo(
+    () => (
+      <LocalStatsTable
+        sources={sources}
+        data={countyStats[0]}
+        level={"county"}
+      />
+    ),
+    [sources, countyStats]
+  );
 
   const classes = useStyles();
   return (
@@ -500,49 +557,26 @@ function App() {
             xs={12}
             md={6}
             lg={6}
-            direction="columns"
             spacing={2}
           >
             <Visible condition={level === "usa"}>
               <Grid item xs={12}>
                 <ErrorBoundary>
-                  <Suspense fallback={fallback}>
-                    <LocalStatsTable
-                      sources={sources}
-                      data={usaStats[0]}
-                      getFlag
-                      level={"usa"}
-                    />
-                  </Suspense>
+                  <Suspense fallback={fallback}>{MemoStatsUsa}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
             <Visible condition={level === "state" || level === "county"}>
               <Grid item xs={12}>
                 <ErrorBoundary>
-                  <Suspense fallback={fallback}>
-                    <LocalStatsTable
-                      sources={sources}
-                      data={stateStats.find(
-                        (x) => x.state_name === countyStats[0].state_name
-                      )}
-                      getFlag
-                      level={"state"}
-                    />
-                  </Suspense>
+                  <Suspense fallback={fallback}>{MemoStatsState}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
             <Visible condition={level === "county"}>
               <Grid item xs={12}>
                 <ErrorBoundary>
-                  <Suspense fallback={fallback}>
-                    <LocalStatsTable
-                      sources={sources}
-                      data={countyStats[0]}
-                      level={"county"}
-                    />
-                  </Suspense>
+                  <Suspense fallback={fallback}>{MemoStatsCounty}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
@@ -551,7 +585,7 @@ function App() {
           <Grid item xs={12} md={6} lg={6}>
             <ErrorBoundary>
               <Suspense fallback={fallback}>
-                <UsaMap data={countyStats[0]} />
+                <UsaMap data={level !== "usa" ? countyStats[0] : emptyObject} />
               </Suspense>
             </ErrorBoundary>
           </Grid>

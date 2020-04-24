@@ -1,6 +1,6 @@
 const url = process.env.REACT_APP_SERVER_URL;
 const jwtToken = process.env.REACT_APP_JWT_TOKEN || false;
-
+const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
 const fetch = window.fetch;
 const headers = new Headers();
 if (jwtToken) {
@@ -10,20 +10,21 @@ if (jwtToken) {
 function fetchWithHeader(url, options) {
   return fetch(url, {
     headers,
-    ...options
+    ...options,
   });
 }
 
 function getDate() {
   let today = new Date();
   today.setDate(today.getDate() - 1);
-  const latest = `${today.getFullYear()}-${today.getMonth() +
-    1}-${today.getDate()}`;
+  const latest = `${today.getFullYear()}-${
+    today.getMonth() + 1
+  }-${today.getDate()}`;
   return latest;
 }
 
 export async function fetchDataFromUSA(query, rows = 1) {
-  const latest = getDate()
+  const latest = getDate();
   const response = await fetchWithHeader(
     `${url}covid_data_stat?location_type=eq.country&country_id=eq.US&date=eq.${latest}&limit=${rows}`
   );
@@ -34,16 +35,14 @@ export async function fetchDataFromUSA(query, rows = 1) {
 }
 
 export async function fetchDataSources() {
-  const response = await fetchWithHeader(
-    `${url}covid_data_source`
-  );
+  const response = await fetchWithHeader(`${url}covid_data_source`);
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
 }
 
 export async function fetchDataFromState(query, rows = 1) {
-  const latest = getDate()
+  const latest = getDate();
   const response = await fetchWithHeader(
     `${url}covid_data_stat?country_id=eq.US&location_type=eq.state&date=eq.${latest}&date=eq.${latest}`
   );
@@ -54,9 +53,9 @@ export async function fetchDataFromState(query, rows = 1) {
 }
 
 export async function fetchDataFromZip(query, rows = 1) {
-  const latest = getDate()
+  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_with_zip?or=(zip.eq.${query},location_name.eq.${query})&date=eq.${latest}&limit=${rows}`
+    `${url}covid_data_stat_with_zip?zip=eq.${query}&date=eq.${latest}&limit=${rows}`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
@@ -65,7 +64,7 @@ export async function fetchDataFromZip(query, rows = 1) {
 }
 
 export async function fetchAllCountyData(query, rows = 1) {
-  const latest = getDate()
+  const latest = getDate();
   const response = await fetchWithHeader(
     `${url}covid_data_stat_slim?country_id=eq.US&location_type=eq.county&date=eq.${latest}`
   );
@@ -76,17 +75,17 @@ export async function fetchAllCountyData(query, rows = 1) {
 }
 
 export async function fetchStateHeadlines(query, rows = 4) {
-  const latest = getDate()
+  const latest = getDate();
   const response = await fetchWithHeader(
     `${url}covid_info_link?country_id=eq.US&state_id=eq.${query}#${latest}`
   );
   const data = await response.json();
-  if (data.message) return { error: data.message}
-  return {data};
+  if (data.message) return { error: data.message };
+  return { data };
 }
 
 export async function findLocationData(query, rows = 1) {
-  const latest = getDate()
+  const latest = getDate();
 
   const { latitude, longitude } = query;
   console.info(latitude, longitude);
@@ -107,6 +106,18 @@ export async function findLocationData(query, rows = 1) {
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data: data[0] };
+}
+
+export async function fetchEmployeeData() {
+  if (associateView) {
+    const response = await fetch(
+      `${process.env.PUBLIC_URL}/data/special-locations.json`
+    );
+    const data = await response.json();
+    if (data.message) return { error: data.message };
+    return { data };
+  }
+  return { data: null };
 }
 
 function precise(x) {

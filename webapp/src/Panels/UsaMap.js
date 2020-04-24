@@ -1,55 +1,129 @@
-import React, { useLayoutEffect, useEffect, useState, useRef } from "react";
+import React, {
+  useLayoutEffect,
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+} from "react";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
+import Radio from "@material-ui/core/Radio";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormControl from "@material-ui/core/FormControl";
 
-import { initMap, drawMap } from "../d3/map/map.js";
+import { initMap, drawMap, getAllMapData } from "../d3/map/map.js";
 import "../d3/map/map.css";
-import { fetchAllCountyData } from "../util/fetch";
-import useLocalStorage from "../util/useLocalStorage";
+import { fetchAllCountyData, fetchEmployeeData } from "../util/fetch";
+
+const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
+
+const mapNames = {
+  confirmed: {
+    short: "Confirmed Cases",
+    long: "Total Confirmed Cases by County",
+  },
+  ratio: {
+    short: "Confirmed per 100,000",
+    long: "Confirmed Cases per 100,000 People",
+  },
+  associateImpact: {
+    short: "Associate Impact",
+    long: "Associate Pandemic Impact Map",
+  },
+};
 
 const UsaMap = ({ data }) => {
-  const [localCountyHeat, setLocalCountyHeat] = useLocalStorage(
-    "countyHeat",
-    []
-  );
-  const [heat, setHeat] = useState(localCountyHeat);
+  // const [localCountyHeat, setLocalCountyHeat] = useLocalStorage(
+  //   "countyHeat",
+  //   []
+  // );
+  const [myMap, setMyMap] = useState("confirmed");
+  const [heat, setHeat] = useState([]);
+  const [emplData, setEmplData] = useState(null);
   const [initialized, setInitialized] = useState(false);
+  const [isHeatSaved, setIsHeatSaved] = useState(false);
   const sectionEl = useRef(null);
 
+  const readiedMap = useMemo(() => {
+    const getMapReady = () => {
+      console.log(`%c Ready Map`, "color: lime");
+
+      const width = sectionEl.current.clientWidth || 200;
+      const height = width * (5 / 9);
+      drawMap(width, height, data, heat, myMap);
+    };
+    return getMapReady;
+  }, [data, heat, myMap]);
+
   useEffect(() => {
-    setLocalCountyHeat(heat);
-  }, [heat, setLocalCountyHeat]);
+    console.log(`%cUSAMAP render`, "color: orange");
+  });
 
   useEffect(() => {
     const f = async () => {
+      let { data: eData } = await fetchEmployeeData();
       let { data: heatData } = await fetchAllCountyData();
       if (heatData && heatData.length) {
-        setHeat(heatData);
+        const finalHeat = getAllMapData(heatData, eData);
+        setHeat(finalHeat);
+        // setLocalCountyHeat(heat);
+        console.log(`%c Got Heat Data`, "color: yellow");
       }
     };
-    f();
-  }, []);
+    if (!isHeatSaved) {
+      setIsHeatSaved(true);
+      f();
+    }
+  }, [isHeatSaved]);
 
   useLayoutEffect(() => {
-    const readyMap = () => {
-      const width = sectionEl.current.clientWidth || 200;
-      const height = 400;
-      drawMap(width, height, data, heat);
-    };
     if (!initialized) {
-      initMap(200, 400);
+      initMap(200, 500);
       setInitialized(true);
+    } else {
+      readiedMap();
     }
-    readyMap();
-    window.addEventListener("resize", readyMap);
-    return () => window.removeEventListener("resize", readyMap);
-  }, [data, heat]);
+    window.addEventListener("resize", readiedMap);
+    return () => window.removeEventListener("resize", readiedMap);
+  }, [data, heat, initialized, myMap, readiedMap]);
+
+  const handleRadioChange = ({ target }) => {
+    setMyMap(target.value);
+  };
 
   return (
     <Card variant="outlined">
-      <CardHeader title={`Map of Confirmed Cases`} />
+      <CardHeader title={`${mapNames[myMap].long}`} />
       <CardContent>
+        <FormControl>
+          <RadioGroup
+            row
+            aria-label="map selection"
+            name="map"
+            value={myMap}
+            onChange={handleRadioChange}
+          >
+            <FormControlLabel
+              value="confirmed"
+              control={<Radio />}
+              label={mapNames.confirmed.short}
+            />
+            <FormControlLabel
+              value="ratio"
+              control={<Radio />}
+              label={mapNames.ratio.short}
+            />
+            {associateView ? (
+              <FormControlLabel
+                value="associateImpact"
+                control={<Radio />}
+                label={mapNames.associateImpact.short}
+              />
+            ) : null}
+          </RadioGroup>
+        </FormControl>
         <section
           ref={sectionEl}
           style={{ width: "100%", height: "100%" }}
