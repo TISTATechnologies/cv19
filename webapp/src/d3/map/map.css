@@ -126,3 +126,16 @@
   left: 50px;
   top: -25px;
 }
+
+@media (max-width: 599.99px) {
+  .legend-square {
+    font-size: 0.8em;
+    min-width: 10vw;
+  }
+
+  .legend-holder {
+    position: relative;
+    top: -40px;
+    height: 0;
+  }
+}

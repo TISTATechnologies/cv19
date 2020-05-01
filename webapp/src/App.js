@@ -20,7 +20,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Popover from "@material-ui/core/Popover";
-import Hidden from '@material-ui/core/Hidden';
+import Hidden from "@material-ui/core/Hidden";
 
 import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
@@ -62,6 +62,11 @@ const useStyles = makeStyles((theme) => ({
   logo: {
     [theme.breakpoints.down("xs")]: {
       width: 100,
+    },
+  },
+  localStatsGrid: {
+    [theme.breakpoints.down("sm")]: {
+      flexFlow: "column-reverse",
     },
   },
   progress: {
@@ -387,9 +392,10 @@ function App() {
         data={usaStats[0]}
         getFlag
         level={"usa"}
+        mini={level !== "usa"}
       />
     ),
-    [sources, usaStats]
+    [sources, usaStats, level]
   );
   const MemoStatsState = useMemo(
     () => (
@@ -460,16 +466,16 @@ function App() {
             )}
           </div>
           <Hidden smDown>
-          <Link
-            href="http://www.tistacares.com"
-            target="_blank"
-            rel="noopener"
-            color="textSecondary"
-            variant="h6"
-            className={classes.caresLink}
-          >
-            www.tistacares.com
-          </Link>
+            <Link
+              href="http://www.tistacares.com"
+              target="_blank"
+              rel="noopener"
+              color="textSecondary"
+              variant="h6"
+              className={classes.caresLink}
+            >
+              www.tistacares.com
+            </Link>
           </Hidden>
         </Toolbar>
         <Popover
@@ -567,23 +573,21 @@ function App() {
             </Visible>
           </Grid>
 
-          <Grid container item xs={12} md={6} lg={6} spacing={0}>
-            <Visible condition={level === "usa"}>
-              <Grid item xs={12} style={{paddingBottom: '0px'}} >
-                <ErrorBoundary>
-                  <Suspense fallback={fallback}>{MemoStatsUsa}</Suspense>
-                </ErrorBoundary>
-              </Grid>
-            </Visible>
+          <Grid container item xs={12} md={6} lg={6} spacing={2} id="local-stats-grid" className={classes.localStatsGrid}>
+            <Grid item xs={12}>
+              <ErrorBoundary>
+                <Suspense fallback={fallback}>{MemoStatsUsa}</Suspense>
+              </ErrorBoundary>
+            </Grid>
             <Visible condition={level === "state" || level === "county"}>
-              <Grid item xs={12} style={{paddingBottom: '8px'}} >
+              <Grid item xs={12} style={{ paddingBottom: "8px" }}>
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsState}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
             <Visible condition={level === "county"}>
-              <Grid item xs={12} style={{paddingBottom: '0px'}} >
+              <Grid item xs={12} style={{ paddingBottom: "0px" }}>
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsCounty}</Suspense>
                 </ErrorBoundary>

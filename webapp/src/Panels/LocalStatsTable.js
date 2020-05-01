@@ -63,6 +63,7 @@ const StatBlock = ({
   subvalue = "",
   colorClass = "",
   level = "x",
+  mini = false,
 }) => {
   const classes = useStyles();
   let formattedVal = value;
@@ -79,58 +80,81 @@ const StatBlock = ({
   } else if (typeof subvalue === "number") {
     formattedSubVal = Math.ceil(subvalue * 1e5);
   }
+  if (!mini) {
+    return (
+      <Card
+        className={`${classes.statGridBlock} ${classes[colorClass]}`}
+        id={`${level}-${colorClass}`}
+      >
+        <CardContent>
+          <Hidden only="xs">
+            <Typography
+              variant="h3"
+              align="center"
+              id={`${level}-${colorClass}-value`}
+            >
+              {formattedVal}
+            </Typography>
+            <Typography
+              variant="h6"
+              align="center"
+              className={classes.rates}
+              id={`${level}-${colorClass}-rate`}
+            >
+              {formattedSubVal} {subname}
+            </Typography>
+            <Typography
+              variant="h5"
+              align="center"
+              className={classes[`${colorClass}Bar`]}
+            >
+              {name}
+            </Typography>
+          </Hidden>
+
+          <Hidden smUp>
+            <Typography
+              variant="h5"
+              align="center"
+              className={classes[`${colorClass}Bar`]}
+            >
+              {name}
+            </Typography>
+            <Typography variant="h5" align="center">
+              {formattedVal}
+            </Typography>
+            <Typography variant="h6" align="center" className={classes.rates}>
+              {formattedSubVal} {subname}
+            </Typography>
+          </Hidden>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card
-      className={`${classes.statGridBlock} ${classes[colorClass]}`}
+      className={`${classes[colorClass]}`}
       id={`${level}-${colorClass}`}
     >
-      <CardContent>
-        <Hidden only="xs">
-          <Typography
-            variant="h3"
-            align="center"
-            id={`${level}-${colorClass}-value`}
-          >
-            {formattedVal}
-          </Typography>
-          <Typography
-            variant="h6"
-            align="center"
-            className={classes.rates}
-            id={`${level}-${colorClass}-rate`}
-          >
-            {formattedSubVal} {subname}
-          </Typography>
-          <Typography
-            variant="h5"
-            align="center"
-            className={classes[`${colorClass}Bar`]}
-          >
-            {name}
-          </Typography>
-        </Hidden>
-
-        <Hidden smUp>
-          <Typography
-            variant="h5"
-            align="center"
-            className={classes[`${colorClass}Bar`]}
-          >
-            {name}
-          </Typography>
-          <Typography variant="h5" align="center">
-            {formattedVal}
-          </Typography>
-          <Typography variant="h6" align="center" className={classes.rates}>
-            {formattedSubVal} {subname}
-          </Typography>
-        </Hidden>
-      </CardContent>
+      <Typography
+        variant="h5"
+        align="center"
+        id={`${level}-${colorClass}-value`}
+        className={classes[`${colorClass}Bar`]}
+      >
+        {formattedVal}
+      </Typography>
     </Card>
   );
 };
 
-const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
+const LocalStatsTable = ({
+  data = {},
+  getFlag = false,
+  sources,
+  level,
+  mini = false,
+}) => {
   const classes = useStyles();
   const {
     confirmed = "N/A",
@@ -172,24 +196,142 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
       backgroundPosition: "center",
     };
   }
+  if (!mini)
+    return (
+      <Card style={svgFlag} variant="outlined">
+        <CardHeader
+          titleTypographyProps={{
+            className: classes.title,
+          }}
+          title={`COVID-19 Data for ${location_name}`}
+          subheader={`Population: ${bigFormat.format(population)}`}
+          subheaderTypographyProps={{
+            color: "secondary",
+            variant: "h6",
+            id: `${level}-population`,
+          }}
+        ></CardHeader>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm>
+              <StatBlock
+                name="Confirmed Cases"
+                value={confirmed}
+                colorClass="confirmed"
+                subvalue={confirmed / population}
+                level={level}
+              />
+            </Grid>
+            <Grid item xs={12} sm>
+              <StatBlock
+                name={`Deaths`}
+                value={deaths}
+                colorClass="deaths"
+                subvalue={deaths / population}
+                level={level}
+              />
+            </Grid>
+            <Visible condition={active}>
+              <Grid item xs={12} sm>
+                <StatBlock
+                  name={`Active Cases`}
+                  value={active}
+                  colorClass="active"
+                  subvalue={active / population}
+                  level={level}
+                />
+              </Grid>
+            </Visible>
+            <Visible condition={recovered}>
+              <Grid item xs={12} sm>
+                <StatBlock
+                  name={`Recoveries`}
+                  value={recovered}
+                  colorClass="recovered"
+                  subvalue={recovered / population}
+                  level={level}
+                />
+              </Grid>
+            </Visible>
+          </Grid>
+          <Grid
+            container
+            item
+            xs={12}
+            justify="space-between"
+            style={{ paddingTop: "8px" }}
+          >
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2">
+                {lastUpdated.toString() !== "Invalid Date"
+                  ? `Last updated: ${lastUpdated.toLocaleDateString("en", {
+                      timeStyle: "long",
+                      dateStyle: "long",
+                    })}`
+                  : "---"}
+              </Typography>
+            </Grid>
+            <Grid item xs>
+              <Typography variant="body2" align="right">
+                <Link
+                  color="textSecondary"
+                  underline="always"
+                  onClick={handleClick}
+                  style={{ cursor: "pointer" }}
+                >
+                  Data sources
+                </Link>
+              </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+        >
+          {sources.map((source) => (
+            <ListItem key={source.url}>
+              <Link
+                target="_blank"
+                rel="noopener noreferrer"
+                color="textSecondary"
+                underline="always"
+                href={source.url}
+              >
+                {source.name}
+              </Link>
+            </ListItem>
+          ))}
+        </Popover>
+      </Card>
+    );
+
+  // mini stats view
   return (
     <Card style={svgFlag} variant="outlined">
-      <CardHeader
-        titleTypographyProps={{
-          className: classes.title,
-        }}
-        title={`COVID-19 Data for ${location_name}`}
-        subheader={`Population: ${bigFormat.format(population)}`}
-        subheaderTypographyProps={{
-          color: "secondary",
-          variant: "h6",
-          id: `${level}-population`,
-        }}
-      ></CardHeader>
+    <CardHeader
+      titleTypographyProps={{
+        className: classes.title,
+        variant:"body1",
+        component: 'span'
+      }}
+      title={`COVID-19 Data for ${location_name}`}
+    ></CardHeader>
+
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm>
+          <Grid item xs={6} sm={3}>
             <StatBlock
+              mini={mini}
               name="Confirmed Cases"
               value={confirmed}
               colorClass="confirmed"
@@ -197,8 +339,9 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
               level={level}
             />
           </Grid>
-          <Grid item xs={12} sm>
+          <Grid item xs={6} sm={3}>
             <StatBlock
+              mini={mini}
               name={`Deaths`}
               value={deaths}
               colorClass="deaths"
@@ -207,8 +350,9 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
             />
           </Grid>
           <Visible condition={active}>
-            <Grid item xs={12} sm>
+            <Grid item xs={6} sm={3}>
               <StatBlock
+                mini={mini}
                 name={`Active Cases`}
                 value={active}
                 colorClass="active"
@@ -218,8 +362,9 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
             </Grid>
           </Visible>
           <Visible condition={recovered}>
-            <Grid item xs={12} sm>
+            <Grid item xs={6} sm={3}>
               <StatBlock
+                mini={mini}
                 name={`Recoveries`}
                 value={recovered}
                 colorClass="recovered"
@@ -229,64 +374,39 @@ const LocalStatsTable = ({ data = {}, getFlag = false, sources, level }) => {
             </Grid>
           </Visible>
         </Grid>
-        <Grid
-          container
-          item
-          xs={12}
-          justify="space-between"
-          style={{ paddingTop: "8px" }}
-        >
-          <Grid item xs={12} sm={6}>
-            <Typography variant="body2">
-              {lastUpdated.toString() !== "Invalid Date"
-                ? `Last updated: ${lastUpdated.toLocaleDateString("en", {
-                    timeStyle: "long",
-                    dateStyle: "long",
-                  })}`
-                : "---"}
-            </Typography>
+        {!mini ? (
+          <Grid
+            container
+            item
+            xs={12}
+            justify="space-between"
+            style={{ paddingTop: "8px" }}
+          >
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2">
+                {lastUpdated.toString() !== "Invalid Date"
+                  ? `Last updated: ${lastUpdated.toLocaleDateString("en", {
+                      timeStyle: "long",
+                      dateStyle: "long",
+                    })}`
+                  : "---"}
+              </Typography>
+            </Grid>
+            <Grid item xs>
+              <Typography variant="body2" align="right">
+                <Link
+                  color="textSecondary"
+                  underline="always"
+                  onClick={handleClick}
+                  style={{ cursor: "pointer" }}
+                >
+                  Data sources
+                </Link>
+              </Typography>
+            </Grid>
           </Grid>
-          <Grid item xs>
-            <Typography variant="body2" align="right">
-              <Link
-                color="textSecondary"
-                underline="always"
-                onClick={handleClick}
-                style={{ cursor: "pointer" }}
-              >
-                Data sources
-              </Link>
-            </Typography>
-          </Grid>
-        </Grid>
+        ) : null}
       </CardContent>
-      <Popover
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
-        }}
-      >
-        {sources.map((source) => (
-          <ListItem key={source.url}>
-            <Link
-              target="_blank"
-              rel="noopener noreferrer"
-              color="textSecondary"
-              underline="always"
-              href={source.url}
-            >
-              {source.name}
-            </Link>
-          </ListItem>
-        ))}
-      </Popover>
     </Card>
   );
 };
