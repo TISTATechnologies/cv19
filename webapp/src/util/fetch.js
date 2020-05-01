@@ -1,6 +1,6 @@
 const url = process.env.REACT_APP_SERVER_URL;
 const jwtToken = process.env.REACT_APP_JWT_TOKEN || false;
-const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
+const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === "1";
 const fetch = window.fetch;
 const headers = new Headers();
 if (jwtToken) {
@@ -52,10 +52,26 @@ export async function fetchDataFromState(query, rows = 1) {
   return { data };
 }
 
-export async function fetchDataFromZip(query, rows = 1) {
+export async function fetchFipsFromZip(query) {
+  const first = query.slice(0, 1);
+  const chunk = query.slice(0, 3);
+  if (chunk.length < 3) return [];
+  const response = await fetch(
+    `${process.env.PUBLIC_URL}/data/us/zip/${first}/${chunk}.json`
+  );
+  try {
+    const fips = await response.json();
+    return fips;
+  } catch {
+    console.error(`No fips for this Zip group: ${chunk}`);
+    return [];
+  }
+}
+
+export async function fetchDataFromFips(fips, rows = 1) {
   const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_with_zip?zip=eq.${query}&date=eq.${latest}&limit=${rows}`
+    `${url}covid_data_stat?fips=eq.${fips}&date=eq.${latest}&limit=${rows}`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };

@@ -7,6 +7,12 @@ import CardHeader from "@material-ui/core/CardHeader";
 import { makeStyles } from "@material-ui/core/styles";
 import CardContent from "@material-ui/core/CardContent";
 
+const gtag =
+  window.gtag ||
+  (([a, b, c, d, e, f]) => {
+    console.log("No Google Analytics Installed");
+  });
+
 const useStyles = makeStyles((theme) => ({
   url: {
     [theme.breakpoints.down("xs")]: {
@@ -26,11 +32,12 @@ const Feed = ({ data }) => {
   if (loadingZip)
     return (
       <Card variant="outlined">
-        <CardHeader title={`COVID-19 Critical Executive Orders`}
-        titleTypographyProps={{
-          className: classes.title,
-        }}
-/>
+        <CardHeader
+          title={`COVID-19 Critical Executive Orders`}
+          titleTypographyProps={{
+            className: classes.title,
+          }}
+        />
         <CardContent>
           <LinearProgress style={{ width: "100%" }} />
         </CardContent>
@@ -44,7 +51,6 @@ const Feed = ({ data }) => {
         titleTypographyProps={{
           className: classes.title,
         }}
-
         subheader="The most important executive orders for this state:"
       />
       <CardContent>
@@ -60,6 +66,9 @@ const Feed = ({ data }) => {
             noWrap
             key={f.url + f.created}
             variant="h6"
+            onClick={gtag("event", "Navigate", {
+              event_label: `Look at Executive Order ${f.note}`,
+            })}
           >
             <li>{f.note}</li>
           </Link>
