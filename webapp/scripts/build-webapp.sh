@@ -12,14 +12,22 @@ react-scripts build
 # Download all flags
 ./scripts/download-flags.sh
 
-# Create _version.txt file
+# Create _version.json file
 mkdir ./build/ 2>/dev/null
-date +"%Y-%m-%dT%H:%M:%S%z" > ./build/_version.txt
+echo -e "{
+  \"version\": \"${REACT_APP_VERSION}\",
+  \"buildtime\": \"${REACT_APP_BUILD_TIME}\"
+}" > ./build/_version.json
 
 # Exclude files by special environments
 if [ "${REACT_APP_VIEW_ASSOCIATES}" != "1" ]; then
     echo "Remove special files for NON-internal environment"
     rm -vf ./build/data/special-locations.json
 fi
+
+# Create data/files.txt file
+mkdir ./build/data 2>/dev/null
+cd ./build/data
+find . -type f | sort | sed 's/\.\///g'> ./files.txt
 
 echo "Build complete"
