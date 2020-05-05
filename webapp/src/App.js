@@ -20,6 +20,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Popover from "@material-ui/core/Popover";
+import Hidden from '@material-ui/core/Hidden';
 
 import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
@@ -54,7 +55,7 @@ const Feed = React.lazy(() => import("./Panels/Feed"));
 const LocalStatsTable = React.lazy(() => import("./Panels/LocalStatsTable"));
 
 const fallback = <LinearProgress />;
-const emptyObject = {}
+const emptyObject = {};
 const emptyArray = [];
 
 const useStyles = makeStyles((theme) => ({
@@ -137,6 +138,10 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up("sm")]: {
       width: "12ch",
     },
+  },
+  caresLink: {
+    position: "absolute",
+    right: theme.spacing(4),
   },
 }));
 
@@ -272,10 +277,9 @@ function App() {
     }
   }, [debouncedLocation, goToLevel, history]);
 
-
- useEffect(() => {
-   console.log(`%c${countyStats}`, 'color: salmon');
- },[countyStats])
+  useEffect(() => {
+    console.log(`%c${countyStats}`, "color: salmon");
+  }, [countyStats]);
 
   useEffect(() => {
     const pathLocation = pathname.slice(1);
@@ -425,7 +429,7 @@ function App() {
             }}
           />
           <Typography variant="h5" className={classes.title}>
-            ● CV-19 Dashboard
+            ● CV-19 Tracker
           </Typography>
 
           <IconButton
@@ -455,6 +459,18 @@ function App() {
               <LinearProgress color="secondary" className={"progress"} />
             )}
           </div>
+          <Hidden smDown>
+          <Link
+            href="http://www.tistacares.com"
+            target="_blank"
+            rel="noopener"
+            color="textSecondary"
+            variant="h6"
+            className={classes.caresLink}
+          >
+            www.tistacares.com
+          </Link>
+          </Hidden>
         </Toolbar>
         <Popover
           open={open}
@@ -551,30 +567,23 @@ function App() {
             </Visible>
           </Grid>
 
-          <Grid
-            container
-            item
-            xs={12}
-            md={6}
-            lg={6}
-            spacing={2}
-          >
+          <Grid container item xs={12} md={6} lg={6} spacing={0}>
             <Visible condition={level === "usa"}>
-              <Grid item xs={12}>
+              <Grid item xs={12} style={{paddingBottom: '0px'}} >
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsUsa}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
             <Visible condition={level === "state" || level === "county"}>
-              <Grid item xs={12}>
+              <Grid item xs={12} style={{paddingBottom: '8px'}} >
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsState}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
             <Visible condition={level === "county"}>
-              <Grid item xs={12}>
+              <Grid item xs={12} style={{paddingBottom: '0px'}} >
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsCounty}</Suspense>
                 </ErrorBoundary>
