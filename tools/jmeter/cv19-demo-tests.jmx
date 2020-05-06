@@ -13,11 +13,10 @@
     <hashTree>
       <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
-          <elementProp name="apiserver" elementType="Argument">
-            <stringProp name="Argument.name">apiserver</stringProp>
-            <stringProp name="Argument.value">${__env(API_SERVER)}</stringProp>
+          <elementProp name="apiserverhost" elementType="Argument">
+            <stringProp name="Argument.name">apiserverhost</stringProp>
+            <stringProp name="Argument.value">${__env(API_SERVER_HOST)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
-            <stringProp name="Argument.desc">Host of Webservice</stringProp>
           </elementProp>
           <elementProp name="jwt" elementType="Argument">
             <stringProp name="Argument.name">jwt</stringProp>
@@ -39,9 +38,19 @@
             <stringProp name="Argument.value">${__env(VUSERS)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="webappserver" elementType="Argument">
-            <stringProp name="Argument.name">webappserver</stringProp>
-            <stringProp name="Argument.value">${__env(APP_SERVER)}</stringProp>
+          <elementProp name="webappserverhost" elementType="Argument">
+            <stringProp name="Argument.name">webappserverhost</stringProp>
+            <stringProp name="Argument.value">${__env(APP_SERVER_HOST)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="apiserverport" elementType="Argument">
+            <stringProp name="Argument.name">apiserverport</stringProp>
+            <stringProp name="Argument.value">${__env(API_SERVER_PORT)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="webappserverport" elementType="Argument">
+            <stringProp name="Argument.name">webappserverport</stringProp>
+            <stringProp name="Argument.value">${__env(APP_SERVER_PORT)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -87,8 +96,8 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${apiserver}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.domain">${apiserverhost}</stringProp>
+          <stringProp name="HTTPSampler.port">${apiserverport}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/covid_data_stat</stringProp>
@@ -153,8 +162,8 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${apiserver}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.domain">${apiserverhost}</stringProp>
+          <stringProp name="HTTPSampler.port">${apiserverport}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/covid_data_stat</stringProp>
@@ -225,8 +234,8 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${apiserver}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.domain">${apiserverhost}</stringProp>
+          <stringProp name="HTTPSampler.port">${apiserverport}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/covid_data_stat_with_zip</stringProp>
@@ -269,8 +278,8 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${webappserver}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.domain">${webappserverhost}</stringProp>
+          <stringProp name="HTTPSampler.port">${webappserverport}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/</stringProp>
@@ -286,7 +295,7 @@
         <hashTree>
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
             <collectionProp name="Asserion.test_strings">
-              <stringProp name="188013380">COVID-19 Dashboard</stringProp>
+              <stringProp name="-1003539480">COVID-19 Tracker</stringProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Verify content in response</stringProp>
             <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
