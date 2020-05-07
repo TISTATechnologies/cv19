@@ -301,7 +301,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
     .attr("stroke", "#444")
     .attr("stroke-opacity", 0.2);
 
-  const zoom = d3.zoom().scaleExtent([1, 15]).on("zoom", zoomed);
+  const zoom = d3.zoom().scaleExtent([0.5, 15]).on("zoom", zoomed);
 
   function drawLocation(location) {
     counties

@@ -70,7 +70,7 @@ const Feed = ({ data }) => {
               event_label: `Look at Executive Order ${f.note}`,
             })}
           >
-            <li>{f.note}</li>
+            • {f.note}
           </Link>
         ))}
         {headlines.length < 1 ? (

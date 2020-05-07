@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import { fade, makeStyles } from "@material-ui/core/styles";
 import useGeolocation from "react-hook-geolocation";
 import Grid from "@material-ui/core/Grid";
 import Container from "@material-ui/core/Container";
@@ -31,7 +32,9 @@ import Visible from "./components/Visible";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ZipInput from "./components/ZipInput";
 
-import { fade, makeStyles } from "@material-ui/core/styles";
+import TistaCares50 from "./resources/TISTA_Philanthropy_50.png";
+import TistaCares25 from "./resources/TISTA_Philanthropy_25.png";
+
 import useLocalStorage from "./util/useLocalStorage";
 import {
   fetchDataFromFips,
@@ -72,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
   localStatsGrid: {
     [theme.breakpoints.down("sm")]: {
       flexFlow: "column-reverse",
+      // padding: '0 !important',
     },
   },
   progress: {
@@ -121,8 +125,8 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
     marginLeft: 0,
-    width: "40%",
-    maxWidth: "600px",
+    minWidth: "100px",
+    flexGrow: 1,
     [theme.breakpoints.up("sm")]: {
       marginLeft: theme.spacing(4),
     },
@@ -140,22 +144,12 @@ const useStyles = makeStyles((theme) => ({
     color: "inherit",
     flexGrow: 1,
   },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("sm")]: {
-      width: "12ch",
-    },
-  },
   caresLink: {
     padding: theme.spacing(2),
     color: "white",
     [theme.breakpoints.up("sm")]: {
-      position: "absolute",
-      right: theme.spacing(2),
+      // position: "absolute",
+      // right: theme.spacing(2),
     },
   },
 }));
@@ -195,19 +189,16 @@ function App() {
   const geoLocation = useGeolocation();
   const [savedLocations, setSavedLocations] = useLocalStorage("MyLocations", [
     {
-      county: "Montogomery",
-      state: "MD",
-      fips: 24031,
+      location_name: "Montogomery County, MD",
+      fips: "24031",
     },
     {
-      county: "Fairfax",
-      state: "VA",
-      fips: 51059,
+      location_name: "Fairfax County, VA",
+      fips: "51059",
     },
     {
-      county: "District of Columbia",
-      state: "DC",
-      fips: 11001,
+      location_name: "District of Columbia, DC",
+      fips: "11001",
     },
   ]);
   const [myLocations, setMyLocations] = useState(savedLocations);
@@ -306,11 +297,13 @@ function App() {
         });
         history.push(fips);
       } else {
-        setErrorMessage(`Could not load county data for ${location}.`);
+        setErrorMessage(`Could not load county data for FIPS ${fips}.`);
         gtag("event", "search", {
           event_label: `Zip Search Failed ${location}`,
           event_callback: () => console.log("GTAG sent"),
         });
+        setFips("");
+        setLocation("");
         setSnackOpen(true);
         setLoadingZip(false);
       }
@@ -327,7 +320,7 @@ function App() {
         setLastFipsSearch(search);
       }
     };
-    if (location.length >= 3 && location.length >= 3) {
+    if (location.length >= 3) {
       g();
     }
     if (fips) {
@@ -342,9 +335,11 @@ function App() {
 
   useEffect(() => {
     const pathLocation = pathname.slice(1);
-    if (pathLocation) {
+    console.log(`%c${pathLocation}`, "color: orange");
+    if (pathLocation && pathLocation.length === 5) {
       setFips(pathLocation);
     } else {
+      setFips("");
       goToLevel("usa");
     }
   }, [goToLevel, pathname]);
@@ -474,13 +469,15 @@ function App() {
     if (index < 0) {
       if (myLocations.length >= 10) {
         console.log("LIST FULL");
-        setErrorMessage("Tracked county list is full. Please remove an entry to add a new county.")
+        setErrorMessage(
+          "Tracked county list is full. Please remove an entry to add a new county."
+        );
         return;
       }
 
       setSavedLocations([...myLocations, { fips }]);
     } else {
-      setErrorMessage("County is already tracked.")
+      setErrorMessage("County is already tracked.");
       return;
     }
   };
@@ -491,7 +488,7 @@ function App() {
       console.log(`%cDELETING ${fips}`, "color: red");
       if (myLocations.length === 1) {
         setSavedLocations(emptyArray);
-        setMyLocations(emptyArray)
+        setMyLocations(emptyArray);
       } else {
         const a = myLocations.slice(0, index);
         const b = myLocations.slice(index + 1);
@@ -552,7 +549,7 @@ function App() {
             }}
           />
           <Typography variant="h5" className={classes.title}>
-            ● CV-19 Tracker
+            ● COVID-19 Tracker
           </Typography>
 
           <IconButton
@@ -582,48 +579,34 @@ function App() {
             )}
           </div>
           <Hidden mdDown>
-            <Link
-              href="http://www.tistacares.com"
-              target="_blank"
-              rel="noopener"
-              color="textSecondary"
-              variant="h6"
-              className={classes.caresLink}
-            >
-              www.tistacares.com
-            </Link>
+          <Link
+            href="http://www.tistacares.com"
+            target="_blank"
+            rel="noopener"
+            variant="body1"
+            className={classes.caresLink}
+            style={{ fontSize: "12px",textAlign: "center", padding: '8px 16px',  }}
+          >
+            <img src={TistaCares50} alt="Tista Cares"
+            style={{ height: 40 }}
+            />
+            <div>www.tistacares.com</div>
+          </Link>
           </Hidden>
           <Hidden lgUp>
             <Link
               href="http://www.tistacares.com"
               target="_blank"
               rel="noopener"
-              color="textSecondary"
               variant="body1"
               className={classes.caresLink}
+              style={{ fontSize: "12px", textAlign: "center" }}
             >
-              tistacares.com
+              <img src={TistaCares25} alt="Tista Cares" />
+              <div>tistacares.com</div>
             </Link>
           </Hidden>
         </Toolbar>
-        <Popover
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClosePopover}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "left",
-          }}
-        >
-          <CardContent className={classes.helpCard}>
-            To find the most relevant statistics for you, this application
-            searches by your <strong>zip code</strong>.
-          </CardContent>
-        </Popover>
       </AppBar>
 
       <Snackbar
@@ -641,29 +624,31 @@ function App() {
 
       <Container maxWidth={false}>
         <Grid container spacing={2} justify="space-between">
-          <Grid item xs={12} sm={8}>
-            <Visible condition={noticeOpen}>
-              <ListItem className={classes.noteCard}>
-                <ListItemText variant="h6" component="p" align="center">
-                  NOTE: New CDC guidance could cause an increase in the number
-                  of deaths attributed to COVID-19.{" "}
-                  <Link
-                    href="https://www.cdc.gov/nchs/data/nvss/coronavirus/Alert-2-New-ICD-code-introduced-for-COVID-19-deaths.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    color="textSecondary"
-                    underline="always"
-                  >
-                    See this report for more details.
-                  </Link>
-                </ListItemText>
-                <ListItemIcon>
-                  <IconButton onClick={() => setNoticeOpen(false)}>
-                    <CloseIcon />
-                  </IconButton>
-                </ListItemIcon>
-              </ListItem>
-            </Visible>
+          <Grid item container xs={12} justify="center">
+            <Grid item xs={12} sm={8}>
+              <Visible condition={noticeOpen}>
+                <ListItem className={classes.noteCard}>
+                  <ListItemText variant="h6" component="p" align="center">
+                    NOTE: New CDC guidance could cause an increase in the number
+                    of deaths attributed to COVID-19.{" "}
+                    <Link
+                      href="https://www.cdc.gov/nchs/data/nvss/coronavirus/Alert-2-New-ICD-code-introduced-for-COVID-19-deaths.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="textSecondary"
+                      underline="always"
+                    >
+                      See this report for more details.
+                    </Link>
+                  </ListItemText>
+                  <ListItemIcon>
+                    <IconButton onClick={() => setNoticeOpen(false)}>
+                      <CloseIcon />
+                    </IconButton>
+                  </ListItemIcon>
+                </ListItem>
+              </Visible>
+            </Grid>
           </Grid>
           <Grid item xs={12}>
             <Link
@@ -740,7 +725,7 @@ function App() {
             </ErrorBoundary>
           </Grid>
 
-          <Grid item xs={12} lg={6}>
+          <Grid item xs={12} lg={6} zeroMinWidth>
             <ErrorBoundary>
               <Suspense fallback={fallback}>
                 <Feed data={{ myState, headlines, loadingZip }} />

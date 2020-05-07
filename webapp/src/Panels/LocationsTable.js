@@ -10,9 +10,11 @@ import Paper from "@material-ui/core/Paper";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
-import Button from "@material-ui/core/Button";
+import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
+import AddCircleIcon from "@material-ui/icons/AddCircle";
+
 import Link from "@material-ui/core/Link";
 
 const enFormat = new Intl.NumberFormat("en", {});
@@ -24,10 +26,10 @@ const format = (val) => {
 };
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    // minWidth: 650,
-    fontSize: "1.2rem",
-    backgroundColor: "#222",
+  root: { fontSize: "1.2rem" },
+  tooltip: { fontSize: "0.8rem", backgroundColor: "#222" },
+  linkButton: {
+    textAlign: "inherit",
   },
   confirmed: { color: theme.palette.grey[300] },
   active: { color: theme.palette.warning.light },
@@ -69,12 +71,20 @@ export default function SimpleTable({
         }}
         action={
           thisLocation.fips ? (
-            <Button
+            <IconButton
               color="secondary"
-              // variant="outlined"
               // size="small"
               onClick={() => addFunction(thisLocation.fips)}
-            >{`Add ${thisLocation.location_name}`}</Button>
+            >
+              <Tooltip
+                title={`Add ${thisLocation.location_name}`}
+                classes={{ tooltip: classes.tooltip }}
+                interactive
+                placement="left"
+              >
+                <AddCircleIcon />
+              </Tooltip>
+            </IconButton>
           ) : null
         }
       />
@@ -87,7 +97,7 @@ export default function SimpleTable({
           >
             <TableHead>
               <TableRow>
-                <TableCell>County</TableCell>
+                <TableCell align="left">County</TableCell>
                 <TableCell align="right">Confirmed</TableCell>
                 <TableCell align="right">Deaths</TableCell>
                 <TableCell align="right">Active</TableCell>
@@ -97,13 +107,14 @@ export default function SimpleTable({
             </TableHead>
             <TableBody>
               {rows.map((row) => (
-                <TableRow key={row.location_name}>
-                  <TableCell component="th" scope="row">
+                <TableRow key={row.location_name || "empty"}>
+                  <TableCell component="th" scope="row" align="left">
                     <Link
                       color="textPrimary"
                       underline="always"
                       component="button"
                       variant="body1"
+                      classes={{ button: classes.linkButton }}
                       onClick={() => {
                         navigate(row.fips);
                       }}
