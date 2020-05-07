@@ -1,6 +1,12 @@
 const https = require('https')
 const url = require('url');
 
+const debug = (message) => {
+    if (process.env.DEBUG === 'true') {
+        console.debug(message);
+    }
+}
+
 module.exports.shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -20,7 +26,7 @@ module.exports.getDayForApi = (date) => {
     }
 }
 
-module.exports.getRequest = (apiRootUrl, pathWithQuesry, jwt=undefined) => {
+module.exports.getRequest = (apiRootUrl, pathWithQuesry='', jwt=undefined) => {
     const apiUrlObj = new URL(pathWithQuesry, apiRootUrl);
     return new Promise((resolve, reject) => {
         const options = {
@@ -30,11 +36,11 @@ module.exports.getRequest = (apiRootUrl, pathWithQuesry, jwt=undefined) => {
             method: 'GET',
             rejectUnauthorized: false,
         };
-        console.debug(`Make request: ${apiUrlObj.href}`);
+        debug(`Make request: ${apiUrlObj.href}`);
         
         if (jwt) {
             options.headers = { Authorization: `Bearer ${jwt}` };
-            console.debug(`Authorization: Bearer *********`);
+            debug(`Authorization: Bearer *********`);
         }
         const req = https.request(options, (res) => {
             if (res.statusCode >= 400 || res.statusCode < 200) {

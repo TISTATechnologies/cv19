@@ -25,9 +25,9 @@ if [ "${REACT_APP_VIEW_ASSOCIATES}" != "1" ]; then
     rm -vf ./build/data/special-locations.json
 fi
 
-# Create data/files.txt file
-mkdir ./build/data 2>/dev/null
-cd ./build/data
-find . -type f | sort | sed 's/\.\///g'> ./files.txt
+# # Create data/files.txt file
+# mkdir ./build/data 2>/dev/null
+# cd ./build/data
+# find . -type f | sort | sed 's/\.\///g'> ./files.txt
 
 echo "Build complete"

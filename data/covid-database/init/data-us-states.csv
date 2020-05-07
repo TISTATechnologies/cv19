@@ -1,60 +1,60 @@
-id,country_id,name,type,aliases,fips,geo_lat,geo_lang
-AL,US,Alabama,State,"",01,,
-AK,US,Alaska,State,"",02,,
-AZ,US,Arizona,State,"",04,,
-AR,US,Arkansas,State,"",05,,
-CA,US,California,State,"",06,,
-CO,US,Colorado,State,"",08,,
-CT,US,Connecticut,State,"",09,,
-DE,US,Delaware,State,"",10,,
-DC,US,District of Columbia,Federal District,"",11,,
-FL,US,Florida,State,"",12,,
-GA,US,Georgia,State,"",13,,
-HI,US,Hawaii,State,"",15,,
-ID,US,Idaho,State,"",16,,
-IL,US,Illinois,State,"",17,,
-IN,US,Indiana,State,"",18,,
-IA,US,Iowa,State,"",19,,
-KS,US,Kansas,State,"",20,,
-KY,US,Kentucky,State,"",21,,
-LA,US,Louisiana,State,"",22,,
-ME,US,Maine,State,"",23,,
-MD,US,Maryland,State,"",24,,
-MA,US,Massachusetts,State,"",25,,
-MI,US,Michigan,State,"",26,,
-MN,US,Minnesota,State,"",27,,
-MS,US,Mississippi,State,"",28,,
-MO,US,Missouri,State,"",29,,
-MT,US,Montana,State,"",30,,
-NE,US,Nebraska,State,"",31,,
-NV,US,Nevada,State,"",32,,
-NH,US,New Hampshire,State,"",33,,
-NJ,US,New Jersey,State,"",34,,
-NM,US,New Mexico,State,"",35,,
-NY,US,New York,State,"",36,,
-NC,US,North Carolina,State,"",37,,
-ND,US,North Dakota,State,"",38,,
-OH,US,Ohio,State,"",39,,
-OK,US,Oklahoma,State,"",40,,
-OR,US,Oregon,State,"",41,,
-PA,US,Pennsylvania,State,"",42,,
-RI,US,Rhode Island,State,"",44,,
-SC,US,South Carolina,State,"",45,,
-SD,US,South Dakota,State,"",46,,
-TN,US,Tennessee,State,"",47,,
-TX,US,Texas,State,"",48,,
-UT,US,Utah,State,"",49,,
-VT,US,Vermont,State,"",50,,
-VA,US,Virginia,State,"",51,,
-WA,US,Washington,State,"",53,,
-WV,US,West Virginia,State,"",54,,
-WI,US,Wisconsin,State,"",55,,
-WY,US,Wyoming,State,"",56,,
-AS,US,American Samoa,Territory,"",60,,
-GU,US,Guam,Territory,"",66,,
-MP,US,Northern Mariana Islands,Territory,"",69,,
-PR,US,Puerto Rico,Territory,"",72,,
-VI,US,Virgin Islands,Territory,"",78,,
-PW,US,Palau,Associated State,"",70,,
-FM,US,Micronesia,Associated State,"",64,,
-MH,US,Marshall Islands,Associated State,"",68,,
+id,country_id,name,type,aliases,fips,geo_lat,geo_long
+AL,US,Alabama,state,,01,32.318231,-86.902298
+AK,US,Alaska,state,,02,63.588753,-154.493062
+AZ,US,Arizona,state,,04,34.048928,-111.093731
+AR,US,Arkansas,state,,05,35.20105,-91.831833
+CA,US,California,state,,06,36.778261,-119.417932
+CO,US,Colorado,state,,08,39.550051,-105.782067
+CT,US,Connecticut,state,,09,41.603221,-73.087749
+DE,US,Delaware,state,,10,38.910832,-75.52767
+DC,US,District of Columbia,federal district,,11,38.905985,-77.033418
+FL,US,Florida,state,,12,27.664827,-81.515754
+GA,US,Georgia,state,,13,32.157435,-82.907123
+HI,US,Hawaii,state,,15,19.898682,-155.665857
+ID,US,Idaho,state,,16,44.068202,-114.742041
+IL,US,Illinois,state,,17,40.633125,-89.398528
+IN,US,Indiana,state,,18,40.551217,-85.602364
+IA,US,Iowa,state,,19,41.878003,-93.097702
+KS,US,Kansas,state,,20,39.011902,-98.484246
+KY,US,Kentucky,state,,21,37.839333,-84.270018
+LA,US,Louisiana,state,,22,31.244823,-92.145024
+ME,US,Maine,state,,23,45.253783,-69.445469
+MD,US,Maryland,state,,24,39.045755,-76.641271
+MA,US,Massachusetts,state,,25,42.407211,-71.382437
+MI,US,Michigan,state,,26,44.314844,-85.602364
+MN,US,Minnesota,state,,27,46.729553,-94.6859
+MS,US,Mississippi,state,,28,32.354668,-89.398528
+MO,US,Missouri,state,,29,37.964253,-91.831833
+MT,US,Montana,state,,30,46.879682,-110.362566
+NE,US,Nebraska,state,,31,41.492537,-99.901813
+NV,US,Nevada,state,,32,38.80261,-116.419389
+NH,US,New Hampshire,state,,33,43.193852,-71.572395
+NJ,US,New Jersey,state,,34,40.058324,-74.405661
+NM,US,New Mexico,state,,35,34.97273,-105.032363
+NY,US,New York,state,,36,43.299428,-74.217933
+NC,US,North Carolina,state,,37,35.759573,-79.0193
+ND,US,North Dakota,state,,38,47.551493,-101.002012
+OH,US,Ohio,state,,39,40.417287,-82.907123
+OK,US,Oklahoma,state,,40,35.007752,-97.092877
+OR,US,Oregon,state,,41,43.804133,-120.554201
+PA,US,Pennsylvania,state,,42,41.203322,-77.194525
+RI,US,Rhode Island,state,,44,41.580095,-71.477429
+SC,US,South Carolina,state,,45,33.836081,-81.163725
+SD,US,South Dakota,state,,46,43.969515,-99.901813
+TN,US,Tennessee,state,,47,35.517491,-86.580447
+TX,US,Texas,state,,48,31.968599,-99.901813
+UT,US,Utah,state,,49,39.32098,-111.093731
+VT,US,Vermont,state,,50,44.558803,-72.577841
+VA,US,Virginia,state,,51,37.431573,-78.656894
+WA,US,Washington,state,,53,47.751074,-120.740139
+WV,US,West Virginia,state,,54,38.597626,-80.454903
+WI,US,Wisconsin,state,,55,43.78444,-88.787868
+WY,US,Wyoming,state,,56,43.075968,-107.290284
+AS,US,American Samoa,territory,,60,-14.2709723,-170.1322174
+GU,US,Guam,territory,,66,13.4443045,144.7937317
+MP,US,Northern Mariana Islands,territory,,69,17.3308296,145.3846893
+PR,US,Puerto Rico,territory,,72,18.220833,-66.590149
+VI,US,Virgin Islands,territory,,78,18.3357658,-64.8963318
+PW,US,Palau,associated state,,70,7.5149798,134.5825195
+FM,US,Micronesia,associated state,,64,7.4255538,150.5508118
+MH,US,Marshall Islands,associated state,,68,7.131474,171.1844788

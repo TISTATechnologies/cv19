@@ -1,5 +1,8 @@
 const fs = require('fs')
 const { shuffleArray } = require('../helpers/util');
+const { Config } = require('../helpers/config');
+
+const log = (new Config()).log;
 
 class CovidData {
     constructor(config) {
@@ -7,41 +10,62 @@ class CovidData {
         this.debug = this.config.is_debug ? console.debug : (msg) => {};
         this.loadDataFile();
         this.loadExecutiveLinksFile();
+        this.loadZip2FipsFile();
+        this.debug('-- Debug mode enabled --');
+    }
+
+    getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
     }
 
     loadDataFile() {
-        console.info(`Load data file: ${this.config.data_file}`);
+        log.debug(`Load data file: ${this.config.data_file}`);
         const rawdata = fs.readFileSync(this.config.data_file);
         this.debug(`Parse test data into the dictionary`);
         this.data = JSON.parse(rawdata);
-        const zips = Object.keys(this.data.zips);
-        console.info(`Loaded data: found ${zips.length} zips.`);
+        const counties = Object.keys(this.data.counties);
+        log.debug(`Loaded data: found ${counties.length} counties.`);
     }
 
     loadExecutiveLinksFile() {
-        console.info(`Load executive links file: ${this.config.executive_links_file}`);
+        log.debug(`Load executive links file: ${this.config.executive_links_file}`);
         const rawdata = fs.readFileSync(this.config.executive_links_file);
         this.debug(`Parse executive links into the memory`);
         this.executiveLinks = JSON.parse(rawdata);
-        console.info(`Loaded executive links: found ${this.executiveLinks.length} links.`);
+        log.debug(`Loaded executive links: found ${this.executiveLinks.length} links.`);
+    }
+
+    loadZip2FipsFile() {
+        log.debug(`Load zips file: ${this.config.zips_file}`);
+        const rawdata = fs.readFileSync(this.config.zips_file);
+        this.debug(`Parse zips into the memory`);
+        this.zip2fips = {};
+        const zip2fipsRaw = JSON.parse(rawdata);
+        for (let i = 0, len = zip2fipsRaw.length; i < len; i += 1) {
+            const item = zip2fipsRaw[i];
+            if (!(item.zip in this.zip2fips)) {
+                this.zip2fips[item.zip] = [];
+            }
+            this.zip2fips[item.zip].push(item.fips);
+        }
+        log.debug(`Loaded zips: found ${Object.keys(this.zip2fips).length} links.`);
     }
 
     getTestZips() {
         let result = null;
         if (process.env.ZIPS_RANDOM) {
             result = shuffleArray(process.env.ZIPS_RANDOM.split(',').map((i) => i.trim()));
-            console.info(`Use zips from the env.ZIPS: ${result}`);
+            log.info(`Use zips from the env.ZIPS: ${result}`);
         } else if (process.env.ZIPS) {
             result = process.env.ZIPS.split(',').map((i) => i.trim());
-            console.info(`Use zips from the env.ZIPS: ${result}`);
+            log.info(`Use zips from the env.ZIPS: ${result}`);
         } else {
-            console.info(`Load zips file: ${this.config.zips_file}`);
-            const fileRawData = String(fs.readFileSync(this.config.zips_file));
-            let testZips = fileRawData.split('\n');
+            const testZips = Object.keys(this.zip2fips);
             result = ['US'].concat(shuffleArray(testZips).slice(0, this.config.zipCount));
-            console.info(`Loaded zips [${result.length}]`);
+            log.info(`Loaded zips [${result.length}]`);
+            // log.log(`ZIPS: ${testZips}`)
         }
-        console.info(`Make tests with ${JSON.stringify(result)} zips`);
+        log.debug(`Make tests with ${JSON.stringify(result)} zips`);
         return (result || ['US']).filter((z) => z);
     }
 
@@ -49,16 +73,22 @@ class CovidData {
         if (!this.data) {
             throw new Error(`Load test data first`);
         }
-        const zipsOnly = Object.keys(this.data.zips);
-        this.debug(`Looking to the ${zip} zip in the test data (keys: ${zipsOnly.length})`);
+        const countiesOnly = Object.keys(this.data.counties);
+        this.debug(`Looking to the ${zip} zip in the test data (keys: ${countiesOnly.length})`);
         const values = []
         if ((zip || 'US').toUpperCase() === 'US') {
             values.push(this.data.US);
         } else {
-            for (let i = 0, len = this.data.zips.length; i < len; i += 1) {
-                const item = this.data.zips[i];
-                if (item && item.county && item.county.zip === zip) {
-                    values.push(item);
+            const fips_list = this.zip2fips[zip];
+            if (!fips_list) {
+                this.debug(`Fips not found for ${zip} zip.`);
+            } else {
+                this.debug(`Found fips: ${JSON.stringify(fips_list)}`);
+                for (let i = 0, len = this.data.counties.length; i < len; i += 1) {
+                    const item = this.data.counties[i];
+                    if (item && item.county && fips_list.indexOf(item.county.fips) >= 0) {
+                        values.push(item);
+                    }
                 }
             }
         }

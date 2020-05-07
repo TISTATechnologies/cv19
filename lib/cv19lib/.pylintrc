@@ -1,0 +1,34 @@
+[MASTER]
+load_plugins=pylint-quotes, pylint_unittest
+
+string-quote=single
+triple-quote=double
+docstring-quote=double
+
+
+[FORMAT]
+max-line-length=119
+max-module-lines=1000
+
+
+[BASIC]
+good-names=log, fo, ch, fh, dt, conf, config, cfg, ex, k, db
+
+
+[MESSAGES CONTROL]
+disable=missing-docstring,
+        logging-format-interpolation,
+        logging-fstring-interpolation,
+        too-few-public-methods,
+        too-many-arguments,
+        too-many-instance-attributes,
+        broad-except,
+        no-self-use,
+        expression-not-assigned,
+        too-many-locals,
+        too-many-statements,
+        R0801,
+
+
+[TYPECHECK]
+ignored-classes=Config

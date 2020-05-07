@@ -10,7 +10,7 @@ CREATE TABLE country (
     name TEXT NOT NULL,
     aliases TEXT,
     geo_lat DECIMAL,
-    geo_lang DECIMAL
+    geo_long DECIMAL
 );
 
 CREATE TABLE state (
@@ -21,7 +21,7 @@ CREATE TABLE state (
     aliases TEXT,
     fips TEXT,
     geo_lat DECIMAL,
-    geo_lang DECIMAL,
+    geo_long DECIMAL,
     PRIMARY KEY (id, country_id),
     FOREIGN KEY (country_id) REFERENCES country (id)
 );
@@ -36,7 +36,7 @@ CREATE TABLE region (
     aliases TEXT,
     type TEXT,
     geo_lat DECIMAL,
-    geo_lang DECIMAL,
+    geo_long DECIMAL,
     FOREIGN KEY (country_id) REFERENCES country (id),
     FOREIGN KEY (state_id, country_id) REFERENCES state (id, country_id)
 );

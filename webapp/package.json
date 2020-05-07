@@ -22,7 +22,7 @@
     "build": "./scripts/build-webapp.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": ". ../scripts/load.env; ../scripts/upload-to-s3-bucket.sh ./build"
+    "deploy": "./scripts/deploy-webapp.sh"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# Usage: run-special-zips-tests.sh <all/webapp/api>
+# Usage: run-special-zips-tests.sh <all/webapp/api/static-api>
 # The 'all' level is ising by default
 ###############################################################################
 # US,20850,20147,22204,20001,20852"         # Common zips

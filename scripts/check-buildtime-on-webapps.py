@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import json
 import sys
 import time
 import urllib.request
@@ -26,7 +27,7 @@ def read_page(url, size=200):
 
 
 def get_buildtime_from_page(page_text):
-    debug(f'Parse datetime from the raw page')
+    debug(f'Parse datetime from a raw page')
     try:
         key = 'buildtime="'
         start = page_text.find(key) + len(key)
@@ -43,32 +44,37 @@ def get_buildtime_from_page(page_text):
 def get_buildtimes_from_url(url):
     raw_page = read_page(url)
     debug(f'Raw page has {len(raw_page)} bytes')
-    buildtime = get_buildtime_from_page(raw_page)
+    if '.json' in url:
+        debug(f'Parse datetime from a json data')
+        try:
+            buildtime = json.loads(raw_page).get('buildtime')[:19]
+            buildtime = datetime.strptime(buildtime, "%Y-%m-%dT%H:%M:%S")
+        except Exception as ex:
+            debug(f'Error: {ex}')
+            buildtime = datetime.datetime(2000, 1, 1)
+    else:
+        buildtime = get_buildtime_from_page(raw_page)
     debug(f'Found {buildtime} buildtime')
     return buildtime or datetime(2000, 1, 1)
 
 
 def get_buildtimes_for_domain(name):
     ts = int(time.time())
-    page1_time = get_buildtimes_from_url(f'https://{name}/?ts=${ts}')
-    page2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/?ts=${ts}')
-    ver1_time = get_buildtimes_from_url(f'https://{name}/_version.txt?ts=${ts}')
-    ver2_time = get_buildtimes_from_url(f'http://{name}.s3-website.us-east-1.amazonaws.com/_version.txt?ts=${ts}')
-    diff = max([(page1_time - ver1_time).total_seconds(),
-                (page2_time - ver2_time).total_seconds(),
-                (page1_time - page2_time).total_seconds()])
+    page1_time = get_buildtimes_from_url(f'https://{name}')
+    ver1_time = get_buildtimes_from_url(f'https://{name}/_version.json')
+    debug(f'page1_time = {page1_time}, ver1_time = {ver1_time}')
+    diff = max([(page1_time - ver1_time).total_seconds()])
 
     if diff > GOOD_DIFF_SEC:
-        print(f'[ERR] {name}: {page1_time} / {ver1_time}, {page2_time} / {ver2_time} (min diff: {diff} sec)')
+        print(f'[ERR] {name}: {page1_time} / {ver1_time} (min diff: {diff} sec)')
         return 1
-    print(f'[OK ] {name}: {page1_time} / {ver1_time}, {page2_time} / {ver2_time}')
+    print(f'[OK ] {name}: {page1_time} / {ver1_time}')
     return 0
 
 
 def main():
     get_buildtimes_for_domain('innovation-dev.tistatech.com')
     res = get_buildtimes_for_domain('innovation-demo.tistatech.com') \
-        + get_buildtimes_for_domain('innovation-internal.tistatech.com') \
         + get_buildtimes_for_domain('innovation.tistatech.com')
     return 0
 

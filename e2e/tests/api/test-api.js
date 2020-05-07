@@ -8,6 +8,7 @@ const config = new Config();
 const cvData = new CovidData(config);
 const cvApi = new CovidApi(config);
 const testZips = cvData.getTestZips();
+const log = config.log;
 
 const expectEqualNumbers = (num1, num2) => {
     const num1Str = String(num1).split(',').join('');
@@ -18,23 +19,27 @@ describe("Test API calls", () => {
     const day = getDayForApi(undefined);;
     beforeAll(() => {
         jest.setTimeout(config.apiTimeout);
-        console.info(`Start api tests on the CV19 server: ${cvApi.apiUrl.href}`)
+        log.info(`Start api tests on the CV19 server: ${cvApi.apiUrl.href}`)
     })
     describe(`Test data`, () => {
-        console.info(`Test data for ${JSON.stringify(testZips)} zips.`);
+        log.debug(`Test data for ${JSON.stringify(testZips)} zips.`);
         for (let i = 0, len = testZips.length; i < len; i += 1) {
             const zip = testZips[i];
             it(`Test data for ${zip}`, async () => {
                 const realDataItems = await cvData.getDataByZip(zip);
-                const data = await cvApi.getDataByZip(zip, day);
-                // console.log(JSON.stringify(data, null, 2));
-                // console.log(JSON.stringify(realData, null, 2));
+                // log.debug(JSON.stringify(data, null, 2));
+                // log.debug(JSON.stringify(realData, null, 2));
                 
                 if (!realDataItems || realDataItems.length <= 0) {
                     // This is a specific situation when we don't have data for the zip code
-                    expect(data || []).toHaveLength(0);
+                    expect([]).toHaveLength(0);
                 } else {
-                    const realData = realDataItems[0];      // TODO: fix for multiple counties
+                    const index = cvData.getRandomInt(realDataItems.length);
+                    const realData = realDataItems[index];
+                    log.debug(`REAL DATA: ${JSON.stringify(realData)}`);
+                    const fips = realData.county ? realData.county.fips : 'US'
+                    const data = await cvApi.getDataByFips(fips, day);
+                    log.debug(`API DATA: ${JSON.stringify(data)}`);
                     expect(realData).toBeTruthy();
                     
                     expect(data).toBeTruthy();
@@ -53,7 +58,6 @@ describe("Test API calls", () => {
                         expectEqualNumbers(dataRow.recovered, realData.state.recovered_val1);
                     } else {
                         expect(dataRow.location_name).toEqual(realData.county.name);
-                        expect(realData.county.zip).toEqual(zip);
                         expect(dataRow.fips).toEqual(realData.county.fips);
                         expectEqualNumbers(dataRow.population, realData.county.population);
                         expectEqualNumbers(dataRow.confirmed, realData.county.confirmed_val1);

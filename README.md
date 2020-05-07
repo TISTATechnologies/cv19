@@ -140,10 +140,6 @@ https://api-server/state
 ```
 https://api-server/covid_data_stat?country_id=eq.US&date=eq.2020-04-03&location_type=eq.state&order=fips
 ```
-* Get covid data on 2020-03-28 with zip code 20850:
-```
-https://api-server/covid_data_stat_with_zip?zip=eq.20850&date=eq.2020-03-28
-```
 * Check status of the last datasets:
 ```
 https://api-server/_log?message=like.*added*&order=id.desc&limit=20

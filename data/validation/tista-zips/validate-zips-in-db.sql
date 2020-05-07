@@ -23,9 +23,9 @@ WHERE zf IS NULL;
 SELECT 'Zip without data' as note, vz.*, zf.fips, r.name, r.type FROM validation_zips vz
 LEFT JOIN zip_to_fips zf ON zf.zip = vz.zip
 LEFT JOIN region r ON r.fips = zf.fips and r.country_id = vz.country_id
-LEFT JOIN covid_data_stat_with_zip dz
-    ON dz.zip = vz.zip AND dz.date = current_date - 1
-WHERE dz IS NULL
+LEFT JOIN covid_data_stat ds
+    ON ds.fips = zf.fips AND ds.date = current_date - 1
+WHERE ds IS NULL
 ORDER BY vz.country_id, vz.state_id, zf.fips;
 
 DROP TABLE IF EXISTS validation_zips;
