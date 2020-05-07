@@ -9,6 +9,10 @@ let theme = createMuiTheme({
   },
   spacing: 8,
   overrides: {
+    MuiTableCell:{
+      head: { fontWeight: '600', },
+    root: {fontSize: '1em', }, 
+    },
     MuiCard: {
       root: {
         height: "100%"

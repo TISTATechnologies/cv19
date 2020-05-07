@@ -11,12 +11,8 @@ import Container from "@material-ui/core/Container";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import InputBase from "@material-ui/core/InputBase";
-import Tooltip from "@material-ui/core/Tooltip";
 import CardContent from "@material-ui/core/CardContent";
 import MyLocationIcon from "@material-ui/icons/MyLocation";
-import SearchIcon from "@material-ui/icons/Search";
-import FavoriteIcon from "@material-ui/icons/Favorite";
 import CloseIcon from "@material-ui/icons/Close";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -37,7 +33,6 @@ import ZipInput from "./components/ZipInput";
 
 import { fade, makeStyles } from "@material-ui/core/styles";
 import useLocalStorage from "./util/useLocalStorage";
-import useDebounce from "./util/useDebounce";
 import {
   fetchDataFromFips,
   findLocationData,
@@ -57,6 +52,7 @@ import Logo from "./resources/tista-logo-1.png";
 const UsaMap = React.lazy(() => import("./Panels/UsaMap"));
 const Feed = React.lazy(() => import("./Panels/Feed"));
 const LocalStatsTable = React.lazy(() => import("./Panels/LocalStatsTable"));
+const LocationsTable = React.lazy(() => import("./Panels/LocationsTable"));
 
 const gtag =
   window.gtag ||
@@ -197,6 +193,24 @@ function App() {
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
   const geoLocation = useGeolocation();
+  const [savedLocations, setSavedLocations] = useLocalStorage("MyLocations", [
+    {
+      county: "Montogomery",
+      state: "MD",
+      fips: 24031,
+    },
+    {
+      county: "Fairfax",
+      state: "VA",
+      fips: 51059,
+    },
+    {
+      county: "District of Columbia",
+      state: "DC",
+      fips: 11001,
+    },
+  ]);
+  const [myLocations, setMyLocations] = useState(savedLocations);
 
   const goToLevel = useCallback(
     (lvl) => {
@@ -395,6 +409,28 @@ function App() {
     f();
   }, []);
 
+  useEffect(() => {
+    const f = async () => {
+      console.log(`%cFetching my locations`, "color: yellow");
+      const list = [];
+      await savedLocations.reduce(async (memo, { fips }) => {
+        await memo;
+        const { data } = await fetchDataFromFips(fips);
+        const [d] = data;
+        console.log(`%c🟡 ${fips} ${d.location_name}`, "color: goldenrod");
+        list.push(d);
+      }, undefined);
+      setMyLocations(list);
+    };
+    if (savedLocations.length) {
+      f();
+    }
+  }, [savedLocations, setMyLocations]);
+
+  // useEffect(() => {
+  //   setSavedLocations(myLocations)
+  // },[setSavedLocations, myLocations])
+
   const handleClosePopover = () => {
     console.log(`%cCLOSE  `, "color: magenta");
     setFirstSearch(false);
@@ -430,6 +466,38 @@ function App() {
   const handleCloseSnack = () => {
     setSnackOpen(false);
     setErrorMessage("");
+  };
+
+  const addToMyLocations = (fips) => {
+    if (!fips) return;
+    const index = myLocations.findIndex((x) => x.fips === fips);
+    if (index < 0) {
+      if (myLocations.length >= 10) {
+        console.log("LIST FULL");
+        setErrorMessage("Tracked county list is full. Please remove an entry to add a new county.")
+        return;
+      }
+
+      setSavedLocations([...myLocations, { fips }]);
+    } else {
+      setErrorMessage("County is already tracked.")
+      return;
+    }
+  };
+
+  const removeFromMyLocations = (fips) => {
+    const index = myLocations.findIndex((x) => x.fips === fips);
+    if (index >= 0) {
+      console.log(`%cDELETING ${fips}`, "color: red");
+      if (myLocations.length === 1) {
+        setSavedLocations(emptyArray);
+        setMyLocations(emptyArray)
+      } else {
+        const a = myLocations.slice(0, index);
+        const b = myLocations.slice(index + 1);
+        setSavedLocations([...a, ...b]);
+      }
+    }
   };
 
   // const MemoFeed = useMemo();
@@ -559,7 +627,7 @@ function App() {
       </AppBar>
 
       <Snackbar
-        open={snackOpen}
+        open={!!errorMessage}
         onClose={handleCloseSnack}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         autoHideDuration={3500}
@@ -672,10 +740,24 @@ function App() {
             </ErrorBoundary>
           </Grid>
 
-          <Grid item xs={12} lg={12}>
+          <Grid item xs={12} lg={6}>
             <ErrorBoundary>
               <Suspense fallback={fallback}>
                 <Feed data={{ myState, headlines, loadingZip }} />
+              </Suspense>
+            </ErrorBoundary>
+          </Grid>
+
+          <Grid item xs={12} lg={level === "usa" ? 12 : 6}>
+            <ErrorBoundary>
+              <Suspense fallback={fallback}>
+                <LocationsTable
+                  data={myLocations}
+                  addFunction={addToMyLocations}
+                  removeFunction={removeFromMyLocations}
+                  thisLocation={countyStats[0]}
+                  navigate={setFips}
+                />
               </Suspense>
             </ErrorBoundary>
           </Grid>
