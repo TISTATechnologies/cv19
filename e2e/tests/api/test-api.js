@@ -25,15 +25,16 @@ describe("Test API calls", () => {
         for (let i = 0, len = testZips.length; i < len; i += 1) {
             const zip = testZips[i];
             it(`Test data for ${zip}`, async () => {
-                const realData = await cvData.getDataByZip(zip);
+                const realDataItems = await cvData.getDataByZip(zip);
                 const data = await cvApi.getDataByZip(zip, day);
                 // console.log(JSON.stringify(data, null, 2));
                 // console.log(JSON.stringify(realData, null, 2));
                 
-                if (!realData) {
+                if (!realDataItems || realDataItems.length <= 0) {
                     // This is a specific situation when we don't have data for the zip code
                     expect(data || []).toHaveLength(0);
                 } else {
+                    const realData = realDataItems[0];      // TODO: fix for multiple counties
                     expect(realData).toBeTruthy();
                     
                     expect(data).toBeTruthy();

@@ -12,6 +12,7 @@ exports.config = {
         'url': 'https://innovation-demo.tistatech.com',
         'waitForTimeout': 10000,
         'show': (process.env.BROWSER === 'true') || false,
+        "restart": true,
         "width": 1200,
         "height": 1200
     }

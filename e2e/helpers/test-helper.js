@@ -2,20 +2,76 @@ const url = require('url');
 const { getRequest} = require('./util');
 
 class CovidPage {
+
     constructor(I) {
+        this.county_popup_selector = '#zip-search-input-popup';
         this.I = I;
+        this.isDebug = process.env.DEBUG === 'true';
+        this.defTimeout = 10;        // in seconds
     }
-    putZip(zip) {
-        if (zip && zip !== 'US') {
-            this.I.fillField('input.MuiInputBase-input', zip);
+
+    debug(message) {
+        if (this.isDebug) {
+            console.debug(message);
         }
     }
+
+    getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+    
+    putZip(zip) {
+        if (zip && zip !== 'US') {
+            this.I.fillField('#zip-search-input', zip);
+        } else {
+            this.I.fillField('#zip-search-input', '');
+        }
+    }
+    async getZip() {
+        return this.I.grabTextFrom('#zip-search-input');
+    }
     expectTitle(title = undefined) {
-        this.I.seeInTitle(title || 'TISTA COVID-19 Dashboard');
+        this.I.seeInTitle(title || 'TISTA COVID-19 Tracker');
     }
     expectCDCWorning() {
         this.I.see('NOTE: New CDC guidance could cause an increase in the number of deaths attributed to COVID-19.')
         this.I.see('See this report for more details.');
+    }
+
+    async expectCountyPopupWithNoElement() {
+        this.I.dontSeeElement(this.county_popup_selector);
+        this.I.see('No options');
+        this.I.see('', '#zip-search-input-option-0');
+    }
+    async expectCountyPopupShown(len=undefined) {
+        await this.I.waitForVisible(this.county_popup_selector, this.defTimeout);
+        this.I.seeElement(this.county_popup_selector);
+        if (len !== undefined) {
+            for (let i=0; i < len; i += 1) {
+                this.I.seeElement(`#zip-search-input-option-${i}`);
+            }
+        }
+    }
+    expectNoCountyPopup() {
+        this.I.dontSeeElement(this.county_popup_selector);
+    }
+    async selectItemCountyInPopup(index) {
+        this.I.seeElement(`#zip-search-input-option-${index}`);
+        const selectedValue = await this.I.grabTextFrom(`#zip-search-input-option-${index}`);
+        if (!selectedValue || selectedValue.length <= 0) {
+            throw new Error(`Can't get text from the #zip-search-input-option-${index}`);
+        }
+        // this.I.click(`#zip-search-input-option-${index}`);
+        // this.I.selectOption(this.county_popup_selector, value);
+        //
+        // NOTE: I.click and I.selectOption methods don't work with React application,
+        // emulate click to the element from keyboard
+        for (let i = 0; i <= index; i += 1) {
+            this.I.pressKey('Down');
+        }
+        this.I.pressKey('Enter');
+        
+        return selectedValue;
     }
     expectProperDataBox(level, dataItem, boxName, boxKey, allowZero = false) {
         const value = dataItem[`${boxKey}_val1`];
@@ -30,7 +86,9 @@ class CovidPage {
         }
     }
     expectStateData(data, level) {
-        this.I.see(`COVID-19 Data for ${data.state.name}`);
+        const stateHeader = `COVID-19 Data for ${data.state.name}`;
+        //this.I.waitForText(stateHeader, this.defTimeout);
+        this.I.see(stateHeader);
         this.I.see(`Population: ${data.state.population}`, `#${level}-population`);
         this.expectProperDataBox(level, data.state, 'Confirmed Cases', 'confirmed', true);
         this.expectProperDataBox(level, data.state, 'Deaths', 'deaths', true);

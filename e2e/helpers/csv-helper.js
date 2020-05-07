@@ -51,20 +51,19 @@ class CovidData {
         }
         const zipsOnly = Object.keys(this.data.zips);
         this.debug(`Looking to the ${zip} zip in the test data (keys: ${zipsOnly.length})`);
-        let value = null;
+        const values = []
         if ((zip || 'US').toUpperCase() === 'US') {
-            value = this.data.US;
+            values.push(this.data.US);
         } else {
             for (let i = 0, len = this.data.zips.length; i < len; i += 1) {
                 const item = this.data.zips[i];
                 if (item && item.county && item.county.zip === zip) {
-                    value = item;
-                    break;
+                    values.push(item);
                 }
             }
         }
-        this.debug(`Use data: ${JSON.stringify(value)}`);
-        return  value;
+        this.debug(`Use data: ${JSON.stringify(values)}`);
+        return  values;
     }
 
     getExecutiveLinksByState(country_id, state_id, day=undefined) {
