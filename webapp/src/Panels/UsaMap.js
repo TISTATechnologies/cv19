@@ -17,7 +17,7 @@ import { initMap, drawMap, getAllMapData } from "../d3/map/map.js";
 import "../d3/map/map.css";
 import { fetchAllCountyData, fetchEmployeeData } from "../util/fetch";
 
-const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
+const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === "1";
 
 const mapNames = {
   confirmed: {
@@ -32,6 +32,10 @@ const mapNames = {
     short: "Associate Impact",
     long: "Associate Pandemic Impact Map",
   },
+  aid: {
+    short: "TISTA Aid",
+    long: "TISTA's Aid Locations",
+  },
 };
 
 const UsaMap = ({ data }) => {
@@ -41,7 +45,6 @@ const UsaMap = ({ data }) => {
   // );
   const [myMap, setMyMap] = useState("confirmed");
   const [heat, setHeat] = useState([]);
-  const [emplData, setEmplData] = useState(null);
   const [initialized, setInitialized] = useState(false);
   const [isHeatSaved, setIsHeatSaved] = useState(false);
   const sectionEl = useRef(null);
@@ -122,6 +125,11 @@ const UsaMap = ({ data }) => {
                 label={mapNames.associateImpact.short}
               />
             ) : null}
+            <FormControlLabel
+              value="aid"
+              control={<Radio />}
+              label={mapNames.aid.short}
+            />
           </RadioGroup>
         </FormControl>
         <section

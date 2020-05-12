@@ -1,6 +1,6 @@
 import CountyMap from "./gz_2010_us_050_00_20m.json";
 import StateMap from "./gz_2010_us_040_00_20m.json";
-// import EmpCounties from "./employeeCounties";
+import AidData from "./aidData.json";
 import * as d3 from "d3";
 
 const countyGeo = CountyMap.features.map((x) => ({
@@ -25,6 +25,12 @@ const bivarColors = [
   "#627f8c",
   "#574249",
 ];
+let aidMapColor = d3
+  .scaleOrdinal()
+  .domain([true, false])
+  .range(["#ccc", "transparent"])
+  .unknown("transparent");
+
 let confirmedColor = d3
   .scaleSequentialLog(d3.interpolateYlOrRd)
   .domain([10, 1000])
@@ -58,6 +64,18 @@ function showToolTip(d, i) {
   const ttWidth = 150;
   const xAdjust = x + ttWidth + 25 < window.innerWidth ? x + 25 : x - 150;
   t.html(buildTooltipText(d));
+  t.style("top", `${d3.event.pageY - 15}px`)
+    .style("left", `${xAdjust}px`)
+    .style("visibility", "visible")
+    .style("opacity", "1");
+}
+
+function showAidToolTip(d, i) {
+  const t = d3.select(".tooltip-aid");
+  const x = d3.event.pageX;
+  const ttWidth = 150;
+  const xAdjust = x + ttWidth + 25 < window.innerWidth ? x + 25 : x - 150;
+  t.html(buildTooltipAidText(d));
   t.style("top", `${d3.event.pageY - 15}px`)
     .style("left", `${xAdjust}px`)
     .style("visibility", "visible")
@@ -116,9 +134,34 @@ function buildTooltipText({
   return `<div><strong>${properties.NAME}</strong></div>${string}`;
 }
 
+function buildTooltipAidText({ name, aid, masks, meals,pendingMasks,pendingMeals }) {
+  let string = "";
+  if (masks && !Number.isNaN(Number.parseInt(masks, 10))) {
+    string += `<div class='tooltip-masks'>Masks: ${bigFormat.format(
+      masks
+    )}</div>`;
+  }
+  if (pendingMasks && !Number.isNaN(Number.parseInt(pendingMasks, 10))) {
+    string += `<div class='tooltip-masks'>Pending Masks: ${bigFormat.format(
+      pendingMasks
+    )}</div>`;
+  }
+  if (meals && !Number.isNaN(Number.parseInt(meals, 10))) {
+    string += `<div class='tooltip-meals'>Meals: ${bigFormat.format(
+      meals
+    )}</div>`;
+  }
+  if (pendingMeals && !Number.isNaN(Number.parseInt(pendingMeals, 10))) {
+    string += `<div class='tooltip-meals'>Pending Meals: ${bigFormat.format(
+      pendingMeals
+    )}</div>`;
+  }
+  return `<div><strong>${name}</strong></div>${string}`;
+}
+
 function hideToolTip() {
   const t = d3
-    .select(".tooltip")
+    .selectAll(".tooltip")
     .style("visibility", "hidden")
     .style("opacity", "0");
 }
@@ -170,6 +213,17 @@ function initMap(width = 950, height = 300) {
     .attr("class", "d3BivLegend");
   // .attr("style", "position: absolute")
 
+  svg
+    .append("defs")
+    .append("filter")
+    .attr("id", "shadow")
+    .append("feDropShadow")
+    .attr("dx", "0.1")
+    .attr("dy", "0.1")
+    .attr("stdDeviation", "0.0")
+    .attr("flood-color", "#222")
+    .attr("flood-opacity", "0.5");
+
   const g = svg.append("g");
   const counties = g.append("g").attr("class", "counties");
   const states = g.append("g").attr("class", "states");
@@ -178,6 +232,14 @@ function initMap(width = 950, height = 300) {
     .select("section")
     .append("div")
     .attr("class", "tooltip")
+    .attr("y", 30)
+    .style("visibility", "hidden")
+    .style("opacity", "0");
+
+  const tooltip2 = d3
+    .select("section")
+    .append("div")
+    .attr("class", "tooltip tooltip-aid")
     .attr("y", 30)
     .style("visibility", "hidden")
     .style("opacity", "0");
@@ -243,6 +305,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
   const states = g.select(".states");
   const circles = g.select(".circles");
   const tooltip = d3.select(".tooltip");
+  const tooltip2 = d3.select(".tooltip-aid");
 
   const confirmed = countyHeat.map((x) => x.confirmed || 1); // log domain can't be 0
   const confirmedExtend = d3.extent(confirmed);
@@ -252,7 +315,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
   const ratioExtend = d3.extent(ratio);
   ratioColor = ratioColor.domain(ratioExtend);
 
-  // Append empty placeholder g element to the SVG
+  // Append aidMap placeholder g element to the SVG
   // g will contain geometry elements
   let currentColorFunction = confirmedColor;
   let scaleValues;
@@ -301,7 +364,8 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
     .attr("stroke", "#444")
     .attr("stroke-opacity", 0.2);
 
-  const zoom = d3.zoom().scaleExtent([0.5, 15]).on("zoom", zoomed);
+  let zoom;
+  zoom = d3.zoom().scaleExtent([0.5, 30]).on("zoom", zoomed);
 
   function drawLocation(location) {
     counties
@@ -343,12 +407,22 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
     const { transform } = d3.event;
     g.attr("transform", transform);
     g.attr("stroke-width", 1 / transform.k);
+    if (myMap === "aid") {
+      drawCircles({
+        group: circles,
+        colorScale: ratioColor,
+        data: null,
+        scale: transform.k,
+      });
+    } else {
+      circles.selectAll("circle").remove();
+    }
   }
 
   svg.call(zoom);
   if (location.geo_lat) {
     toLocation(location);
-    drawLocation(location);
+    if (myMap !== 'aid') drawLocation(location);
   } else {
     zoomToUsa();
   }
@@ -370,31 +444,77 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
       div: d3.select(".d3BivLegend"),
     });
   }
-  // Might use for employee concentration
-  function drawCircles({ group, colorScale, data }) {
+  // For aidMap pins
+  function drawCircles({ group, colorScale, data, scale = 1 }) {
     let adjustedData = [];
-    if (myMap === "associateImpact") {
-      adjustedData = data
-        .filter((d) => d.geo_lat && d.geo_long && d.count)
-        .map((d) => {
-          const [x, y] = projection([d.geo_long, d.geo_lat]);
-          return { x, y, count: d.count, confirmed: d.confirmed };
-        });
-    }
+    adjustedData = AidData.map((d) => {
+      const [x, y] = projection([d.long, d.lat]);
+      return {
+        x,
+        y,
+        masks: d.masks || 0,
+        meals: d.meals || 0,
+        pendingMasks: d.pendingMasks || 0,
+        pendingMeals: d.pendingMeals || 0,
+        aid: d.masks + d.meals,
+        name: d.name,
+      };
+    });
+    const circleFillColor = (d) => {
+      if (d.masks) return "#ffff33";
+      return "transparent";
+    };
+    const squareFillColor = (d) => {
+      if (d.meals) return "#00acc4";
+      return "transparent";
+    };
+    const circleStrokeColor = (d) => {
+      if (d.pendingMasks && !d.masks) return "#ffff33";
+      return "black";
+    };
+    const squareStrokeColor = (d) => {
+      if (d.pendingMeals && !d.meals) return "#00acc4";
+      return "black";
+    };
 
-    const squareScale = d3.scaleSqrt().domain([1, 200]).range([2, 30]);
+    const squareScale = d3.scaleSqrt().domain([1, 1000]).range([1, 1.5]);
     group
       .selectAll("circle")
       .data(adjustedData)
       .join("circle")
+      .attr("class", "pin")
+      .on("mouseout", hideToolTip)
+      .on("mousemove", showAidToolTip)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
-      .attr("r", (d) => squareScale(d.count))
-      .style("fill", (d) => colorScale(d.confirmed))
-      .style("stroke", (d) => colorScale(d.confirmed))
-      .attr("fill-opacity", 0.2)
-      .attr("stroke-opacity", 0.5)
-      .attr("stroke-width", 0.5);
+      .attr("r", (d) => (squareScale(d.aid) * 18) / scale)
+      .attr("fill", (d) => circleFillColor(d))
+      .attr("fill-opacity", 0.9)
+      .attr("stroke", (d) => circleStrokeColor(d))
+      .attr('stroke-opacity', 0.75)
+      .attr("stroke-width", 5 / scale)
+      .style("visibility", (d) =>
+        d.masks + d.pendingMasks > 0 ? "visible" : "hidden"
+      );
+    group
+      .selectAll("rect")
+      .data(adjustedData)
+      .join("rect")
+      .attr("class", "pin")
+      .on("mouseout", hideToolTip)
+      .on("mousemove", showAidToolTip)
+      .attr("x", (d) => d.x - (squareScale(d.aid) * 12.5) / scale)
+      .attr("y", (d) => d.y - (squareScale(d.aid) * 12.5) / scale)
+      .attr("width", (d) => (squareScale(d.aid) * 25) / scale)
+      .attr("height", (d) => (squareScale(d.aid) * 25) / scale)
+      .attr("fill", (d) => squareFillColor(d))
+      .attr("fill-opacity", 0.9)
+      .attr("stroke", (d) => squareStrokeColor(d))
+      .attr('stroke-opacity', 0.75)
+      .attr("stroke-width", 5 / scale)
+      .style("visibility", (d) =>
+        d.meals + d.pendingMeals > 0 ? "visible" : "hidden"
+      );
   }
 }
 

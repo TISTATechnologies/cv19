@@ -24,9 +24,8 @@ function getDate() {
 }
 
 export async function fetchDataFromUSA(query, rows = 1) {
-  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat?location_type=eq.country&country_id=eq.US&date=eq.${latest}&limit=${rows}`
+    `${url}covid_data_stat_latest?location_type=eq.country&country_id=eq.US&limit=${rows}`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
@@ -42,9 +41,8 @@ export async function fetchDataSources() {
 }
 
 export async function fetchDataFromState(query, rows = 1) {
-  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat?country_id=eq.US&location_type=eq.state&date=eq.${latest}&date=eq.${latest}`
+    `${url}covid_data_stat_latest?country_id=eq.US&location_type=eq.state`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
@@ -57,7 +55,7 @@ export async function fetchFipsFromZip(query) {
   const chunk = query.slice(0, 3);
   if (chunk.length < 3) return [];
   const response = await fetch(
-    `${process.env.PUBLIC_URL}/data/us/zip/${first}/${chunk}.json`
+    `${process.env.REACT_APP_COMMON_DATA_URL}/data/us/zip/${first}/${chunk}.json`
   );
   try {
     const fips = await response.json();
@@ -69,9 +67,8 @@ export async function fetchFipsFromZip(query) {
 }
 
 export async function fetchDataFromFips(fips, rows = 1) {
-  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat?fips=eq.${fips}&date=eq.${latest}&limit=${rows}`
+    `${url}covid_data_stat_latest?fips=eq.${fips}&limit=${rows}`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
@@ -80,9 +77,8 @@ export async function fetchDataFromFips(fips, rows = 1) {
 }
 
 export async function fetchAllCountyData(query, rows = 1) {
-  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_slim?country_id=eq.US&location_type=eq.county&date=eq.${latest}`
+    `${url}covid_data_stat_latest?country_id=eq.US&location_type=eq.county`
   );
   // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
@@ -101,33 +97,21 @@ export async function fetchStateHeadlines(query, rows = 4) {
 }
 
 export async function findLocationData(query, rows = 1) {
-  const latest = getDate();
-
   const { latitude, longitude } = query;
   console.info(latitude, longitude);
-  const upperLat = precise(latitude + 0.12);
-  const lowerLat = precise(latitude - 0.12);
-  const upperLong = precise(longitude + 0.12);
-  const lowerLong = precise(longitude - 0.12);
-  const response = await fetchWithHeader(
-    `${url}covid_data_stat_with_zip?geo_lat=lt.${upperLat}&geo_lat=gt.${lowerLat}&geo_long=lt.${upperLong}&geo_long=gt.${lowerLong}&date=eq.${latest}&limit=1`
+  // This uses the gov's location finder
+  const response = await fetch(
+    `https://geo.fcc.gov/api/census/area?format=json&lat=${latitude}&lon=${longitude}`
   );
-  // NOTE: This is a 3rd party API that can get postal addresses from geoLocation. I've removed it
-  // because it is out of our control and may not always be dependable.
-  // It is more accurate the approach above and our current location data, however.
-  // const response = await fetchWithHeader(
-  //   `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-  // );
-  // console.log(`%c${response}`, "color: magenta");
-  if (!response) return { error: "problem" };
+  if (!response) return { message: "problem" };
   const data = await response.json();
-  return { data: data[0] };
+  return { data: data.results[0] };
 }
 
 export async function fetchEmployeeData() {
   if (associateView) {
     const response = await fetch(
-      `${process.env.PUBLIC_URL}/data/special-locations.json`
+      `${process.env.REACT_APP_COMMON_DATA_URL}/data/special-locations.json`
     );
     const data = await response.json();
     if (data.message) return { error: data.message };

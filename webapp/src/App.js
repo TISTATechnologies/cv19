@@ -351,15 +351,12 @@ function App() {
       const { data, error } = await findLocationData(geoLocation);
       if (data && data.message) {
         setErrorMessage(error);
-        setSnackOpen(true);
-      } else if (data) {
-        setLocation(data.zip);
-        setErrorMessage("Getting zip code from your location.");
-        setSnackOpen(true);
+      } else if (data && data.county_fips) {
+        setFips(data.county_fips)
+        setErrorMessage("Getting your location.");
       } else {
         setCanUseGeo(false);
         setErrorMessage("Cannot find location.");
-        setSnackOpen(true);
       }
     };
     if (canUseGeo && updateLocation) {

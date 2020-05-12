@@ -47,7 +47,7 @@
 }
 
 .circles {
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 .active {
@@ -110,6 +110,14 @@
 
 .tooltip-population {
   color: #00bcd4;
+}
+
+.tooltip-meals {
+  color: #00bcd4;
+}
+
+.tooltip-masks {
+  color: #ffff00;
 }
 
 .assoc {

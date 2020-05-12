@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,6 +6,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import TableSortLabel from "@material-ui/core/TableSortLabel";
 import Paper from "@material-ui/core/Paper";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -24,6 +25,31 @@ const format = (val) => {
   if (!val) return "--";
   return enFormat.format(val);
 };
+
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+function stableSort(array, comparator) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  return stabilizedThis.map((el) => el[0]);
+}
+
+function getComparator(order, orderBy) {
+  return order === "desc"
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
 
 const useStyles = makeStyles((theme) => ({
   root: { fontSize: "1.2rem" },
@@ -53,6 +79,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const headers = [
+  { label: "County", numeric: false, id: "location_name" },
+  { label: "Confirmed", numeric: true, id: "confirmed" },
+  { label: "Deaths", numeric: true, id: "deaths" },
+  { label: "Active", numeric: true, id: "active" },
+  { label: "Active/100k", numeric: true, id: "activeRatio" },
+];
+
 export default function SimpleTable({
   data = [],
   addFunction,
@@ -60,8 +94,26 @@ export default function SimpleTable({
   thisLocation,
   navigate,
 }) {
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("activeRatio");
+
   const classes = useStyles();
-  const rows = data;
+
+  const handleRequestSort = (event, property) => {
+    const shouldSetDesc = orderBy !== property || order === "asc";
+    console.log(shouldSetDesc);
+    setOrder(shouldSetDesc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const createSortHandler = (property) => (event) => {
+    handleRequestSort(event, property);
+  };
+
+  const rows = data.map((d) => ({
+    ...d,
+    activeRatio: Math.ceil((d.active / d.population) * 1e5),
+  }));
   return (
     <Card variant="outlined">
       <CardHeader
@@ -97,16 +149,27 @@ export default function SimpleTable({
           >
             <TableHead>
               <TableRow>
-                <TableCell align="left">County</TableCell>
-                <TableCell align="right">Confirmed</TableCell>
-                <TableCell align="right">Deaths</TableCell>
-                <TableCell align="right">Active</TableCell>
-                <TableCell align="right">Recoveries</TableCell>
+                {headers.map((headCell) => (
+                  <TableCell
+                    key={headCell.id}
+                    align={headCell.numeric ? "right" : "left"}
+                    padding={headCell.disablePadding ? "none" : "default"}
+                    sortDirection={orderBy === headCell.id ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === headCell.id}
+                      direction={orderBy === headCell.id ? order : "desc"}
+                      onClick={createSortHandler(headCell.id)}
+                    >
+                      {headCell.label}
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
                 <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
+              {stableSort(rows, getComparator(order, orderBy)).map((row) => (
                 <TableRow key={row.location_name || "empty"}>
                   <TableCell component="th" scope="row" align="left">
                     <Link
@@ -131,8 +194,8 @@ export default function SimpleTable({
                   <TableCell align="right" className={classes.active}>
                     {format(row.active)}
                   </TableCell>
-                  <TableCell align="right" className={classes.recovered}>
-                    {format(row.recovered)}
+                  <TableCell align="right" className={classes.active}>
+                    {format(row.activeRatio)}
                   </TableCell>
                   <TableCell>
                     <IconButton
