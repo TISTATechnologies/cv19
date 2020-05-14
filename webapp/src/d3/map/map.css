@@ -18,6 +18,23 @@
   left: -40px;
 }
 
+.d3AidLegend {
+  background: #222;
+  color: white;
+  width: 170px;
+  position: absolute;
+  top: -115px;
+  left: 10px;
+  padding: 5px;
+  border-radius: 2px;
+}
+
+.leggy {
+  position: relative;
+  width: 150px;
+  right: -30px;
+}
+
 .legend-holder {
   position: relative;
   top: -50px;
@@ -29,7 +46,7 @@
   color: white;
   border-radius: 10px;
   position: absolute;
-  max-width: 150px;
+  max-width: 200px;
   padding: 5px;
   transition: visibility 0.13s ease-out, opacity 0.13s ease-out;
   box-shadow: 3px 3px rgba(33, 33, 33, 0.33);
@@ -40,7 +57,7 @@
 }
 
 .county:hover {
-  stroke-width: 0.5px;
+  stroke-width: 0.2px;
   stroke-opacity: 1;
   transition: all 0.3s ease-out, fill 0.8s ease-out;
   opacity: 1;

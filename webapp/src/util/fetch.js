@@ -55,7 +55,7 @@ export async function fetchFipsFromZip(query) {
   const chunk = query.slice(0, 3);
   if (chunk.length < 3) return [];
   const response = await fetch(
-    `${process.env.REACT_APP_COMMON_DATA_URL}/data/us/zip/${first}/${chunk}.json`
+    `${process.env.REACT_APP_COMMON_DATA_URL}/us/zip/${first}/${chunk}.json`
   );
   try {
     const fips = await response.json();
@@ -111,7 +111,7 @@ export async function findLocationData(query, rows = 1) {
 export async function fetchEmployeeData() {
   if (associateView) {
     const response = await fetch(
-      `${process.env.REACT_APP_COMMON_DATA_URL}/data/special-locations.json`
+      `${process.env.PUBLIC_URL}/data/special-locations.json`
     );
     const data = await response.json();
     if (data.message) return { error: data.message };

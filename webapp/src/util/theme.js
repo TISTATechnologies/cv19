@@ -15,6 +15,9 @@ let theme = createMuiTheme({
     MuiTableCell: {
       head: { fontWeight: "600" },
       root: { fontSize: "inherit" },
+      sizeSmall: {
+        padding: '6px', 
+      },
     },
     MuiCard: {
       root: {

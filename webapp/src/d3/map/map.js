@@ -73,8 +73,8 @@ function showToolTip(d, i) {
 function showAidToolTip(d, i) {
   const t = d3.select(".tooltip-aid");
   const x = d3.event.pageX;
-  const ttWidth = 150;
-  const xAdjust = x + ttWidth + 25 < window.innerWidth ? x + 25 : x - 150;
+  const ttWidth = 200;
+  const xAdjust = x + ttWidth + 25 < window.innerWidth ? x + 25 : x - 200;
   t.html(buildTooltipAidText(d));
   t.style("top", `${d3.event.pageY - 15}px`)
     .style("left", `${xAdjust}px`)
@@ -134,25 +134,32 @@ function buildTooltipText({
   return `<div><strong>${properties.NAME}</strong></div>${string}`;
 }
 
-function buildTooltipAidText({ name, aid, masks, meals,pendingMasks,pendingMeals }) {
+function buildTooltipAidText({
+  name,
+  aid,
+  masks,
+  meals,
+  pendingMasks,
+  pendingMeals,
+}) {
   let string = "";
   if (masks && !Number.isNaN(Number.parseInt(masks, 10))) {
-    string += `<div class='tooltip-masks'>Masks: ${bigFormat.format(
+    string += `<div class='tooltip-masks'>Masks Distributed: ${bigFormat.format(
       masks
     )}</div>`;
   }
   if (pendingMasks && !Number.isNaN(Number.parseInt(pendingMasks, 10))) {
-    string += `<div class='tooltip-masks'>Pending Masks: ${bigFormat.format(
+    string += `<div class='tooltip-masks'>Masks (Committed): ${bigFormat.format(
       pendingMasks
     )}</div>`;
   }
   if (meals && !Number.isNaN(Number.parseInt(meals, 10))) {
-    string += `<div class='tooltip-meals'>Meals: ${bigFormat.format(
+    string += `<div class='tooltip-meals'>Meals Served: ${bigFormat.format(
       meals
     )}</div>`;
   }
   if (pendingMeals && !Number.isNaN(Number.parseInt(pendingMeals, 10))) {
-    string += `<div class='tooltip-meals'>Pending Meals: ${bigFormat.format(
+    string += `<div class='tooltip-meals'>Meals (Committed): ${bigFormat.format(
       pendingMeals
     )}</div>`;
   }
@@ -211,6 +218,10 @@ function initMap(width = 950, height = 300) {
     .selectAll(".legend-holder")
     .append("div")
     .attr("class", "d3BivLegend");
+  const aidLegend = d3
+    .selectAll(".legend-holder")
+    .append("div")
+    .attr("class", "d3AidLegend");
   // .attr("style", "position: absolute")
 
   svg
@@ -365,7 +376,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
     .attr("stroke-opacity", 0.2);
 
   let zoom;
-  zoom = d3.zoom().scaleExtent([0.5, 30]).on("zoom", zoomed);
+  zoom = d3.zoom().scaleExtent([0.8, 40]).on("zoom", zoomed);
 
   function drawLocation(location) {
     counties
@@ -416,20 +427,22 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
       });
     } else {
       circles.selectAll("circle").remove();
+      circles.selectAll("rect").remove();
     }
   }
 
   svg.call(zoom);
   if (location.geo_lat) {
     toLocation(location);
-    if (myMap !== 'aid') drawLocation(location);
+    if (myMap !== "aid") drawLocation(location);
   } else {
     zoomToUsa();
   }
 
-  if (myMap !== "associateImpact") {
+  if (myMap !== "associateImpact" && myMap !== "aid") {
     d3.select(".d3BivLegend").style("visibility", "hidden");
     d3.select(".d3Legend").style("visibility", "visible");
+    d3.select(".d3AidLegend").style("visibility", "hidden");
     betterLegend({
       div: d3.select(".d3Legend"),
       width,
@@ -437,12 +450,18 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
       colorScale: currentColorFunction,
       scaleValues,
     });
-  } else {
+  } else if (myMap === "associateImpact") {
     d3.select(".d3BivLegend").style("visibility", "visible");
     d3.select(".d3Legend").style("visibility", "hidden");
+    d3.select(".d3AidLegend").style("visibility", "hidden");
     bivarLegend({
       div: d3.select(".d3BivLegend"),
     });
+  } else {
+    d3.select(".d3BivLegend").style("visibility", "hidden");
+    d3.select(".d3Legend").style("visibility", "hidden");
+    d3.select(".d3AidLegend").style("visibility", "visible");
+    aidLegend({ div: d3.select(".d3AidLegend") });
   }
   // For aidMap pins
   function drawCircles({ group, colorScale, data, scale = 1 }) {
@@ -456,10 +475,10 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
         meals: d.meals || 0,
         pendingMasks: d.pendingMasks || 0,
         pendingMeals: d.pendingMeals || 0,
-        aid: d.masks + d.meals,
+        aid: Math.max(d.masks + d.meals, d.pendingMasks + d.pendingMeals),
         name: d.name,
       };
-    });
+    }).sort((a, b) => b.aid - a.aid);
     const circleFillColor = (d) => {
       if (d.masks) return "#ffff33";
       return "transparent";
@@ -470,14 +489,18 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
     };
     const circleStrokeColor = (d) => {
       if (d.pendingMasks && !d.masks) return "#ffff33";
-      return "black";
+      // return "#990";
+      return "transparent";
     };
     const squareStrokeColor = (d) => {
       if (d.pendingMeals && !d.meals) return "#00acc4";
-      return "black";
+      // return "#005562";
+      return "transparent";
     };
+    const iconSize = 8;
+    const squareSize = Math.sqrt(2) * iconSize - 1;
 
-    const squareScale = d3.scaleSqrt().domain([1, 1000]).range([1, 1.5]);
+    const squareScale = d3.scaleSqrt().domain([100, 2000]).range([1, 2]).clamp(true);
     group
       .selectAll("circle")
       .data(adjustedData)
@@ -487,12 +510,12 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
       .on("mousemove", showAidToolTip)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
-      .attr("r", (d) => (squareScale(d.aid) * 18) / scale)
+      .attr("r", (d) => (squareScale(d.aid) * iconSize) / scale)
       .attr("fill", (d) => circleFillColor(d))
-      .attr("fill-opacity", 0.9)
+      // .attr("fill-opacity", 0.8)
       .attr("stroke", (d) => circleStrokeColor(d))
-      .attr('stroke-opacity', 0.75)
-      .attr("stroke-width", 5 / scale)
+      // .attr("stroke-opacity", 0.9)
+      .attr("stroke-width", 4 / scale)
       .style("visibility", (d) =>
         d.masks + d.pendingMasks > 0 ? "visible" : "hidden"
       );
@@ -503,15 +526,15 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap) {
       .attr("class", "pin")
       .on("mouseout", hideToolTip)
       .on("mousemove", showAidToolTip)
-      .attr("x", (d) => d.x - (squareScale(d.aid) * 12.5) / scale)
-      .attr("y", (d) => d.y - (squareScale(d.aid) * 12.5) / scale)
-      .attr("width", (d) => (squareScale(d.aid) * 25) / scale)
-      .attr("height", (d) => (squareScale(d.aid) * 25) / scale)
+      .attr("x", (d) => d.x - (squareScale(d.aid) * (squareSize / 2)) / scale)
+      .attr("y", (d) => d.y - (squareScale(d.aid) * (squareSize / 2)) / scale)
+      .attr("width", (d) => (squareScale(d.aid) * squareSize) / scale)
+      .attr("height", (d) => (squareScale(d.aid) * squareSize) / scale)
       .attr("fill", (d) => squareFillColor(d))
-      .attr("fill-opacity", 0.9)
+      // .attr("fill-opacity", 0.8)
       .attr("stroke", (d) => squareStrokeColor(d))
-      .attr('stroke-opacity', 0.75)
-      .attr("stroke-width", 5 / scale)
+      // .attr("stroke-opacity", 0.9)
+      .attr("stroke-width", 4 / scale)
       .style("visibility", (d) =>
         d.meals + d.pendingMeals > 0 ? "visible" : "hidden"
       );
@@ -578,6 +601,52 @@ function betterLegend({
     .text(textTransform)
     .transition(t)
     .delay((d, i) => i * 100);
+}
+
+function aidLegend({ div }) {
+  div.selectAll("div").remove();
+  div
+    .append("div")
+    .style("width", "30px")
+    .style("height", "30px")
+    .style("border", "5px solid #ffff33")
+    .style("border-radius", "30px")
+    .style("background", "#ffff33")
+    .style("margin", "2.5px")
+    .append("div")
+    .attr("class", "leggy")
+    .text("Masks Distributed");
+  div
+    .append("div")
+    .style("width", "30px")
+    .style("height", "30px")
+    .style("border", "5px solid #ffff33")
+    .style("border-radius", "30px")
+    .style("background", "transparent")
+    .style("margin", "2.5px")
+    .append("div")
+    .attr("class", "leggy")
+    .text("Masks Committed");
+  div
+    .append("div")
+    .style("width", "30px")
+    .style("height", "30px")
+    .style("border", "5px solid #00acc4")
+    .style("background", "#00acc4")
+    .style("margin", "2.5px")
+    .append("div")
+    .attr("class", "leggy")
+    .text("Meals Served");
+  div
+    .append("div")
+    .style("width", "30px")
+    .style("height", "30px")
+    .style("border", "5px solid #00acc4")
+    .style("background", "transparent")
+    .style("margin", "2.5px")
+    .append("div")
+    .attr("class", "leggy")
+    .text("Meals Committed");
 }
 
 function bivarLegend({ div }) {
