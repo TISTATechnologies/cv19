@@ -26,6 +26,15 @@ const format = (val) => {
   return enFormat.format(val);
 };
 
+const percentage = (val) => {
+  if (Number.isNaN(Number.parseFloat(val, 10))) return "--";
+  if (!val) return "---";
+  return new Intl.NumberFormat("en", {
+    style: "percent",
+    maximumFractionDigits: 1,
+  }).format(val);
+};
+
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -77,14 +86,49 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.success.main,
     color: "#222",
   },
+  shrink: {
+    color: theme.palette.success.main,
+  },
+  growth: { color: theme.palette.error.main,
+    "&::before": { content: "'+'" },
+   },
+  compact: { fontSize: "0.8em" },
 }));
 
 const headers = [
-  { label: "County", numeric: false, id: "location_name" },
-  { label: "Confirmed", numeric: true, id: "confirmed" },
-  { label: "Deaths", numeric: true, id: "deaths" },
-  { label: "Active", numeric: true, id: "active" },
-  { label: "Active/100k", numeric: true, id: "activeRatio" },
+  { label: "County", numeric: false, id: "name", visible: true },
+  { label: "Confirmed", numeric: true, id: "confirmed", visible: true },
+  { label: "Deaths", numeric: true, id: "deaths", visible: true },
+  { label: "Active", numeric: true, id: "active", visible: true },
+  {
+    label: "Active +/-2day",
+    numeric: true,
+    id: "active_trend2",
+    visible: false,
+    classes: "compact",
+  },
+  {
+    label: "Active +/-Week",
+    numeric: true,
+    id: "active_trend7",
+    visible: false,
+    classes: "compact",
+  },
+  {
+    label: "Active +/-1Mth",
+    numeric: true,
+    id: "active_trend30",
+    visible: false,
+    classes: "compact",
+  },
+  {
+    label: "Active +/-3Mths",
+    numeric: true,
+    id: "active_trend90",
+    visible: false,
+    classes: "compact",
+  },
+  { label: "Active/100k", numeric: true, id: "activeRatio", visible: true },
 ];
 
 export default function SimpleTable({
@@ -114,10 +158,18 @@ export default function SimpleTable({
     ...d,
     activeRatio: Math.ceil((d.active / d.population) * 1e5),
   }));
+
+  rows.forEach((r) => {
+    if (r.active_trend2) headers[4].visible = true;
+    if (r.active_trend7) headers[5].visible = true;
+    if (r.active_trend30) headers[6].visible = true;
+    if (r.active_trend90) headers[7].visible = true;
+  });
+
   return (
     <Card variant="outlined">
       <CardHeader
-        title={`My Tracked Counties`}
+        title={`My Counties`}
         titleTypographyProps={{
           className: classes.title,
         }}
@@ -129,7 +181,7 @@ export default function SimpleTable({
               onClick={() => addFunction(thisLocation.fips)}
             >
               <Tooltip
-                title={`Add ${thisLocation.location_name}`}
+                title={`Add ${thisLocation.name}`}
                 classes={{ tooltip: classes.tooltip }}
                 interactive
                 placement="left"
@@ -149,28 +201,34 @@ export default function SimpleTable({
           >
             <TableHead>
               <TableRow>
-                {headers.map((headCell) => (
-                  <TableCell
-                    key={headCell.id}
-                    align={headCell.numeric ? "right" : "left"}
-                    padding={headCell.disablePadding ? "none" : "default"}
-                    sortDirection={orderBy === headCell.id ? order : false}
-                  >
-                    <TableSortLabel
-                      active={orderBy === headCell.id}
-                      direction={orderBy === headCell.id ? order : "desc"}
-                      onClick={createSortHandler(headCell.id)}
+                {headers.map((headCell) =>
+                  headCell.visible ? (
+                    <TableCell
+                      key={headCell.id}
+                      align={headCell.numeric ? "right" : "left"}
+                      padding={headCell.disablePadding ? "none" : "default"}
+                      sortDirection={orderBy === headCell.id ? order : false}
+                      className={
+                        headCell.classes ? classes[headCell.classes] : ""
+                      }
                     >
-                      {headCell.label}
-                    </TableSortLabel>
-                  </TableCell>
-                ))}
+                      <TableSortLabel
+                        active={orderBy === headCell.id}
+                        direction={orderBy === headCell.id ? order : "desc"}
+                        onClick={createSortHandler(headCell.id)}
+                      >
+                        {headCell.label}
+                      </TableSortLabel>
+                    </TableCell>
+                  ) : null
+                )}
                 <TableCell />
               </TableRow>
             </TableHead>
+
             <TableBody>
               {stableSort(rows, getComparator(order, orderBy)).map((row) => (
-                <TableRow key={row.location_name || "empty"}>
+                <TableRow key={row.name}>
                   <TableCell component="th" scope="row" align="left">
                     <Link
                       color="textPrimary"
@@ -182,7 +240,7 @@ export default function SimpleTable({
                         navigate(row.fips);
                       }}
                     >
-                      {row.location_name}
+                      {row.name}
                     </Link>
                   </TableCell>
                   <TableCell align="right" className={classes.confirmed}>
@@ -194,6 +252,54 @@ export default function SimpleTable({
                   <TableCell align="right" className={classes.active}>
                     {format(row.active)}
                   </TableCell>
+                  {headers[4].visible ? (
+                    <TableCell
+                      align="right"
+                      className={
+                        row.active_trend2 < 0
+                          ? classes.shrink
+                          : classes.growth
+                      }
+                    >
+                      {`${percentage(row.active_trend2)}`}
+                    </TableCell>
+                  ) : null}
+                  {headers[5].visible ? (
+                    <TableCell
+                      align="right"
+                      className={
+                        row.active_trend7 < 0
+                          ? classes.shrink
+                          : classes.growth
+                      }
+                    >
+                      {`${percentage(row.active_trend7)}`}
+                    </TableCell>
+                  ) : null}
+                  {headers[6].visible ? (
+                    <TableCell
+                      align="right"
+                      className={
+                        row.active_trend30 < 0
+                          ? classes.shrink
+                          : classes.growth
+                      }
+                    >
+                      {`${percentage(row.active_trend30)}`}
+                    </TableCell>
+                  ) : null}
+                  {headers[7].visible ? (
+                    <TableCell
+                      align="right"
+                      className={
+                        row.active_trend90 < 0
+                          ? classes.shrink
+                          : classes.growth
+                      }
+                    >
+                      {`${percentage(row.active_trend90)}`}
+                    </TableCell>
+                  ) : null}
                   <TableCell align="right" className={classes.active}>
                     {format(row.activeRatio)}
                   </TableCell>

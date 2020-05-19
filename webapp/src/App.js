@@ -12,13 +12,11 @@ import Container from "@material-ui/core/Container";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import CardContent from "@material-ui/core/CardContent";
 import MyLocationIcon from "@material-ui/icons/MyLocation";
 import CloseIcon from "@material-ui/icons/Close";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import Popover from "@material-ui/core/Popover";
 import Hidden from "@material-ui/core/Hidden";
 
 import IconButton from "@material-ui/core/IconButton";
@@ -38,6 +36,7 @@ import TistaCares25 from "./resources/TISTA_Philanthropy_25.png";
 import useLocalStorage from "./util/useLocalStorage";
 import {
   fetchDataFromFips,
+  fetchTrendFromFips,
   findLocationData,
   fetchDataFromState,
   fetchDataFromUSA,
@@ -65,6 +64,11 @@ const gtag =
 const fallback = <LinearProgress />;
 const emptyObject = {};
 const emptyArray = [];
+
+function diffPercent(today, delta) {
+  if (today-delta === 0) return 0;
+  return delta/(today-delta);
+}
 
 const useStyles = makeStyles((theme) => ({
   logo: {
@@ -175,29 +179,25 @@ function App() {
   const [updateLocation, setUpdateLocation] = useState(false);
   const [canUseGeo, setCanUseGeo] = useLocalStorage("canUseGeo", false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [snackOpen, setSnackOpen] = useState(false);
   const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage(
     "showCDC",
     true
   );
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
-  const [firstSearch, setFirstSearch] = useLocalStorage("firstSearch", true);
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
   const geoLocation = useGeolocation();
   const [savedLocations, setSavedLocations] = useLocalStorage("MyLocations", [
     {
-      location_name: "Montogomery County, MD",
+      name: "Montogomery County, MD",
       fips: "24031",
     },
     {
-      location_name: "Fairfax County, VA",
+      name: "Fairfax County, VA",
       fips: "51059",
     },
     {
-      location_name: "District of Columbia, DC",
+      name: "District of Columbia, DC",
       fips: "11001",
     },
   ]);
@@ -226,16 +226,13 @@ function App() {
       const { data, error } = await fetchDataFromUSA();
       if (data & data.message) {
         setErrorMessage(error);
-        setSnackOpen(true);
       } else if (data && data.length) {
         setUsaStats(data);
       } else {
         setErrorMessage("Could not load USA data.");
-        setSnackOpen(true);
       }
       if (error) {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
     };
     f();
@@ -252,17 +249,14 @@ function App() {
       const { data, error } = await fetchDataFromState();
       if (data & data.message) {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
       if (data && data.length) {
         setStateStats(data);
       } else {
         setErrorMessage("Could not load state data.");
-        setSnackOpen(true);
       }
       if (error) {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
     };
     f();
@@ -279,14 +273,12 @@ function App() {
       const { data, error } = await fetchDataFromFips(fips);
       if (error) {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
       if (data && data.message) {
         setErrorMessage(error);
-        setSnackOpen(true);
       } else if (data && data.length) {
         // setLocation("");
-        setCountyStats(data);
+        setCountyStats(data[0]);
         goToLevel("county");
         setLoadingZip(false);
         setFips("");
@@ -304,7 +296,6 @@ function App() {
         });
         setFips("");
         setLocation("");
-        setSnackOpen(true);
         setLoadingZip(false);
       }
     };
@@ -376,7 +367,6 @@ function App() {
         setHeadlines(data);
       } else {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
     };
     if (myState) {
@@ -395,7 +385,6 @@ function App() {
         setSources(data);
       } else {
         setErrorMessage(error);
-        setSnackOpen(true);
       }
     };
     f();
@@ -407,10 +396,15 @@ function App() {
       const list = [];
       await savedLocations.reduce(async (memo, { fips }) => {
         await memo;
-        const { data } = await fetchDataFromFips(fips);
+        const { data } = await fetchTrendFromFips(fips);
         const [d] = data;
-        console.log(`%c🟡 ${fips} ${d.location_name}`, "color: goldenrod");
-        list.push(d);
+        console.log(`%c🟡 ${fips} ${d.name}`, "color: goldenrod");
+        list.push({...d,
+        active_trend2: diffPercent(d.active, d.active_trend2),
+        active_trend7: diffPercent(d.active, d.active_trend7),
+        active_trend30: diffPercent(d.active, d.active_trend30),
+        active_trend90: diffPercent(d.active, d.active_trend90),
+      });
       }, undefined);
       setMyLocations(list);
     };
@@ -418,23 +412,6 @@ function App() {
       f();
     }
   }, [savedLocations, setMyLocations]);
-
-  // useEffect(() => {
-  //   setSavedLocations(myLocations)
-  // },[setSavedLocations, myLocations])
-
-  const handleClosePopover = () => {
-    console.log(`%cCLOSE  `, "color: magenta");
-    setFirstSearch(false);
-    setOpen(false);
-  };
-
-  const handleFocusInput = (e) => {
-    if (firstSearch) {
-      setAnchorEl(e.currentTarget);
-      setOpen(true);
-    }
-  };
 
   const handleLocationChange = (e, value, reason) => {
     console.log(`%c👍 ${reason}`, "color: pink");
@@ -456,7 +433,6 @@ function App() {
   };
 
   const handleCloseSnack = () => {
-    setSnackOpen(false);
     setErrorMessage("");
   };
 
@@ -513,19 +489,19 @@ function App() {
       <LocalStatsTable
         sources={sources}
         data={stateStats.find(
-          (x) => x.state_name === countyStats[0].state_name
+          (x) => x.state_id === myState
         )}
         getFlag
         level={"state"}
       />
     ),
-    [sources, stateStats, countyStats]
+    [sources, stateStats, myState]
   );
   const MemoStatsCounty = useMemo(
     () => (
       <LocalStatsTable
         sources={sources}
-        data={countyStats[0]}
+        data={countyStats}
         level={"county"}
       />
     ),
@@ -667,7 +643,7 @@ function App() {
                 color="textPrimary"
                 onClick={() => goToLevel("county")}
               >
-                {`${countyStats[0].state_name}`}
+                {`${myState}`}
               </Typography>
             </Visible>
             <Visible condition={level !== "usa"}>
@@ -678,7 +654,7 @@ function App() {
                 color="textPrimary"
                 onClick={() => goToLevel("county")}
               >
-                {`${countyStats[0].location_name}`}
+                {`${countyStats.name}`}
               </Typography>
             </Visible>
           </Grid>
@@ -717,7 +693,7 @@ function App() {
           <Grid item xs={12} md={6} lg={6}>
             <ErrorBoundary>
               <Suspense fallback={fallback}>
-                <UsaMap data={level !== "usa" ? countyStats[0] : emptyObject} />
+                <UsaMap data={level !== "usa" ? countyStats : emptyObject} />
               </Suspense>
             </ErrorBoundary>
           </Grid>
@@ -737,7 +713,7 @@ function App() {
                   data={myLocations}
                   addFunction={addToMyLocations}
                   removeFunction={removeFromMyLocations}
-                  thisLocation={countyStats[0]}
+                  thisLocation={countyStats}
                   navigate={setFips}
                 />
               </Suspense>

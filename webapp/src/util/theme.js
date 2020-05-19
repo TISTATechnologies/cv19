@@ -16,7 +16,7 @@ let theme = createMuiTheme({
       head: { fontWeight: "600" },
       root: { fontSize: "inherit" },
       sizeSmall: {
-        padding: '6px', 
+        padding: '6px',
       },
     },
     MuiCard: {

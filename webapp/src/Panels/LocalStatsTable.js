@@ -159,7 +159,7 @@ const LocalStatsTable = ({
   const {
     confirmed = "N/A",
     deaths = "N/A",
-    location_name = "",
+    name = "",
     recovered = "N/A",
     active = "N/A",
     datetime: updated,
@@ -203,7 +203,7 @@ const LocalStatsTable = ({
           titleTypographyProps={{
             className: classes.title,
           }}
-          title={`COVID-19 Data for ${location_name}`}
+          title={`COVID-19 Data for ${name}`}
           subheader={`Population: ${bigFormat.format(population)}`}
           subheaderTypographyProps={{
             color: "secondary",
@@ -324,7 +324,7 @@ const LocalStatsTable = ({
         variant:"body1",
         component: 'span'
       }}
-      title={`COVID-19 Data for ${location_name}`}
+      title={`COVID-19 Data for ${name}`}
     ></CardHeader>
 
       <CardContent>

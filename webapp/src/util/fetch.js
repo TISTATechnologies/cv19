@@ -1,14 +1,25 @@
-const url = process.env.REACT_APP_SERVER_URL;
+import stateFips from '../resources/stateFips';
+let api = process.env.REACT_APP_SERVER_URL;
+let common = process.env.REACT_APP_COMMON_DATA_URL;
+let covid = process.env.REACT_APP_COVID_DATA_URL;
 const jwtToken = process.env.REACT_APP_JWT_TOKEN || false;
 const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === "1";
+const stamp = process.env.REACT_APP_TIMESTAMP;
 const fetch = window.fetch;
 const headers = new Headers();
+
+
+// Add trailing slashes to paths if missing
+if (common.substr(-1) !== '/') { common = `${common}/`}
+if (covid.substr(-1) !== '/') { covid = `${covid}/`}
+if (api.substr(-1) !== '/') { api = `${api}/`}
+
 if (jwtToken) {
   headers.append("Authorization", `Bearer ${jwtToken}`);
 }
 
 function fetchWithHeader(url, options) {
-  return fetch(url, {
+  return fetch(`${url}?ts=${stamp}`, {
     headers,
     ...options,
   });
@@ -25,26 +36,24 @@ function getDate() {
 
 export async function fetchDataFromUSA(query, rows = 1) {
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_latest?location_type=eq.country&country_id=eq.US&limit=${rows}`
+    `${covid}daily/latest/us.json`
   );
-  // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
 }
 
 export async function fetchDataSources() {
-  const response = await fetchWithHeader(`${url}covid_data_source`);
+  const response = await fetchWithHeader(`${covid}source/latest.json`);
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
 }
 
-export async function fetchDataFromState(query, rows = 1) {
+export async function fetchDataFromState(query) {
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_latest?country_id=eq.US&location_type=eq.state`
+    `${covid}daily/latest/us/all-states.json`
   );
-  // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
@@ -55,7 +64,7 @@ export async function fetchFipsFromZip(query) {
   const chunk = query.slice(0, 3);
   if (chunk.length < 3) return [];
   const response = await fetch(
-    `${process.env.REACT_APP_COMMON_DATA_URL}/us/zip/${first}/${chunk}.json`
+    `${common}us/zip/${first}/${chunk}.json`
   );
   try {
     const fips = await response.json();
@@ -66,30 +75,42 @@ export async function fetchFipsFromZip(query) {
   }
 }
 
-export async function fetchDataFromFips(fips, rows = 1) {
+export async function fetchDataFromFips(fips) {
+  const stateCode = fips.slice(0, 2);
+  const state=stateFips.find((x) => x[2] === stateCode)
+  const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_latest?fips=eq.${fips}&limit=${rows}`
+    `${covid}daily/latest/us/${stateAbbr}/${fips}.json`
   );
-  // console.log(`%c${response}`, "color: magenta");
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
 }
 
-export async function fetchAllCountyData(query, rows = 1) {
+export async function fetchTrendFromFips(fips) {
+  const stateCode = fips.slice(0, 2);
+  const state=stateFips.find((x) => x[2] === stateCode)
+  const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(
-    `${url}covid_data_stat_latest?country_id=eq.US&location_type=eq.county`
+    `${covid}trend/latest/us/${stateAbbr}/${fips}.json`
   );
-  // console.log(`%c${response}`, "color: magenta");
+  if (!response) return { error: "problem" };
+  const data = await response.json();
+  return { data };
+}
+
+export async function fetchAllCountyData() {
+  const response = await fetchWithHeader(
+    `${covid}daily/latest/us/all-counties.json`
+  );
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
 }
 
 export async function fetchStateHeadlines(query, rows = 4) {
-  const latest = getDate();
   const response = await fetchWithHeader(
-    `${url}covid_info_link?country_id=eq.US&state_id=eq.${query}#${latest}`
+    `${covid}executive-orders/latest/us/${query.toLowerCase()}.json`
   );
   const data = await response.json();
   if (data.message) return { error: data.message };
@@ -111,15 +132,11 @@ export async function findLocationData(query, rows = 1) {
 export async function fetchEmployeeData() {
   if (associateView) {
     const response = await fetch(
-      `${process.env.PUBLIC_URL}/data/special-locations.json`
+      `${process.env.PUBLIC_URL}data/special-locations.json`
     );
     const data = await response.json();
     if (data.message) return { error: data.message };
     return { data };
   }
   return { data: null };
-}
-
-function precise(x) {
-  return Number.parseFloat(x).toPrecision(4);
 }
