@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 cd $(dirname "${0}")
-./start-pull-data-services.sh $@ && \
-./start-export-data-services $@
+wd=${PWD}
+"${wd}/start-pull-data-services.sh" $@ || exit 1
+"${wd}/start-export-data-services.sh" $@ || exit 1

@@ -33,8 +33,13 @@ def run(engine_name, args):
     if engine_name not in ENGINES.keys():
         log.error(f'Engine "{engine_name}" not found.')
         return False
-    log.info(f'Start [{engine_name}] collector...')
-    engine = ENGINES[engine_name]
-    engine['instance'].run(args)
-    log.info(f'End [{engine}] collector')
+    if engine_name == 'all':
+        engines = ENGINES.keys()
+    else:
+        engines = [engine_name]
+    for engine in engines:
+        log.info(f'Start [{engine_name}] collector...')
+        engine = ENGINES[engine_name]
+        engine['instance'].run(args)
+        log.info(f'End [{engine}] collector')
     return True

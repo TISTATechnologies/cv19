@@ -45,6 +45,6 @@ if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
 cd lib/cv19lib
 title "Export all covid data" && \
-python3 cv19lib export "${period}" "${output_dir}" $@ && \
+python3 cv19lib export all "${period}" "${output_dir}" $@ && \
 cd - >/dev/null && \
 echo "Success"

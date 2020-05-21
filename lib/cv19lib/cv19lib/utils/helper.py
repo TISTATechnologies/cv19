@@ -25,7 +25,11 @@ def trace(message):
 class DateTimeHelper:
     @staticmethod
     def get_yesterday_date():
-        return datetime.date.today() - datetime.timedelta(days=1)
+        return DateTimeHelper.add_days(datetime.date.today(), -1)
+
+    @staticmethod
+    def add_days(date, days=0):
+        return (date or datetime.date.today()) + datetime.timedelta(days=days)
 
     @staticmethod
     def get_today_date():

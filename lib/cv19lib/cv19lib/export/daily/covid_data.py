@@ -1,6 +1,6 @@
-from .base import Exporter
-from ..utils import logger
-from ..utils.helper import Converter, DateTimeHelper, DatabaseContext
+from ..base import Exporter
+from cv19lib.utils import logger
+from cv19lib.utils.helper import Converter, DateTimeHelper, DatabaseContext
 
 log = logger.get_logger(__file__)
 

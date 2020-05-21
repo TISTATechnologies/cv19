@@ -19,20 +19,27 @@ class CV19:
     def show_help(self):
         print('Usage: cv19-cli <collect|export> [engine] [args...]')
         print('Collectors:')
-        print(f'    {", ".join(collector.ENGINES)}')
+        print(f'    {", ".join(collector.ENGINES)}, all')
+        print('Exporters:')
+        print(f'    {", ".join(export.ENGINES)}')
         return False
 
     def run(self, args):
         try:
-            cmd = sys.argv[1] if len(sys.argv) > 1 else '--help'
+            if len(args) <= 1:
+                return self.show_help()
+            if [a for a in args if a.lstrip('-') == 'help']:
+                return self.show_help()
+            cmd = args[0]
             log.debug(f'Command line: {cmd} {args}')
             if cmd == 'collect':
                 engine = sys.argv[2] if len(sys.argv) > 2 else None
                 args = sys.argv[3:]
                 return collector.run(engine, args)
             if cmd == 'export':
-                args = sys.argv[2:]
-                return export.run(args)
+                engine = sys.argv[2] if len(sys.argv) > 2 else None
+                args = sys.argv[3:]
+                return export.run(engine, args)
             if cmd.lstrip('-') == 'help':
                 return self.show_help()
             log.error(f'Unknown command {cmd}')

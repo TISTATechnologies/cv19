@@ -1,7 +1,7 @@
 import json
-from ..config import config
-from ..utils import logger
-from ..utils.helper import CsvHelper, DateTimeHelper
+from cv19lib.config import config
+from cv19lib.utils import logger
+from cv19lib.utils.helper import CsvHelper, DateTimeHelper
 
 log = logger.get_logger('export-base')
 
