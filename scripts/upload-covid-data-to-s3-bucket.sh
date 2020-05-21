@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # #############################################################################
 ## Upload all data from the build/covid directory to the s3 bucket
-## Usage: _upload-covid-data-to-s3-bucket.sh
+## Usage: upload-covid-data-to-s3-bucket.sh
 # #############################################################################
 title() { echo "======================================================================"; echo "$@"; }
 version=${VERSION:-"1"}

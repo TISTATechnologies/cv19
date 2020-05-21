@@ -11,4 +11,4 @@ export PATH=/usr/local/bin:${PATH}
 
 env=${1:-"dev"}
 echo "Starting..."
-yes | $(dirname "${0}")/../_start-all-pull-data-services.sh --profile "${env}"
+yes | $(dirname "${0}")/../_start-all-data-services.sh --profile "${env}"
