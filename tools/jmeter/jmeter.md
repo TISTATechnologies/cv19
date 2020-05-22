@@ -20,15 +20,18 @@ curl -s "https://apache.claz.org//jmeter/binaries/apache-jmeter-5.2.1.tgz" \
 
 Gui mode (you need it mostly to create a test workflow):
 ```bash
-./jmeter-gui.sh
+./run-jmeter.sh gui
 ```
 
 Run cv19 tests:
 ```bash
-./run-cv19-jmeter-tests.sh
+./run-jmeter.sh
 # or 
-VUSERS=1 ./run-cv19-jmeter-tests.sh
+VUSERS=10 ./run-jmeter.sh
 ```
+System environemnt for the script:
+* JMETER_FILE - jmeter file (default: cv19-demo-tests.jmx)
+* VUSERS - how many virtual users will be used
 
 ## Plugins ???
 
