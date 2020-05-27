@@ -7,17 +7,39 @@ import CardHeader from "@material-ui/core/CardHeader";
 import { makeStyles } from "@material-ui/core/styles";
 import CardContent from "@material-ui/core/CardContent";
 
-const gtag =
-  window.gtag ||
-  (([a, b, c, d, e, f]) => {
-    console.log("No Google Analytics Installed");
-  });
+const daysStillFresh = 7;
+
+const sortDate = (a, b) => {
+  const aDate = Date.parse(a.created);
+  const bDate = Date.parse(b.created);
+  return bDate - aDate;
+};
+
+const daysDiff = (date1, date2) => {
+  const toDays = (dt) => dt / (1000 * 60 * 60 * 24);
+  return Math.abs(toDays(date1) - toDays(date2));
+};
+
+const myAge = (date) => {
+  const d = Date.parse(date);
+  return daysDiff(d, Date.now());
+};
 
 const useStyles = makeStyles((theme) => ({
   url: {
     [theme.breakpoints.down("xs")]: {
       fontSize: "1.2em",
     },
+  },
+  bullet: {
+    width: "35px",
+    marginRight: "0px",
+    textDecoration: "none",
+    display: "inline-block",
+    textAlign: "center",
+  },
+  fresh: {
+    color: "white",
   },
   title: {
     [theme.breakpoints.down("xs")]: {
@@ -54,25 +76,32 @@ const Feed = ({ data }) => {
         subheader="The most important executive orders for this state:"
       />
       <CardContent>
-        {headlines.map((f) => (
-          <Link
-            className={classes.url}
-            display="block"
-            href={f.url}
-            target="_blank"
-            rel="noreferrer noopener"
-            color="textSecondary"
-            underline="always"
-            noWrap
-            key={f.url + f.created}
-            variant="h6"
-            onClick={gtag("event", "Navigate", {
-              event_label: `Look at Executive Order ${f.note}`,
-            })}
-          >
-            • {f.note}
-          </Link>
-        ))}
+        {headlines.sort(sortDate).map((f) => {
+          const age = myAge(f.created);
+          const isFresh = age <= daysStillFresh;
+          return (
+            <div>
+            <Link
+              key={f.url + f.created}
+              classes={{
+                root: classes.url,
+              }}
+              className={isFresh ? classes.fresh : ""}
+              href={f.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              color="textSecondary"
+              underline="always"
+              display="block"
+              noWrap
+              variant="h6"
+            >
+              <span className={classes.bullet}>{isFresh ? "🆕" : "●"}</span>
+              {f.note}
+            </Link>
+            </div>
+          );
+        })}
         {headlines.length < 1 ? (
           <Typography noWrap variant="h6">
             No Executive Orders for {myState}.

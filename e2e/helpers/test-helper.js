@@ -99,7 +99,7 @@ class CovidPage {
         if (!data || !data.county) {
             return;
         }
-        this.I.see(`USA / ${data.state.id} / ${data.county.name}`);
+        this.I.see(`USA / ${data.state.name} / ${data.county.name}`);
         this.I.see(`COVID-19 Data for ${data.county.name}`);
         this.I.see(`Population: ${data.county.population}`, `#county-population`);
         this.expectProperDataBox('county', data.county, 'Confirmed Cases', 'confirmed', true);

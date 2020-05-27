@@ -15,6 +15,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import Hidden from "@material-ui/core/Hidden";
 
 import Link from "@material-ui/core/Link";
 
@@ -28,7 +29,7 @@ const format = (val) => {
 
 const percentage = (val) => {
   if (Number.isNaN(Number.parseFloat(val, 10))) return "--";
-  if (!val) return "---";
+  if (!val) return "--";
   return new Intl.NumberFormat("en", {
     style: "percent",
     maximumFractionDigits: 1,
@@ -61,74 +62,108 @@ function getComparator(order, orderBy) {
 }
 
 const useStyles = makeStyles((theme) => ({
-  root: { fontSize: "1.2rem" },
+  root: {
+    fontSize: "1rem",
+    [theme.breakpoints.down("sm")]: { fontSize: "0.8em" },
+    [theme.breakpoints.down("xs")]: { fontSize: "0.7em" },
+  },
+  icon: {
+    width: "48px",
+    color: theme.palette.warning.light,
+    fontSize: "0.8em",
+    overflow: "hidden",
+  },
   tooltip: { fontSize: "0.8rem", backgroundColor: "#222" },
   linkButton: {
     textAlign: "inherit",
+    [theme.breakpoints.down("sm")]: { fontSize: "1em" },
   },
   confirmed: { color: theme.palette.grey[300] },
   active: { color: theme.palette.warning.light },
   deaths: { color: theme.palette.error.light },
+  deleteButton: { color: theme.palette.error.light },
   recovered: { color: theme.palette.success.light },
-  confirmedBar: {
-    backgroundColor: theme.palette.grey[700],
-    color: "#222",
-  },
-  activeBar: {
-    backgroundColor: theme.palette.warning.main,
-    color: "#222",
-  },
-  deathsBar: {
-    backgroundColor: theme.palette.error.main,
-    color: "#222",
-  },
-  recoveredBar: {
-    backgroundColor: theme.palette.success.main,
-    color: "#222",
-  },
   shrink: {
     color: theme.palette.success.main,
   },
-  growth: { color: theme.palette.error.main,
-    "&::before": { content: "'+'" },
-   },
-  compact: { fontSize: "0.8em" },
+  growth: { color: theme.palette.error.main, "&::before": { content: "'+'" } },
+  shortLabel: {
+    fontSize: "0.7em",
+  },
 }));
 
 const headers = [
-  { label: "County", numeric: false, id: "name", visible: true },
-  { label: "Confirmed", numeric: true, id: "confirmed", visible: true },
-  { label: "Deaths", numeric: true, id: "deaths", visible: true },
-  { label: "Active", numeric: true, id: "active", visible: true },
   {
-    label: "Active +/-2day",
+    label: "County",
+    shortLabel: "County",
+    numeric: false,
+    id: "name",
+    visible: true,
+  },
+  {
+    label: "Confirmed",
+    shortLabel: "Con",
+    numeric: true,
+    id: "confirmed",
+    visible: true,
+  },
+  {
+    label: "Deaths",
+    shortLabel: "Dea",
+    numeric: true,
+    id: "deaths",
+    visible: true,
+  },
+  {
+    label: "Active",
+    shortLabel: "Act",
+    numeric: true,
+    id: "active",
+    visible: true,
+  },
+  {
+    label: "2Day",
+    shortLabel: "2D",
     numeric: true,
     id: "active_trend2",
     visible: false,
-    classes: "compact",
   },
   {
-    label: "Active +/-Week",
+    label: "7Day",
+    shortLabel: "7D",
     numeric: true,
     id: "active_trend7",
     visible: false,
-    classes: "compact",
   },
   {
-    label: "Active +/-1Mth",
+    label: "1Mth",
+    shortLabel: "1M",
     numeric: true,
     id: "active_trend30",
     visible: false,
-    classes: "compact",
   },
   {
-    label: "Active +/-3Mths",
+    label: "3Mths",
+    shortLabel: "3M",
     numeric: true,
     id: "active_trend90",
     visible: false,
-    classes: "compact",
   },
-  { label: "Active/100k", numeric: true, id: "activeRatio", visible: true },
+  {
+    label: "Active/ 100k",
+    shortLabel: "A/100",
+    numeric: true,
+    id: "activeRatio",
+    visible: true,
+  },
+  {
+    label: "",
+    shortLabel: "",
+    numeric: false,
+    id: "",
+    visible: true,
+    classes: "icon",
+  },
 ];
 
 export default function SimpleTable({
@@ -177,8 +212,8 @@ export default function SimpleTable({
           thisLocation.fips ? (
             <IconButton
               color="secondary"
-              // size="small"
-              onClick={() => addFunction(thisLocation.fips)}
+              size="small"
+              onClick={() => addFunction(thisLocation)}
             >
               <Tooltip
                 title={`Add ${thisLocation.name}`}
@@ -195,15 +230,16 @@ export default function SimpleTable({
       <CardContent>
         <TableContainer component={Paper}>
           <Table
-            aria-label="simple table"
+            aria-label="my counties"
             size="small"
             classes={{ root: classes.root }}
           >
             <TableHead>
               <TableRow>
-                {headers.map((headCell) =>
+                {headers.map((headCell, i) =>
                   headCell.visible ? (
                     <TableCell
+                      scope={i === 0 ? "row" : ""}
                       key={headCell.id}
                       align={headCell.numeric ? "right" : "left"}
                       padding={headCell.disablePadding ? "none" : "default"}
@@ -217,12 +253,16 @@ export default function SimpleTable({
                         direction={orderBy === headCell.id ? order : "desc"}
                         onClick={createSortHandler(headCell.id)}
                       >
-                        {headCell.label}
+                        <Hidden smDown className="fullLabel">
+                          {headCell.label}
+                        </Hidden>
+                        <Hidden mdUp className="shortLabel">
+                          {headCell.shortLabel}
+                        </Hidden>
                       </TableSortLabel>
                     </TableCell>
                   ) : null
                 )}
-                <TableCell />
               </TableRow>
             </TableHead>
 
@@ -233,14 +273,19 @@ export default function SimpleTable({
                     <Link
                       color="textPrimary"
                       underline="always"
-                      component="button"
                       variant="body1"
-                      classes={{ button: classes.linkButton }}
-                      onClick={() => {
-                        navigate(row.fips);
-                      }}
+                      classes={{ root: classes.linkButton }}
+                      href={
+                        row.zip
+                          ? `#/${row.zip}-${row.name
+                              .split(/ |,/)
+                              .filter((x) => x)
+                              .join("-")
+                              .toLowerCase()}`
+                          : `#/fips-${row.fips}`
+                      }
                     >
-                      {row.name}
+                      {`${row.name}`}
                     </Link>
                   </TableCell>
                   <TableCell align="right" className={classes.confirmed}>
@@ -256,9 +301,11 @@ export default function SimpleTable({
                     <TableCell
                       align="right"
                       className={
-                        row.active_trend2 < 0
-                          ? classes.shrink
-                          : classes.growth
+                        row.active_trend2
+                          ? row.active_trend2 < 0
+                            ? classes.shrink
+                            : classes.growth
+                          : ""
                       }
                     >
                       {`${percentage(row.active_trend2)}`}
@@ -268,9 +315,11 @@ export default function SimpleTable({
                     <TableCell
                       align="right"
                       className={
-                        row.active_trend7 < 0
-                          ? classes.shrink
-                          : classes.growth
+                        row.active_trend7
+                          ? row.active_trend7 < 0
+                            ? classes.shrink
+                            : classes.growth
+                          : ""
                       }
                     >
                       {`${percentage(row.active_trend7)}`}
@@ -280,9 +329,11 @@ export default function SimpleTable({
                     <TableCell
                       align="right"
                       className={
-                        row.active_trend30 < 0
-                          ? classes.shrink
-                          : classes.growth
+                        row.active_trend30
+                          ? row.active_trend30 < 0
+                            ? classes.shrink
+                            : classes.growth
+                          : ""
                       }
                     >
                       {`${percentage(row.active_trend30)}`}
@@ -292,9 +343,11 @@ export default function SimpleTable({
                     <TableCell
                       align="right"
                       className={
-                        row.active_trend90 < 0
-                          ? classes.shrink
-                          : classes.growth
+                        row.active_trend90
+                          ? row.active_trend90 < 0
+                            ? classes.shrink
+                            : classes.growth
+                          : ""
                       }
                     >
                       {`${percentage(row.active_trend90)}`}
@@ -305,7 +358,11 @@ export default function SimpleTable({
                   </TableCell>
                   <TableCell>
                     <IconButton
-                      className={classes.deaths}
+                      classes={{
+                        root: classes.deleteButton,
+                      }}
+                      size="small"
+                      edge="end"
                       onClick={() => {
                         removeFunction(row.fips);
                       }}

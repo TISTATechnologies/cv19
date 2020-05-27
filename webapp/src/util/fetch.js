@@ -1,4 +1,4 @@
-import stateFips from '../resources/stateFips';
+import stateFips from "../resources/stateFips";
 let api = process.env.REACT_APP_SERVER_URL;
 let common = process.env.REACT_APP_COMMON_DATA_URL;
 let covid = process.env.REACT_APP_COVID_DATA_URL;
@@ -8,11 +8,16 @@ const stamp = process.env.REACT_APP_TIMESTAMP;
 const fetch = window.fetch;
 const headers = new Headers();
 
-
 // Add trailing slashes to paths if missing
-if (common.substr(-1) !== '/') { common = `${common}/`}
-if (covid.substr(-1) !== '/') { covid = `${covid}/`}
-if (api.substr(-1) !== '/') { api = `${api}/`}
+if (common.substr(-1) !== "/") {
+  common = `${common}/`;
+}
+if (covid.substr(-1) !== "/") {
+  covid = `${covid}/`;
+}
+if (api.substr(-1) !== "/") {
+  api = `${api}/`;
+}
 
 if (jwtToken) {
   headers.append("Authorization", `Bearer ${jwtToken}`);
@@ -35,9 +40,7 @@ function getDate() {
 }
 
 export async function fetchDataFromUSA(query, rows = 1) {
-  const response = await fetchWithHeader(
-    `${covid}daily/latest/us.json`
-  );
+  const response = await fetchWithHeader(`${covid}daily/latest/us.json`);
   if (!response) return { error: "problem" };
   const data = await response.json();
   return { data };
@@ -63,9 +66,7 @@ export async function fetchFipsFromZip(query) {
   const first = query.slice(0, 1);
   const chunk = query.slice(0, 3);
   if (chunk.length < 3) return [];
-  const response = await fetch(
-    `${common}us/zip/${first}/${chunk}.json`
-  );
+  const response = await fetch(`${common}us/zip/${first}/${chunk}.json`);
   try {
     const fips = await response.json();
     return fips;
@@ -77,7 +78,8 @@ export async function fetchFipsFromZip(query) {
 
 export async function fetchDataFromFips(fips) {
   const stateCode = fips.slice(0, 2);
-  const state=stateFips.find((x) => x[2] === stateCode)
+  const state = stateFips.find((x) => x[2] === stateCode);
+  if (!state) return {data:[]};
   const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(
     `${covid}daily/latest/us/${stateAbbr}/${fips}.json`
@@ -89,7 +91,7 @@ export async function fetchDataFromFips(fips) {
 
 export async function fetchTrendFromFips(fips) {
   const stateCode = fips.slice(0, 2);
-  const state=stateFips.find((x) => x[2] === stateCode)
+  const state = stateFips.find((x) => x[2] === stateCode);
   const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(
     `${covid}trend/latest/us/${stateAbbr}/${fips}.json`
