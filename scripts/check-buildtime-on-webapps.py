@@ -19,7 +19,7 @@ def read_page(url, size=200):
         debug(f'Reading first {size} bytes from {url}...')
         with urllib.request.urlopen(url) as f:
             result = f.read(size).decode('utf-8')
-        debug(f'Readed {len(result)} bytes.')
+        debug(f'Read {len(result)} bytes.')
         return result
     except Exception as ex:
         print(f'Error: {ex}')

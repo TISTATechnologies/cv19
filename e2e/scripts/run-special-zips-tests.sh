@@ -29,4 +29,9 @@ echo ""
 echo "* Total zips : ${ZIPS}"
 echo ""
 export ZIPS=${ZIPS}
-npm run test:${1-"all"}
+case ${1-"all"} in
+    static-api) npm run test:static-api;;
+    webapp) npm run test:webapp;;
+    all) npm run test:static-api && npm run test:webapp;;
+    *) echo "Error: unknown test type '${1}"; exit 1;;
+esac

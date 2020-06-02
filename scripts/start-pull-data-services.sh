@@ -20,7 +20,7 @@ title() {
     echo "======================================================================"
 }
 
-cd $(dirname "${0}")/..
+cd "$(dirname "${0}")/.."
 
 profile=
 case "${1}" in
@@ -33,7 +33,7 @@ case "${1}" in
         shift
         ;;
 esac
-. ./scripts/load.env
+. ./scripts/load.env || exit 1
 
 title "Start all services to pull new data (profile=${profile:-".env"})"
 read -p "Continue to load data (y/N)? " opt

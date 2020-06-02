@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-cd $(dirname "${0}")/..
+cd "$(dirname "${0}")/.."
 
 wd=${PWD}
-rm  -rf "${wd}/build"
+if [ -d "${wd}/build" ]; then
+    echo "Clean all previous data in ${wd}/build..."
+    rm  -rf "${wd}/build"
+fi
 
 profile=
 case "${1}" in
@@ -14,7 +17,7 @@ case "${1}" in
         shift
         ;;
 esac
-. ${wd}/scripts/load.env
+. "${wd}/scripts/load.env"
 
 "${wd}/scripts/start-pull-data-services.sh" $@ || exit 1
 "${wd}/scripts/start-export-data-services.sh" $@ || exit 1

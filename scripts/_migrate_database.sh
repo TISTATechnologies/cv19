@@ -4,4 +4,4 @@ wd=${PWD}
 arg1=${1:-"update"}
 cd ./data/covid-database/
 ./migrate-db.sh ${arg1}
-cd ${wd}
+cd "${wd}"

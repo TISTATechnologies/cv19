@@ -8,9 +8,9 @@ version=${VERSION:-"1"}
 bucket=${1:-"data.tistatech.com"}
 CACHE_AGE=7200
 
-cd $(dirname "${0}")/..
-. ./scripts/load.env
-src_dir=${PWD}/build/covid
+cd "$(dirname "${0}")/.."
+. ./scripts/load.env || exit 1
+src_dir="${PWD}/build/covid"
 target=/covid/v${version}
 
 if [ ! -d "${src_dir}" ]; then echo "Directory ${src_dir} not found."; exit 1; fi

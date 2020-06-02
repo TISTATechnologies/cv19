@@ -53,11 +53,11 @@ class CovidData {
 
     getTestZips() {
         let result = null;
-        if (process.env.ZIPS_RANDOM) {
-            result = shuffleArray(process.env.ZIPS_RANDOM.split(',').map((i) => i.trim()));
+        if (this.config.zipsRandom) {
+            result = shuffleArray(this.config.zipsRandom.split(',').map((i) => i.trim()));
             log.info(`Use zips from the env.ZIPS: ${result}`);
-        } else if (process.env.ZIPS) {
-            result = process.env.ZIPS.split(',').map((i) => i.trim());
+        } else if (this.config.zips) {
+            result = this.config.zips.split(',').map((i) => i.trim());
             log.info(`Use zips from the env.ZIPS: ${result}`);
         } else {
             const testZips = Object.keys(this.zip2fips);

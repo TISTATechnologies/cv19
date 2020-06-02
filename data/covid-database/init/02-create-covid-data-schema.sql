@@ -47,7 +47,7 @@ CREATE TABLE region_population (
     country_id TEXT NOT NULL,
     state_id TEXT,
     fips TEXT,
-    population INTEGER NOT NULL DEFAULT 0,
+    population INTEGER,
     FOREIGN KEY (country_id) REFERENCES country (id),
     FOREIGN KEY (state_id, country_id) REFERENCES state (id, country_id)
 );

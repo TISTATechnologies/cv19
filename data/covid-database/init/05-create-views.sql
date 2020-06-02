@@ -11,11 +11,8 @@ SELECT DISTINCT
   COALESCE(cd.geo_lat, r.geo_lat, s.geo_lat, c.geo_lat) as geo_lat,
   COALESCE(cd.geo_long, r.geo_long, s.geo_long, c.geo_long) as geo_long,
   cd.note,
-  CASE
-    WHEN EXTRACT(hour FROM cd.source_updated) > 16 THEN cd.source_updated::TIMESTAMP::DATE
-    ELSE ((cd.source_updated) - INTERVAL '1 DAY')::TIMESTAMP::DATE
-  END as date,
-  cd.source_updated as datetime,
+  cd.datetime::TIMESTAMP::DATE as date,
+  cd.datetime as datetime,
   cd.updated,
   cd.source_updated,
   cd.source_location as source_location,

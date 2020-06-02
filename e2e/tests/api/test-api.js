@@ -15,6 +15,7 @@ const expectEqualNumbers = (num1, num2) => {
     const num2Str = String(num2).split(',').join('');
     expect(num1Str).toEqual(num2Str);
 }
+// TODO: Obsolete - need to be removed
 describe("Test API calls", () => {
     const day = getDayForApi(undefined);;
     beforeAll(() => {

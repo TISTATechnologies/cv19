@@ -8,29 +8,28 @@
   },
   "dependencies": {
     "codeceptjs": "^2.6.1",
+    "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
+    "jest": "^25.5.4",
     "nightmare": "^3.0.2",
     "pg": "^8.0.2",
     "selenium-webdriver": "^4.0.0-alpha.7",
     "webdriverio": "^6.0.18"
   },
   "devDependencies": {
-    "jest": "^25.4.0"
+    "selenium-standalone": "^6.17.0"
   },
   "scripts": {
     "clean": "rm -rf ./output; rm -rf ./build",
     "clean:all": "npm run clean && rm -rf ./node_modules",
-    "generate": "./helpers/db-helper.js",
+    "generate": "node ./helpers/db-helper.js",
     "selenium:start-locally": "./node_modules/.bin/selenium-standalone install && ./node_modules/.bin/selenium-standalone start",
     "selenium:start-docker": "docker run -it --rm -p 4444:4444 --shm-size=1g --name selenium-chrome selenium/standalone-chrome",
     "test:webapp-local": "codeceptjs run",
-    "test:webapp": "SELENIUM_SERVER=34.197.134.62:4444 codeceptjs run",
-    "test:api": "jest ./tests/api/test-api.js",
+    "test:webapp": "cross-env SELENIUM_SERVER=34.197.134.62:4444 codeceptjs run",
     "test:static-api": "jest ./tests/api/test-static-api.js",
-    "test:all": "npm run test:api && npm run test:static-api && npm run test:webapp",
-    "test:special-zips": "./scripts/run-special-zips-tests.sh",
-    "test:parallel": "./scripts/run-multiple-tests.sh",
-    "test": "npm run test:all"
+    "test:special-zips": "bash ./scripts/run-special-zips-tests.sh",
+    "test:parallel": "bash ./scripts/run-multiple-tests.sh"
   },
   "keywords": [],
   "author": "",

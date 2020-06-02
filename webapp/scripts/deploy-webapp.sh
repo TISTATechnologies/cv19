@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-cd $(dirname "${0}")/../..
+cd "$(dirname "${0}")/../.."
 
 # load configuration
-. ./scripts/load.env
+. ./scripts/load.env || exit 1
 cd webapp
 source=./build
 bucket=${S3_BUCKET}

@@ -20,7 +20,7 @@ title() {
     echo "======================================================================"
 }
 
-cd $(dirname "${0}")/..
+cd "$(dirname "${0}")/.."
 
 profile=
 case "${1}" in
@@ -33,7 +33,7 @@ case "${1}" in
         shift
         ;;
 esac
-. ./scripts/load.env
+. ./scripts/load.env || exit 1
 output_dir="${PWD}/build/covid"
 period=${1:-"latest"}
 

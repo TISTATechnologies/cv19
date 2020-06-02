@@ -8,27 +8,42 @@ const config = new Config();
 const log = config.log;
 
 const formatItem = (item) => {
-    if (item.confirmed !== undefined && item.confirmed !== null) {
-        item.confirmed_val1 = item.confirmed.toLocaleString();
-        item.confirmed_val2 = Math.ceil((item.confirmed / item.population) * 1e5);
+    if (item.population) {
+        if (item.confirmed !== undefined && item.confirmed !== null) {
+            item.confirmed_val1 = item.confirmed.toLocaleString();
+            item.confirmed_val2 = Math.ceil((item.confirmed / item.population) * 1e5);
+        }
+        item.confirmed = undefined;
+        if (item.deaths !== undefined && item.deaths !== null) {
+            item.deaths_val1 = item.deaths.toLocaleString();
+            item.deaths_val2 = Math.ceil((item.deaths / item.population) * 1e5);
+        }
+        item.deaths = undefined;
+        if (item.active !== undefined && item.active !== null) {
+            item.active_val1 = item.active.toLocaleString();
+            item.active_val2 = Math.ceil((item.active / item.population) * 1e5);
+        }
+        item.active = undefined;
+        if (item.recovered !== undefined && item.recovered !== null) {
+            item.recovered_val1 = item.recovered.toLocaleString();
+            item.recovered_val2 = Math.ceil((item.recovered / item.population) * 1e5);
+        }
+        item.recovered = undefined;
+        item.population = item.population.toLocaleString();
+    } else {
+        item.confirmed_val1 = null;
+        item.confirmed_val2 = null;
+        item.confirmed = undefined;
+        item.deaths_val1 = null;
+        item.deaths_val2 = null;
+        item.deaths = undefined;
+        item.active_val1 = null;
+        item.active_val2 = null;
+        item.active = undefined;
+        item.recovered_val1 = null;
+        item.recovered_val2 = null;
+        item.recovered = undefined;
     }
-    item.confirmed = undefined;
-    if (item.deaths !== undefined && item.deaths !== null) {
-        item.deaths_val1 = item.deaths.toLocaleString();
-        item.deaths_val2 = Math.ceil((item.deaths / item.population) * 1e5);
-    }
-    item.deaths = undefined;
-    if (item.active !== undefined && item.active !== null) {
-        item.active_val1 = item.active.toLocaleString();
-        item.active_val2 = Math.ceil((item.active / item.population) * 1e5);
-    }
-    item.active = undefined;
-    if (item.recovered !== undefined && item.recovered !== null) {
-        item.recovered_val1 = item.recovered.toLocaleString();
-        item.recovered_val2 = Math.ceil((item.recovered / item.population) * 1e5);
-    }
-    item.recovered = undefined;
-    item.population = item.population.toLocaleString();
     return item;
 }
 

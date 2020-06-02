@@ -11,6 +11,8 @@ class TrendData(Exporter):
         self.name = ' trend covid data'
 
     def _load_data_on_day(self, db, day):
+        """ Load data on the specific date and group it by location (country_id-state_id-fips)
+        """
         items = {}
         for row in db.select('* FROM covid_data_stat WHERE date = %s;', [day]):
             # (country_id, state_id, fips, population, confirmed, deaths, recovered, active,
@@ -44,27 +46,36 @@ class TrendData(Exporter):
             items[key] = item
         return items
 
+    def _delta(self, val1, val2):
+        if val1 is None or val2 is None:
+            return None
+        return val1 - val2
+
     def load_grouped_data(self, day):
-        empty_item = {'confirmed': 0, 'deaths': 0, 'recovered': 0, 'active': 0}
+        latest_day = day
+        empty_item = {'confirmed': None, 'deaths': None, 'recovered': None, 'active': None}
+        trend_days = {
+            '2': DateTimeHelper.add_days(latest_day, -2),
+            '7': DateTimeHelper.add_days(latest_day, -7),
+            '30': DateTimeHelper.add_days(latest_day, -30),
+            '60': DateTimeHelper.add_days(latest_day, -60),
+            '90': DateTimeHelper.add_days(latest_day, -90)
+        }
         log.debug(f'Load all data from the database...')
         with DatabaseContext() as db:
-            latest_day = day
+            data_by_day = {}
             log.info(f'Load latest data ({latest_day})...')
             latest = self._load_data_on_day(db, latest_day)
-
-            day2old = DateTimeHelper.add_days(latest_day, -2)
-            log.info(f'Load 2 days old data ({day2old})...')
-            trend2days = self._load_data_on_day(db, day2old)
-
-            day7old = DateTimeHelper.add_days(latest_day, -7)
-            log.info(f'Load 7 days old data ({day7old})...')
-            trend7days = self._load_data_on_day(db, day7old)
+            for trend_key in trend_days:
+                trend_day = trend_days[trend_key]
+                log.info(f'Load {trend_key} days old data ({trend_day})...')
+                data_by_day[trend_key] = self._load_data_on_day(db, trend_day)
+                log.info(f'Loaded {len(data_by_day[trend_key])} for {trend_key} days old data ({trend_day}).')
 
             log.info(f'Calculate trend items...')
             for key in latest:
+                log.debug(f'Processing {key}...')
                 day0 = latest[key]
-                day2 = trend2days.get(key, empty_item)
-                day7 = trend7days.get(key, empty_item)
                 item = {'country_id': day0['country_id']}
                 if 'state_id' in day0:
                     item['state_id'] = day0['state_id']
@@ -72,22 +83,20 @@ class TrendData(Exporter):
                     item['fips'] = day0['fips']
                 item['population'] = day0['population']
                 item['confirmed'] = day0['confirmed']
-                item['confirmed_trend2'] = day0['confirmed'] - day2['confirmed']
-                item['confirmed_trend7'] = day0['confirmed'] - day7['confirmed']
                 item['deaths'] = day0['deaths']
-                item['deaths_trend2'] = day0['deaths'] - day2['deaths']
-                item['deaths_trend7'] = day0['deaths'] - day7['deaths']
                 item['recovered'] = day0['recovered']
-                item['recovered_trend2'] = day0['recovered'] - day2['recovered']
-                item['recovered_trend7'] = day0['recovered'] - day7['recovered']
                 item['active'] = day0['active']
-                item['active_trend2'] = day0['active'] - day2['active']
-                item['active_trend7'] = day0['active'] - day7['active']
                 item['geo_lat'] = day0['geo_lat']
                 item['geo_long'] = day0['geo_long']
                 item['date'] = day0['date']
                 item['datetime'] = day0['datetime']
                 item['name'] = day0['name']
                 item['type'] = day0['type']
+                for trend_key in data_by_day:
+                    data = data_by_day[trend_key].get(key, empty_item)
+                    item[f'confirmed_trend{trend_key}'] = self._delta(day0['confirmed'], data['confirmed'])
+                    item[f'deaths_trend{trend_key}'] = self._delta(day0['deaths'], data['deaths'])
+                    item[f'recovered_trend{trend_key}'] = self._delta(day0['recovered'], data['recovered'])
+                    item[f'active_trend{trend_key}'] = self._delta(day0['active'], data['active'])
                 self.add_item_to_export_all_levels(item)
             log.info(f'Calculate trend items complete.')

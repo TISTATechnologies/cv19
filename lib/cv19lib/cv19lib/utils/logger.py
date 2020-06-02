@@ -20,11 +20,15 @@ def get_logger(name: str):
     log_name = '.'.join(os.path.basename(os.path.splitext(name or __name__)[0]).split('.')[-2:])
     logger = logging.getLogger(log_name)
     if LOG_FILE:
+        main_module_path = sys.path[0]
+        app_name = os.path.basename(main_module_path)
+        temp = os.environ.get('TEMP', os.environ.get('TMP', '/tmp'))
         now = datetime.datetime.now()
         log_file = LOG_FILE \
             .replace('#DATE#', now.strftime('%Y%m%d')) \
             .replace('#DATETIME#', now.strftime('%Y%m%d-%H%M%S')) \
-            .replace('#SCRIPT#', os.path.splitext(os.path.basename(sys.argv[0]))[0])
+            .replace('#SCRIPT#', app_name) \
+            .replace('#TEMP#', temp)
         # sys.stdout.write(f'Log file: {LOG_FILE}{os.linesep}')
         fh = logging.FileHandler(log_file)
         fh.setLevel(level=log_level)

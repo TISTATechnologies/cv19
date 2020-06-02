@@ -1,4 +1,5 @@
 -- SET search_path TO api;
+DROP TABLE IF EXISTS special_locations;
 DROP TABLE IF EXISTS covid_info_link;
 DROP TABLE IF EXISTS covid_data_link;
 DROP TABLE IF EXISTS covid_data;
