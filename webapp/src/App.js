@@ -18,6 +18,8 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Hidden from "@material-ui/core/Hidden";
+import Button from '@material-ui/core/Button';
+
 
 import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
@@ -45,6 +47,10 @@ import {
   fetchDataSources,
   fetchFipsFromZip,
 } from "./util/fetch";
+import {
+  useServiceWorker,
+} from "./util/useServiceWorker";
+
 import "./App.css";
 
 import defaultUsa from "./resources/defaultUsa.json";
@@ -67,7 +73,8 @@ const emptyObject = {};
 const emptyArray = [];
 
 function diffPercent(today, delta) {
-  if (today - delta === 0) return 0;
+  console.log(`%c${delta}`, 'color: violet');
+  if (today - delta === 0) return Infinity;
   return delta / (today - delta);
 }
 function createUrl(zipCode, county) {
@@ -123,7 +130,12 @@ const useStyles = makeStyles((theme) => ({
     cursor: "pointer",
   },
   snackbar: {
+    color: 'white',
     backgroundColor: theme.palette.error.main,
+  },
+  snackbarRefresh: {
+    color: 'white',
+    backgroundColor: theme.palette.background.default,
   },
   usaMap: {
     backgroundColor: "grey",
@@ -192,6 +204,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function App() {
+  const { isUpdateAvailable, updateAssets} = useServiceWorker();
   const history = useHistory();
   const { pathname = " " } = useLocation();
   const [myState, setMyState] = useState("");
@@ -316,7 +329,6 @@ function App() {
         const [place] = data;
         setCountyStats({ ...place, name: removeDouble(place.name) });
         console.log(`🔴 ${location}`);
-        console.dir(place);
         goToLevel("county");
         setLoadingZip(false);
         setFips("");
@@ -452,6 +464,7 @@ function App() {
           active_trend2: diffPercent(d.active, d.active_trend2),
           active_trend7: diffPercent(d.active, d.active_trend7),
           active_trend30: diffPercent(d.active, d.active_trend30),
+          active_trend60: diffPercent(d.active, d.active_trend60),
           active_trend90: diffPercent(d.active, d.active_trend90),
         });
       }, undefined);
@@ -464,7 +477,6 @@ function App() {
 
   const handleLocationChange = (e, value, reason) => {
     console.log(`%c👍 ${reason}`, "color: pink");
-    console.dir(value);
     if (value) {
       createAndNavigate(value);
       // setLocation(value.zip);
@@ -513,7 +525,6 @@ function App() {
   };
 
   const createAndNavigate = (row) => {
-    console.dir(row);
     let url;
     if (!row.zip && row.fips) url = createFipsUrl(row.fips);
     else url = createUrl(row.zip, row.name);
@@ -660,6 +671,19 @@ function App() {
         />
       </Snackbar>
 
+      <Snackbar
+      open={isUpdateAvailable}
+      onClose={updateAssets}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <SnackbarContent
+          variant="elevation"
+          message='A new version of this app is ready.'
+          className={classes.snackbarRefresh}
+          action={<Button color="secondary" size="small" onClick={updateAssets}>REFRESH</Button>}
+        />
+      </Snackbar>
+
       <Container maxWidth={false}>
         <Grid container spacing={2} justify="space-between">
           <Grid item container xs={12} justify="center">
@@ -776,7 +800,7 @@ function App() {
               </Suspense>
             </ErrorBoundary>
           </Grid>
-          
+
           <Grid item xs={12}>
             <ErrorBoundary>
               <Suspense fallback={fallback}>

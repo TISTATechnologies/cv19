@@ -29,12 +29,16 @@ const format = (val) => {
 
 const percentage = (val) => {
   if (Number.isNaN(Number.parseFloat(val, 10))) return "--";
-  if (!val) return "--";
+  if (!val && val !== 0) return "--";
+  if (val === Infinity) return "N/A";
   return new Intl.NumberFormat("en", {
     style: "percent",
     maximumFractionDigits: 1,
   }).format(val);
 };
+
+const growOrShrink = (val) =>
+  val < Infinity ? (val <= 0 ? "shrink" : "growth") : "";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -122,28 +126,35 @@ const headers = [
     visible: true,
   },
   {
-    label: "2Day",
+    label: "2D",
     shortLabel: "2D",
     numeric: true,
     id: "active_trend2",
     visible: false,
   },
   {
-    label: "7Day",
+    label: "7D",
     shortLabel: "7D",
     numeric: true,
     id: "active_trend7",
     visible: false,
   },
   {
-    label: "1Mth",
+    label: "1M",
     shortLabel: "1M",
     numeric: true,
     id: "active_trend30",
     visible: false,
   },
   {
-    label: "3Mths",
+    label: "2M",
+    shortLabel: "2M",
+    numeric: true,
+    id: "active_trend60",
+    visible: false,
+  },
+  {
+    label: "3M",
     shortLabel: "3M",
     numeric: true,
     id: "active_trend90",
@@ -180,7 +191,6 @@ export default function SimpleTable({
 
   const handleRequestSort = (event, property) => {
     const shouldSetDesc = orderBy !== property || order === "asc";
-    console.log(shouldSetDesc);
     setOrder(shouldSetDesc ? "desc" : "asc");
     setOrderBy(property);
   };
@@ -194,11 +204,19 @@ export default function SimpleTable({
     activeRatio: Math.ceil((d.active / d.population) * 1e5),
   }));
 
+  const shouldShow = (val) => {
+    if (!val) return false;
+    if (Number.isNaN(val)) return false;
+    if (val === Infinity) return false;
+    return true;
+  }
+
   rows.forEach((r) => {
-    if (r.active_trend2) headers[4].visible = true;
-    if (r.active_trend7) headers[5].visible = true;
-    if (r.active_trend30) headers[6].visible = true;
-    if (r.active_trend90) headers[7].visible = true;
+    if (shouldShow(r.active_trend2) ) headers[4].visible = true;
+    if (shouldShow(r.active_trend7) ) headers[5].visible = true;
+    if (shouldShow(r.active_trend30) ) headers[6].visible = true;
+    if (shouldShow(r.active_trend60) ) headers[7].visible = true;
+    if (shouldShow(r.active_trend90) ) headers[8].visible = true;
   });
 
   return (
@@ -300,13 +318,7 @@ export default function SimpleTable({
                   {headers[4].visible ? (
                     <TableCell
                       align="right"
-                      className={
-                        row.active_trend2
-                          ? row.active_trend2 < 0
-                            ? classes.shrink
-                            : classes.growth
-                          : ""
-                      }
+                      className={classes[growOrShrink(row.active_trend2)]}
                     >
                       {`${percentage(row.active_trend2)}`}
                     </TableCell>
@@ -314,13 +326,7 @@ export default function SimpleTable({
                   {headers[5].visible ? (
                     <TableCell
                       align="right"
-                      className={
-                        row.active_trend7
-                          ? row.active_trend7 < 0
-                            ? classes.shrink
-                            : classes.growth
-                          : ""
-                      }
+                      className={classes[growOrShrink(row.active_trend7)]}
                     >
                       {`${percentage(row.active_trend7)}`}
                     </TableCell>
@@ -328,13 +334,7 @@ export default function SimpleTable({
                   {headers[6].visible ? (
                     <TableCell
                       align="right"
-                      className={
-                        row.active_trend30
-                          ? row.active_trend30 < 0
-                            ? classes.shrink
-                            : classes.growth
-                          : ""
-                      }
+                      className={classes[growOrShrink(row.active_trend30)]}
                     >
                       {`${percentage(row.active_trend30)}`}
                     </TableCell>
@@ -342,13 +342,15 @@ export default function SimpleTable({
                   {headers[7].visible ? (
                     <TableCell
                       align="right"
-                      className={
-                        row.active_trend90
-                          ? row.active_trend90 < 0
-                            ? classes.shrink
-                            : classes.growth
-                          : ""
-                      }
+                      className={classes[growOrShrink(row.active_trend60)]}
+                    >
+                      {`${percentage(row.active_trend60)}`}
+                    </TableCell>
+                  ) : null}
+                  {headers[8].visible ? (
+                    <TableCell
+                      align="right"
+                      className={classes[growOrShrink(row.active_trend90)]}
                     >
                       {`${percentage(row.active_trend90)}`}
                     </TableCell>
