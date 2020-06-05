@@ -4,15 +4,15 @@ import os
 from pathlib import Path
 from cv19lib.utils import logger
 
-from .covid_data import TrendData
+from .covid_data import HistoryData
 
-log = logger.get_logger('trend')
+log = logger.get_logger('history')
 
 
 def run(day, output_dir):
-    log.info('Start export trend data...')
+    log.info('Start export history data...')
 
     log.info(f'Output directory: {output_dir}')
-    TrendData(output_dir).run(day)
-    log.info('End export daily data')
+    HistoryData(output_dir).run(day)
+    log.info('End export history data')
     return True

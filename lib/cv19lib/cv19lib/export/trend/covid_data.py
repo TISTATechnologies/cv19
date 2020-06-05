@@ -1,6 +1,6 @@
-from ..base import Exporter
 from cv19lib.utils import logger
 from cv19lib.utils.helper import Converter, DateTimeHelper, DatabaseContext
+from ..base import Exporter
 
 log = logger.get_logger(__file__)
 
@@ -19,10 +19,10 @@ class TrendData(Exporter):
             #  geo_lat, geo_long, note, date, datetime, updated, source_updated, source_location,
             #  country_name, state_name, location_name, location_type) = row
             (country_id, state_id, fips, population,
-                confirmed, deaths, recovered, active,
-                geo_lat, geo_long,
-                note, date, datetime, updated, _, _,
-                _, _, location_name, location_type) = row
+             confirmed, deaths, recovered, active,
+             geo_lat, geo_long,
+             note, date, datetime, updated, _, _,
+             _, _, location_name, location_type) = row
             item = {'country_id': country_id}
             if state_id:
                 item['state_id'] = state_id

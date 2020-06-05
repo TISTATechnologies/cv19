@@ -1,6 +1,6 @@
-from ..base import Exporter
 from cv19lib.utils import logger
 from cv19lib.collector import ENGINES
+from ..base import Exporter
 
 log = logger.get_logger(__file__)
 

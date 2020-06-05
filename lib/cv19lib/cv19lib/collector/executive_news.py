@@ -42,7 +42,9 @@ def run(args=None):
                 link = atags.get('href')
                 order = atags.text
                 state_order = unidecode.unidecode(order).strip('*').strip()
-                add_on = ['Masks', 'Utility', 'Late Fees', 'Eviction', 'Travel', 'Restaurant', 'Easing', 'Reopening', 'Phase', 'State of Emergency declared', 'Face Covering', 'Stay at Home Order', 'Quarantine', 'Mortgage Payment']
+                add_on = ['Masks', 'Utility', 'Late Fees', 'Eviction', 'Travel', 'Restaurant', 'Easing', 'Reopening',
+                          'Phase', 'State of Emergency declared', 'Face Covering', 'Stay at Home Order', 'Quarantine',
+                          'Mortgage Payment']
                 if any(x in state_order for x in add_on):
                     try:
                         sql = ''.join(['covid_info_link ', '(country_id,state_id,fips,note,url) ',

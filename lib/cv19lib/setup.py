@@ -65,7 +65,8 @@ setup(
         'dev': [                        # Packages for development only.
             'pytest',                   # To install it you can use a command:
             'pylint-quotes',            # $ pip install -e .[dev]
-            'pylint-unittest'
+            'pylint-unittest',
+            'pylint-fail-under'
         ]
     },
     classifiers=[

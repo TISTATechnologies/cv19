@@ -27,6 +27,7 @@ disable=missing-docstring,
         expression-not-assigned,
         too-many-locals,
         too-many-statements,
+        f-string-without-interpolation,
         R0801,
 
 

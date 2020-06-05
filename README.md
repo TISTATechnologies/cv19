@@ -55,9 +55,11 @@ All Web server which are hosting Covid-19 Tracker Web Aplplication are hosted on
 1. Python 3.8+
 1. Python packages:
      * ```pip3 install pyjwt --user```
-     * ```pip install psycopg2 --user``` or ```sudo yum/apt install python3-psycopg2```
-     * ```pip install python-dotenv --user```
-     * ```pip install requests --user```
+     * ```pip3 install psycopg2 --user``` or ```pip3 install psycopg2-binary --user``` or ```sudo yum/apt install python3-psycopg2```
+     * ```pip3 install python-dotenv --user```
+     * ```pip3 install requests --user```
+     * ```pip3 install unidecode --user```
+     * ```pip3 install bs4 --user```
 1. awscli
 
 ## Release
@@ -98,14 +100,20 @@ git push origin <new bersion>           # example: git push origin 1.5.0
 See [Configuration](#configuration) section before manuall deploy.
 
 ```bash
-cd <project directory>
-./scripts/_build-and-deploy-webapp.sh
+cd <project directory>/webapp
+npm install && \
+npm run build && \
+yes | npm run deploy
 ```
 This script will install all requirements packages for WebApp, build React application and deploy it to the S3 bucket.
 
 You can specify a configuration and call this script:
 ```
-CV19_ENV=dev ./scripts/_build-and-deploy-webapp.sh
+export CV19_ENV=dev
+cd <project directory>/webapp
+npm install && \
+npm run build && \
+yes | npm run deploy
 ```
 
 ## Development
@@ -123,10 +131,10 @@ git clone ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/cv19
 Code structure:
 * ```data``` - contains scripts and tools to create/update Postgresql database
     - ```covid-database``` - sql script to initialize and update database
-    - ```datasets``` - scripts, notes how to create static data for database: states, countries, counties, population, and etc.
-    - ```schemaspy``` - tool to generate database documentation
+* ```lib```     - 
 * ```scripts``` - devops and helper scripts for project
-* ```services``` - contains code to download/analyze/stora data
+* ```tools```
+    - ```schemaspy``` - tool to generate database documentation
 * ```webapp``` - source code of a Web Application based on React
 
 ### Configuration
@@ -171,7 +179,10 @@ Use a command ```./scripts/upload-covid-data-to-s3-bucket.sh``` to deploy all fi
 
 ## Notes
 
-### Collect all data for 90 days
+
+### Useful/Helper scripts
+
+#### Collect all data for 90 days
 ```bash
 cd <project dir>
 for i in $(seq 90 -1 1); do
@@ -183,14 +194,23 @@ for i in $(seq 90 -1 1); do
     echo "==================================================================================="
     echo "|  PROCESSING   ${dt}                                                 |"
     echo "==================================================================================="
-    yes | ./scripts/start-pull-data-services.sh ${dt}
+    yes | ./scripts/start-pull-data-services.sh ${dt} || exit 1
 done
 ```
 
-### Export all data for 90 days
+#### Export all data for 90 days
 ```bash
 for i in $(seq 90 -1 1); do
     dt=$(date +"%Y-%m-%d" -d "-${i} days")
-    yes | ./scripts/start-export-data-services.sh ${dt}
+    yes | ./scripts/start-export-data-services.sh ${dt} || exit 1
 done
 ```
+
+#### Collect latest data and upload it to the S3 Bucket
+```bash
+rm  -rf ./build
+yes | ./scripts/start-pull-data-services.sh \
+&& yes | ./scripts/start-export-data-services.sh \
+&& yes | ./scripts/upload-covid-data-to-s3-bucket.sh
+```
+

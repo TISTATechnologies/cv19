@@ -2,50 +2,24 @@
 <head>
   <meta charset="UTF-8" />
   <title>Covid-19 data - TISTA</title>
-  <style>
-    body {
-      margin: 10px;
-      font-family: "ETmodules";
-      font-size: 16px;
-      font-weight: 800;
-      color: #333333;
-    }
-    h1 {
-      font-size: 200%;
-      color: #333399;
-      margin: 2em 0 0.5em;
-    }
-    h1:first-child {
-        margin-top: 0.5em;
-    }
-    h2 {
-      font-size: 150%;
-      color: #ff8000;
-    }
-    .center {
-      margin: auto;
-      width: 50%;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <section class="center">
     <h1>Get latest Covid-19 data</h1>
-    <h2>Covid-19 data on a country level</h2>
+    <h3>Covid-19 data on a country level</h3>
     <ul>
       <li><a href="/covid/v1/daily/latest/all-countries.json">/covid/v1/daily/latest/all-countries.json</a></li>
       <li>/covid/v1/daily/latest/&lt;country-id&gt;.json 
           (example: <a href="/covid/v1/daily/latest/it.json">/covid/v1/daily/latest/it.json</a>)</li>
     </ul>
-    <h2>Covid-19 data on a state level</h2>
+    <h3>Covid-19 data on a state level</h3>
     <ul>
       <li><a href="/covid/v1/daily/latest/us/all-states.json">/covid/v1/daily/latest/us/all-states.json</a></li>
       <li>/covid/v1/daily/latest/us/&lt;state-id&gt;.json 
           (example: <a href="/covid/v1/daily/latest/us/md.json">/covid/v1/daily/latest/us/md.json</a>)</li>
     </ul>
-    <h2>Covid-19 data on a county level</h2>
+    <h3>Covid-19 data on a county level</h3>
     <ul>
       <li><a href="/covid/v1/daily/latest/us/all-counties.json">/covid/v1/daily/latest/us/all-counties.json</a></li>
       <li>/covid/v1/daily/latest/us/&lt;state-id&gt;/all-counties.json 
@@ -55,7 +29,26 @@
     </ul>
 
     <h1>Get historical Covid-19 data</h1>
-    <p>To get a historical data you need:
+    <h2>A full hitorical data</h2>
+    <h3>Covid-19 historical data on a country level</h3>
+    <ul>
+      <li>/covid/v1/history/active/&lt;country-id&gt;.json 
+          (example: <a href="/covid/v1/history/active/it.json">/covid/v1/history/active/it.json</a>)</li>
+    </ul>
+    <h3>Covid-19 historical data on a state level</h3>
+    <ul>
+      <li>/covid/v1/history/active/us/&lt;state-id&gt;.json 
+          (example: <a href="/covid/v1/history/active/us/md.json">/covid/v1/history/active/us/md.json</a>)</li>
+    </ul>
+    <h3>Covid-19 historical data on a county level</h3>
+    <ul>
+      <li>/covid/v1/history/active/us/&lt;state-id&gt;/all-counties.json 
+          (example: <a href="/covid/v1/history/active/us/md/all-counties.json">/covid/v1/history/active/us/md/all-counties.json</a>)</li>
+      <li>/covid/v1/history/active/us/&lt;state-id&gt;/&lt;fips&gt;.json 
+          (example: <a href="/covid/v1/history/active/us/md/24031.json">/covid/v1/history/active/us/md/24031.json</a>)</li>
+    </ul>
+
+    <h2>Historical data on a specific day</h2>
     <ul>
       <li>Choose any url above</li>
       <li>Change <b>latest</b> to the specific date <b>YYYYMMDD</b></li>

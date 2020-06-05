@@ -8,7 +8,7 @@ from .covid_data import CovidDataExporter
 from .executive_news import ExecutiveOrdersExporter
 from .source import SourceExporter
 
-log = logger.get_logger('export')
+log = logger.get_logger('daily')
 
 
 def run(day, output_dir):

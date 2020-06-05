@@ -14,7 +14,7 @@ end_migration() {
 execute_sql_file() {
     echo "============================================================"
     echo ">>> Execute ${1} script..."
-    "${prg_dir}/scripts/psql.sh" -f "${1}" 2>&1 | grep -v "Load " | grep -v "Config: " || exit 1
+    "${prg_dir}/data/covid-database/psql.sh" -f "${1}" 2>&1 | grep -v "Load " | grep -v "Config: " || exit 1
 }
 
 process_sql_files_from_dir() {

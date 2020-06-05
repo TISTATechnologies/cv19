@@ -75,7 +75,7 @@ class DownladHelper:
 
 class ExcelHelper:
     def __init__(self):
-        import pandas                           # pylint: disable=C0415
+        import pandas                           # pylint: disable=C0415, E0401
         self.pandas = pandas
 
     def read_table_from_url(self, excel_file_url, sheet_name=0, columns=None):
@@ -97,7 +97,7 @@ class CsvHelper:
             yield row
 
     def read_stdin(self, delimiter=',', quotechar='"'):
-        log.debug(f'Read CSV data from STDIN')
+        log.debug('Read CSV data from STDIN')
         yield from self._read_file_stream(sys.stdin, delimiter, quotechar)
 
     def read_csv_file(self, file_name: Path, delimiter=',', quotechar='"'):
@@ -166,7 +166,7 @@ class DatabaseContext:
         return self.cursor.rowcount
 
     def select(self, sql, values=None):
-        self.execute('SELECT' + sql, values or [])
+        self.execute('SELECT ' + sql, values or [])
         return self.cursor.fetchall()
 
     def execute(self, sql, values=None):

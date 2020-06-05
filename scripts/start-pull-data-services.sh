@@ -48,5 +48,5 @@ title "Pull data from the JHU dataset" && \
 python3 cv19lib collect jhu $@ && \
 cd - >/dev/null && \
 title "Refresh data in the database" && \
-yes yes | ./scripts/_migrate_database.sh refresh-data && \
+yes yes | ./data/covid-database/migrate-db.sh refresh-data && \
 echo "Success"

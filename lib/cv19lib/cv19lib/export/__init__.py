@@ -5,6 +5,7 @@ from pathlib import Path
 from ..utils import logger
 from ..utils.helper import DateTimeHelper
 from . import daily
+from . import history
 from . import trend
 
 log = logger.get_logger('export')
@@ -12,7 +13,8 @@ log = logger.get_logger('export')
 ENGINES = {
     'daily': [daily],
     'trend': [trend],
-    'all': [daily, trend]
+    'history': [history],
+    'all': [daily, trend, history]
 }
 
 
