@@ -79,7 +79,7 @@ export async function fetchFipsFromZip(query) {
 export async function fetchDataFromFips(fips) {
   const stateCode = fips.slice(0, 2);
   const state = stateFips.find((x) => x[2] === stateCode);
-  if (!state) return {data:[]};
+  if (!state) return { data: [] };
   const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(
     `${covid}daily/latest/us/${stateAbbr}/${fips}.json`
@@ -141,4 +141,21 @@ export async function fetchEmployeeData() {
     return { data };
   }
   return { data: null };
+}
+
+export async function fetchHistoric(fips) {
+  let response;
+  if (!fips) {
+    response = await fetchWithHeader(`${covid}history/active/us.json`);
+  } else {
+    const stateCode = fips.slice(0, 2);
+    const state = stateFips.find((x) => x[2] === stateCode);
+    const stateAbbr = state[1].toLowerCase();
+    response = await fetchWithHeader(
+      `${covid}history/active/us/${stateAbbr}/${fips}.json`
+    );
+  }
+  if (!response) return { error: "problem" };
+  const data = await response.json();
+  return { data };
 }

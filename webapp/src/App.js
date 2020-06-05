@@ -18,8 +18,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Hidden from "@material-ui/core/Hidden";
-import Button from '@material-ui/core/Button';
-
+import Button from "@material-ui/core/Button";
 
 import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
@@ -46,10 +45,9 @@ import {
   fetchStateHeadlines,
   fetchDataSources,
   fetchFipsFromZip,
+  fetchHistoric,
 } from "./util/fetch";
-import {
-  useServiceWorker,
-} from "./util/useServiceWorker";
+import { useServiceWorker } from "./util/useServiceWorker";
 
 import "./App.css";
 
@@ -62,6 +60,7 @@ const UsaMap = React.lazy(() => import("./Panels/UsaMap"));
 const Feed = React.lazy(() => import("./Panels/Feed"));
 const LocalStatsTable = React.lazy(() => import("./Panels/LocalStatsTable"));
 const LocationsTable = React.lazy(() => import("./Panels/LocationsTable"));
+const HistoricRates = React.lazy(() => import("./Panels/HistoricRates"));
 
 const gtag =
   window.gtag ||
@@ -73,7 +72,6 @@ const emptyObject = {};
 const emptyArray = [];
 
 function diffPercent(today, delta) {
-  console.log(`%c${delta}`, 'color: violet');
   if (today - delta === 0) return Infinity;
   return delta / (today - delta);
 }
@@ -130,11 +128,11 @@ const useStyles = makeStyles((theme) => ({
     cursor: "pointer",
   },
   snackbar: {
-    color: 'white',
+    color: "white",
     backgroundColor: theme.palette.error.main,
   },
   snackbarRefresh: {
-    color: 'white',
+    color: "white",
     backgroundColor: theme.palette.background.default,
   },
   usaMap: {
@@ -204,7 +202,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function App() {
-  const { isUpdateAvailable, updateAssets} = useServiceWorker();
+  const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const history = useHistory();
   const { pathname = " " } = useLocation();
   const [myState, setMyState] = useState("");
@@ -233,6 +231,7 @@ function App() {
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
+  const [historic, setHistoric] = useState({active: []})
   const geoLocation = useGeolocation();
   const [savedLocations, setSavedLocations] = useLocalStorage("MyLocations", [
     {
@@ -373,7 +372,8 @@ function App() {
   }, [location, goToLevel, history, fips, lastFipsSearch, stateStats]);
 
   useEffect(() => {
-    console.log(`%c${countyStats}`, "color: salmon");
+    console.log(`%c${countyStats.name}`, "color: salmon");
+    console.dir(countyStats);
   }, [countyStats]);
 
   useEffect(() => {
@@ -448,6 +448,25 @@ function App() {
     f();
   }, []);
 
+  // Historic
+  useEffect(() => {
+    const f = async () => {
+      console.log(`%cFetching historic`, "color: cyan");
+      const target = level === "usa" ? undefined : countyStats.fips
+      const { data, error } = await fetchHistoric(target);
+      if (data && data.message) {
+        setErrorMessage(data.message);
+      } else if (!error) {
+        setHistoric(data);
+      } else {
+        setErrorMessage(error);
+      }
+    };
+    f();
+  }, [countyStats, level]);
+
+
+  // My Counties
   useEffect(() => {
     const f = async () => {
       console.log(`%cFetching my locations`, "color: yellow");
@@ -672,15 +691,19 @@ function App() {
       </Snackbar>
 
       <Snackbar
-      open={isUpdateAvailable}
-      onClose={updateAssets}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={isUpdateAvailable}
+        onClose={updateAssets}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <SnackbarContent
           variant="elevation"
-          message='A new version of this app is ready.'
+          message="A new version of this app is ready."
           className={classes.snackbarRefresh}
-          action={<Button color="secondary" size="small" onClick={updateAssets}>REFRESH</Button>}
+          action={
+            <Button color="secondary" size="small" onClick={updateAssets}>
+              REFRESH
+            </Button>
+          }
         />
       </Snackbar>
 
@@ -779,12 +802,22 @@ function App() {
             </Visible>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={6}>
-            <ErrorBoundary>
-              <Suspense fallback={fallback}>
-                <UsaMap data={level !== "usa" ? countyStats : emptyObject} />
-              </Suspense>
-            </ErrorBoundary>
+          <Grid item container xs={12} md={6} spacing={2}>
+            <Grid item xs={12} >
+              <ErrorBoundary>
+                <Suspense fallback={fallback}>
+                  <UsaMap data={level !== "usa" ? countyStats : emptyObject} />
+                </Suspense>
+              </ErrorBoundary>
+            </Grid>
+
+            <Grid item xs={12} >
+              <ErrorBoundary>
+                <Suspense fallback={fallback}>
+                  <HistoricRates level={level} county={countyStats} historic={historic}/>
+                </Suspense>
+              </ErrorBoundary>
+            </Grid>
           </Grid>
 
           <Grid item xs={12}>

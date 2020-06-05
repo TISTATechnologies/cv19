@@ -94,6 +94,15 @@ const useStyles = makeStyles((theme) => ({
   shortLabel: {
     fontSize: "0.7em",
   },
+  guide: {
+    display: "flex",
+    textAlign: "center",
+    width: "100%",
+    padding: theme.spacing(0, 1),
+    alignContent: "space-between",
+    fontSize: "0.8rem",
+    backgroundColor: "#333",
+  },
 }));
 
 const headers = [
@@ -106,14 +115,14 @@ const headers = [
   },
   {
     label: "Confirmed",
-    shortLabel: "Con",
+    shortLabel: "Cnf",
     numeric: true,
     id: "confirmed",
     visible: true,
   },
   {
     label: "Deaths",
-    shortLabel: "Dea",
+    shortLabel: "Dth",
     numeric: true,
     id: "deaths",
     visible: true,
@@ -161,8 +170,8 @@ const headers = [
     visible: false,
   },
   {
-    label: "Active/ 100k",
-    shortLabel: "A/100",
+    label: "Active/100K",
+    shortLabel: "A/100K",
     numeric: true,
     id: "activeRatio",
     visible: true,
@@ -209,14 +218,14 @@ export default function SimpleTable({
     if (Number.isNaN(val)) return false;
     if (val === Infinity) return false;
     return true;
-  }
+  };
 
   rows.forEach((r) => {
-    if (shouldShow(r.active_trend2) ) headers[4].visible = true;
-    if (shouldShow(r.active_trend7) ) headers[5].visible = true;
-    if (shouldShow(r.active_trend30) ) headers[6].visible = true;
-    if (shouldShow(r.active_trend60) ) headers[7].visible = true;
-    if (shouldShow(r.active_trend90) ) headers[8].visible = true;
+    if (shouldShow(r.active_trend2)) headers[4].visible = true;
+    if (shouldShow(r.active_trend7)) headers[5].visible = true;
+    if (shouldShow(r.active_trend30)) headers[6].visible = true;
+    if (shouldShow(r.active_trend60)) headers[7].visible = true;
+    if (shouldShow(r.active_trend90)) headers[8].visible = true;
   });
 
   return (
@@ -376,6 +385,17 @@ export default function SimpleTable({
               ))}
             </TableBody>
           </Table>
+          <Hidden mdUp>
+            <div className={classes.guide}>
+              {headers.map((a) =>
+                a.shortLabel !== a.label ? (
+                  <div
+                    style={{ flex: "1" }}
+                  >{`${a.shortLabel}: ${a.label} `}</div>
+                ) : null
+              )}
+            </div>
+          </Hidden>
         </TableContainer>
       </CardContent>
     </Card>

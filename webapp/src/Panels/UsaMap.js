@@ -54,7 +54,7 @@ const UsaMap = ({ data }) => {
       console.log(`%c Ready Map`, "color: lime");
 
       const width = sectionEl.current.clientWidth || 200;
-      const height = width * (5 / 9);
+      const height = width * (1 / 2);
       drawMap(width, height, data, heat, myMap);
     };
     return getMapReady;
@@ -96,42 +96,45 @@ const UsaMap = ({ data }) => {
     setMyMap(target.value);
   };
 
+  const action = (
+    <FormControl>
+      <RadioGroup
+        row
+        aria-label="map selection"
+        name="map"
+        value={myMap}
+        onChange={handleRadioChange}
+      >
+        <FormControlLabel
+          value="confirmed"
+          control={<Radio />}
+          label={mapNames.confirmed.short}
+        />
+        <FormControlLabel
+          value="ratio"
+          control={<Radio />}
+          label={mapNames.ratio.short}
+        />
+        {associateView ? (
+          <FormControlLabel
+            value="associateImpact"
+            control={<Radio />}
+            label={mapNames.associateImpact.short}
+          />
+        ) : null}
+        <FormControlLabel
+          value="aid"
+          control={<Radio />}
+          label={mapNames.aid.short}
+        />
+      </RadioGroup>
+    </FormControl>
+  );
+
   return (
     <Card variant="outlined">
-      <CardHeader title={`${mapNames[myMap].long}`} />
+      <CardHeader title={`${mapNames[myMap].long}`} subheader={action} />
       <CardContent>
-        <FormControl>
-          <RadioGroup
-            row
-            aria-label="map selection"
-            name="map"
-            value={myMap}
-            onChange={handleRadioChange}
-          >
-            <FormControlLabel
-              value="confirmed"
-              control={<Radio />}
-              label={mapNames.confirmed.short}
-            />
-            <FormControlLabel
-              value="ratio"
-              control={<Radio />}
-              label={mapNames.ratio.short}
-            />
-            {associateView ? (
-              <FormControlLabel
-                value="associateImpact"
-                control={<Radio />}
-                label={mapNames.associateImpact.short}
-              />
-            ) : null}
-            <FormControlLabel
-              value="aid"
-              control={<Radio />}
-              label={mapNames.aid.short}
-            />
-          </RadioGroup>
-        </FormControl>
         <section
           ref={sectionEl}
           style={{ width: "100%", height: "100%" }}
