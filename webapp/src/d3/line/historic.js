@@ -8,7 +8,12 @@ let height;
 let legend;
 let mouseG;
 
-const findTrueProps = (obj) => Object.entries(obj);
+const findTrueProps = (obj) => [
+  ["trend2", obj.trend2],
+  ["trend7", obj.trend7],
+  ["trend30", obj.trend30],
+  ["value", obj.value],
+]
 
 const colorScale = d3.scaleOrdinal(d3.schemeSet2);
 
@@ -46,6 +51,7 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
   // only return rows with at least some of the data we're looking for.
   const data = historic.active
     ? historic.active
+        .filter((d) => d.date >= "2020-05-01") // temp cap date range
         .filter((d) =>
           params.reduce(
             (acc, [param, isOn]) =>
@@ -62,7 +68,10 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
   let scales = params.map(([param]) =>
     d3
       .scaleLinear()
-      .domain(d3.extent(data, (d) => +d[param]))
+      .domain([
+        0, d3.max(data, (d) => +d[param])
+      ])
+      // .domain(d3.extent(data, (d) => +d[param]))
       .range([h, 0])
   );
 

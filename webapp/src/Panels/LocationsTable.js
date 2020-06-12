@@ -100,8 +100,9 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     padding: theme.spacing(0, 1),
     alignContent: "space-between",
-    fontSize: "0.8rem",
+    fontSize: "0.7rem",
     backgroundColor: "#333",
+    borderRadius: '0 0 4px 4px',
   },
 }));
 
@@ -385,6 +386,7 @@ export default function SimpleTable({
               ))}
             </TableBody>
           </Table>
+          </TableContainer>
           <Hidden mdUp>
             <div className={classes.guide}>
               {headers.map((a) =>
@@ -396,7 +398,6 @@ export default function SimpleTable({
               )}
             </div>
           </Hidden>
-        </TableContainer>
       </CardContent>
     </Card>
   );

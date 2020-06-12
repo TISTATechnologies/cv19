@@ -98,7 +98,7 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
                 classes={{ root: classes.checkRoot3, checked: classes.checked }}
               />
             }
-            label="Cases"
+            label="Case Count"
           />
         </FormGroup>
       </FormControl>
