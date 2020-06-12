@@ -1,6 +1,0 @@
-/apache-jmeter
-apache-jmeter-*
-/output*
-/**/*.log
-*.log
-

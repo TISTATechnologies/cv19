@@ -75,10 +75,10 @@ def pull_data_by_day(day):
                 geo_lat = None
                 geo_long = None
                 source_location = None
-                last_update = Converter.parse_datetime(row['dateChecked'])
-                unique_bytes = f'{country_id}{state_id}{fips}{last_update}'.encode()
-                unique_key = f'{SOURCE_ID:04o}' + hashlib.md5(unique_bytes).hexdigest()
                 collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+                last_update = Converter.parse_datetime(row['dateChecked'])
+                unique_bytes = f'{country_id}{state_id}{fips}{collected_time}'.encode()
+                unique_key = f'{SOURCE_ID:04o}' + hashlib.md5(unique_bytes).hexdigest()
                 sql = ''.join([
                     'covid_data ',
                     '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
