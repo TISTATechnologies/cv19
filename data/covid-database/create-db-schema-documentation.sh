@@ -1,6 +1,9 @@
 #!/bin/sh
 # #############################################################################
-#
+# Helper script to create database documentation.
+# The result documentation will be inside the renerated static web pages.
+# Default output directory: <project directory>/build/db-schema
+# 
 # Requirements:
 # wget "https://github.com/schemaspy/schemaspy/releases/download/v6.1.0/schemaspy-6.1.0.jar"
 # wget "https://jdbc.postgresql.org/download/postgresql-9.4.1208.jre6.jar"

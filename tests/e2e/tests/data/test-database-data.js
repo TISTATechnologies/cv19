@@ -123,3 +123,24 @@ describe("Check Covid-19 data in database", () => {
         expect(res).toHaveLength(0);
     });
 });
+
+describe("THe Covid-19 data view will return one record forlocation", () => {
+    const day = config.testDate;
+    it(`One record for each of the counties on the ${day} day`, async () => {
+        const sql = 'SELECT country_id, state_id, source_id FROM covid_data_stat '
+            + 'WHERE country_id = $1 AND state_id IS NULL AND date = $2;'
+        for (let country_id of ['US', 'IT', 'RU', 'CN']) {
+            const res = await exec(sql, [country_id, day]);
+            expect(res).toHaveLength(1);
+        }
+    });
+
+    it(`One record for each of the US states on the ${day} day`, async () => {
+        const sql = 'SELECT country_id, state_id, source_id FROM covid_data_stat '
+            + 'WHERE country_id = \'US\' AND state_id = $1 AND fips LIKE \'000%\' AND date = $2;'
+        for (let state_id of ['MD', 'DC', 'MN', 'NY', 'CA', 'ID', 'TX']) {
+            const res = await exec(sql, [state_id, day]);
+            expect(res).toHaveLength(1);
+        }
+    });
+});

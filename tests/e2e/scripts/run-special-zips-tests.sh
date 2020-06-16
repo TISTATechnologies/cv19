@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# Usage: run-special-zips-tests.sh <all/webapp/api/static-api>
+# Usage: run-special-zips-tests.sh <all/webapp/api>
 # The 'all' level is ising by default
 ###############################################################################
 # US,20850,20147,22204,20001,20852"         # Common zips
@@ -30,8 +30,8 @@ echo "* Total zips : ${ZIPS}"
 echo ""
 export ZIPS=${ZIPS}
 case ${1-"all"} in
-    static-api) npm run test:static-api;;
+    static-api|api) npm run test:api;;
     webapp) npm run test:webapp;;
-    all) npm run test:static-api && npm run test:webapp;;
+    all) npm run test:api && npm run test:webapp;;
     *) echo "Error: unknown test type '${1}"; exit 1;;
 esac

@@ -1,8 +1,8 @@
 {
   "name": "e2e",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "author": "TISTA Science & Technology Corporation (https://github.com/TISTATechnologies)",
+  "license": "Apache-2.0",
   "directories": {
     "test": "tests"
   },
@@ -23,19 +23,13 @@
     "clean": "rm -rf ./output; rm -rf ./build",
     "clean:all": "npm run clean && rm -rf ./node_modules",
     "generate": "node ./helpers/db-helper.js",
-    "selenium:start-locally": "./node_modules/.bin/selenium-standalone install && ./node_modules/.bin/selenium-standalone start",
+    "selenium:install-locally": "./node_modules/.bin/selenium-standalone install",
+    "selenium:start-locally": "./node_modules/.bin/selenium-standalone start",
     "selenium:start-docker": "docker run -it --rm -p 4444:4444 --shm-size=1g --name selenium-chrome selenium/standalone-chrome",
-    "test:webapp-local": "codeceptjs run",
-    "test:webapp": "cross-env SELENIUM_SERVER=34.197.134.62:4444 codeceptjs run",
+    "test:webapp": "codeceptjs run",
     "test:api": "jest ./tests/data/test-static-api.js",
-    "test:static-api": "npm run test:static-api",
-    "test:database": "jest ./tests/data/test-database-data.js",
-    "test:special-zips": "bash ./scripts/run-special-zips-tests.sh",
-    "test:parallel": "bash ./scripts/run-multiple-tests.sh"
+    "test:database": "jest ./tests/data/test-database-data.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "",
   "jest": {
     "testMatch": [
       "<rootDir>/tests/data/test-*.js"

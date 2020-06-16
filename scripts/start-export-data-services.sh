@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+###############################################################################
+# Helper script, see 'show_help' method for details
+###############################################################################
 show_help() {
     echo "Start all services to export data from all sources."
     echo "Usage: $(basename "${0}") [--profile dev/demo/prod] [YYYY-MM-DD|latest]"
@@ -43,8 +46,8 @@ echo "Output: ${output_dir}"
 read -p "Continue to export data (y/N)? " opt
 if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
-cd lib/cv19lib
+cd data/services/cv19srv
 title "Export all covid data" && \
-python3 cv19lib export all "${period}" "${output_dir}" $@ && \
+python3 cv19srv export all "${period}" "${output_dir}" $@ && \
 cd - >/dev/null && \
 echo "Success"

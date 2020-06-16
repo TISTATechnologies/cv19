@@ -149,7 +149,7 @@ const loadSpecialLocations = async (count=0, shuffle=false) => {
 const generateDataJson = async () => {
     const queryDay = config.testDate;
     const usData = (await loadUSData(queryDay))[0];
-    log.info(`US = ${JSON.stringify(usData, null, 2)}`);
+    log.info(`US = ${JSON.stringify(usData)}`);
     const statesData = await loadStatesData(queryDay);
     log.info(`States = ${statesData.length}`);
     // log.debug(`States: ${JSON.stringify(statesData)}`)

@@ -2,6 +2,14 @@
 # #############################################################################
 ## Upload all data from the build/covid directory to the s3 bucket
 ## Usage: upload-covid-data-to-s3-bucket.sh <bucket name>
+## System environment:
+##   COVID_DATA_S3_BUCKET   - specify bucket name (default: data-dev.tistatech.com)
+##   VERSION                - version (default: 1)
+## 
+## Changing VERSION you can upload data to the separate directory, example:
+##   VERSION=1 will make the target diretory to s3://<bucket name>/covid/v1
+##   VERSION=5 will make the target diretory to s3://<bucket name>/covid/v5
+##   VERSION=1dev will make the target diretory to s3://<bucket name>/covid/v1dev
 # #############################################################################
 title() { echo "======================================================================"; echo "$@"; }
 

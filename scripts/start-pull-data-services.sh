@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+###############################################################################
+# Helper script, see 'show_help' method for details
+###############################################################################
 show_help() {
     echo "Start services to collect data from all sources."
     echo "Usage: $(basename "${0}") [--profile dev/demo/prod] [YYYY-MM-DD|all]"
@@ -39,13 +42,13 @@ title "Start all services to pull new data (profile=${profile:-".env"})"
 read -p "Continue to load data (y/N)? " opt
 if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
-cd lib/cv19lib
+cd data/services/cv19srv
 title "Pull executive news links" && \
-python3 cv19lib collect executive-news && \
-title "Pull data from the CovidTracking dataset" && \
-python3 cv19lib collect covidtracking $@ && \
+python3 cv19srv collect executive-news && \
 title "Pull data from the JHU dataset" && \
-python3 cv19lib collect jhu $@ && \
+python3 cv19srv collect jhu $@ && \
+title "Pull data from the CovidTracking dataset" && \
+python3 cv19srv collect covidtracking $@ && \
 cd - >/dev/null && \
 title "Refresh data in the database" && \
 yes yes | ./data/covid-database/migrate-db.sh refresh-data && \

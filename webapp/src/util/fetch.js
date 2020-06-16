@@ -1,10 +1,10 @@
 import stateFips from "../resources/stateFips";
-let api = process.env.REACT_APP_SERVER_URL;
-let common = process.env.REACT_APP_COMMON_DATA_URL;
-let covid = process.env.REACT_APP_COVID_DATA_URL;
+let api = process.env.REACT_APP_SERVER_URL || '';
+let common = process.env.REACT_APP_COMMON_DATA_URL || '';
+let covid = process.env.REACT_APP_COVID_DATA_URL || '';
 const jwtToken = process.env.REACT_APP_JWT_TOKEN || false;
 const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === "1";
-const stamp = process.env.REACT_APP_TIMESTAMP;
+const stamp = process.env.REACT_APP_TIMESTAMP || '';
 const fetch = window.fetch;
 const headers = new Headers();
 

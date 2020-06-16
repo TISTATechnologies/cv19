@@ -46,7 +46,7 @@ const useWebDriver = () => {
 const useNightmare = () => {
     return {
         Nightmare: {
-            'url': 'https://innovation-demo.tistatech.com',
+            'url': 'https://covid19.tistatech.com',
             'waitForTimeout': 10000,
             'show': !config.headless,
             "restart": true,

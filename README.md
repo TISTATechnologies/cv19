@@ -1,68 +1,142 @@
-# Tista COVID-19 tracker
+# Tista COVID-19 Tracker
 
+The repository contains all source code for the [Tista COVID-19 Tracker](https://covid19.tistatech.com) Web Application.
+
+
+* [Data sources](#data-sources)
 * [Environment](#environment)
-* [Requirements](#requirements)
-* [Release/Deploy](#release)
+* [Quick Start](#quick-start)
 * [Development](#development)
+    - [Requirements](#requirements)
     - [Configuration](#configuration)
+    - [Release/Deploy](#release)
     - [Collect data](#collect-data)
     - [Export data](#export-data)
 * [Testing](#testing)
-    - [e2e](#e2e-testing)
-    - [jmeter](#jmeter)
+    - [e2e testing](tests/e2e/README.md)
+    - [jmeter](tests/jmeter/README.md)
 * [Notes](#notes)
-    - [Setup JWT on Postgrest](#setup-jwt-on-postgrest)
+* [Links](#links)
+* [License](#license)
+
+
+## Data sources
+
+The list of the data sources what we are using for the application contains:
+* [Johns Hopkins University Center for Systems Science and Engineering](https://github.com/CSSEGISandData/COVID-19)
+* [The COVID Tracking Project](https://covidtracking.com/)
 
 ## Environment
 
 * **Postgresql** - stores all collected Covid-19 data (closed for public).
-* **AWS S3 buckets** - hosts a Covid-19 Tracker Web Application and all generated files with data.
+* **AWS S3 Buckets** - hosting a Covid-19 Tracker Web Application and all generated files with data.
 
-### Databases
+### Postgresql Database
 
-|           | PROD/DEMO                     | DEV                           |
-| --------- | ----------------------------- | ----------------------------- |
-| Host      | 18.232.212.26 (172.16.0.4)    | 18.232.212.26 (172.16.0.4)    |
-| Port      | 5433                          | 5433                          |
-| Database  | postgres                      | postgres                      |
-| Schema    | api                           | apidev                        |
-| Username  | authenticator                 | <developer specific>          |
+Data collector service is using Postgresql database to store all information.
+
+Data exporter service is using Postresql database to transform, analyze, and export Covid-19 data.
 
 ### AWS S3 Buckets
 
 #### data.tistatech.com
-* [common/v1](https://data.tistatech.com/common/v1/index.html) - all public Tista data (countries, states, counties, population, and etc. information)
-* [covid/v1](https://data.tistatech.com/covid/v1/index.html) - Covid-19 related data
+
+Data layer for Covid-19 Tracker application.
+
+* [https://data.tistatech.com/common/v1/](https://data.tistatech.com/common/v1/index.html) - all public data (countries, states, counties, population, and etc. information)
+* [https://data.tistatech.com/covid/v1/](https://data.tistatech.com/covid/v1/index.html) - Covid-19 related data
+
+
+#### covid19.tistatech.com
+
+Web application hosting.
+
+* covid19.tistatech.com -> s3://innovation.tistatech.com
+
 
 ### Covid-19 Tracker Application Web servers
 
-All Web server which are hosting Covid-19 Tracker Web Aplplication are hosted on AWS S3 buckets.
+All Web server for Covid-19 Tracker Web Application are hosted on AWS S3 buckets.
 
 * **https://covid19.tistatech.com** - Main public server.
-    - https://covid19-a.tistatech.com - server for blue/green deployment.
-    - https://covid19-b.tistatech.com - server for blue/green deployment.
-* **https://covid19-internal.tistatech.com** - Public server with a Tista employees specific functionality.
-    - https://covid19-internal-a.tistatech.com - server for blue/green deployment.
-    - https://covid19-internal-b.tistatech.com - server for blue/green deployment.
-* **https://covid19-demo.tistatech.com** - Demo server, allowd for DEV Team only (Updated manually fro the **develop** branch).
-* **https://covid19-dev.tistatech.com** - DEV server, allowd for DEV Team only (Updated automatically from the **develop** branch).
 
 
-## Requirements:
+## Quick Start
+
+The steps how to setup Tista COVID-19 Tracker Web Application:
+1. Get source code from the Github: https://github.com/TISTATechnologies/cv19.
+2. Create Postgresql database.
+3. Create AWS S3 bucket for data and setup static site hosting on it (ex: cv19data)
+4. Create AWS S3 bucket for Web Application and setup static site hosting on it  (ex: cv19web).
+5. Create configuration file ~/cv19.dev.conf, use a *.env.sample* file as an example
+6. Initialize a new database for *cv19* project: ```CV19_ENV=dev ./data/covid-database/migrate-db.sh init```
+7. Collect the data: ```CV19_ENV=dev ./scripts/start-pull-data-services.sh```
+8. To see historical and trends data we need to collect more data on each days:
+```bash
+cd <project dir>
+for i in $(seq 90 -1 1); do
+    dt=$(date +"%Y-%m-%d" -d "-${i} days")
+    yes | ./scripts/start-pull-data-services.sh ${dt} || exit 1
+done
+```
+9. Export collected data to the json files: ```CV19_ENV=dev ./scripts/start-export-data-services.sh```
+10. Upload all json files into the AWS S3 bucket with data: ```CV19_ENV=dev ./upload-covid-data-to-s3-bucket.sh```
+11. Now you should have latest Covid-19 data on your AWS S3 bucket: http://cv19data.s3-website.us-east-1.amazonaws.com/covid/v1/daily/latest/us/dc/11001.json
+12. Build a web application and deploy it to the S3 bucket:
+```
+export CV19_ENV=dev
+cd webapp
+npm install
+npm run build
+npm run deploy
+```
+13. Now you can open the Tista COVID-19 Tracker site: http://cv19web.s3-website.us-east-1.amazonaws.com
+
+## Development
+
+We are using company [github TISTATechnologies](https://github.com/TISTATechnologies/cv19) to store source code.
+
+Get source code:
+```bash
+git clone git@github.com:TISTATechnologies/cv19.git
+```
+
+### Requirements:
 
 1. Nodejs 12+
-1. Postgres Client 10+
+1. Postgresql Client 10+
 1. Python 3.8+
-1. Python packages:
-     * ```pip3 install pyjwt --user```
-     * ```pip3 install psycopg2 --user``` or ```pip3 install psycopg2-binary --user``` or ```sudo yum/apt install python3-psycopg2```
-     * ```pip3 install python-dotenv --user```
-     * ```pip3 install requests --user```
-     * ```pip3 install unidecode --user```
-     * ```pip3 install bs4 --user```
 1. awscli
 
-## Release
+### Architecture
+
+![Covid-19 Tracker application architecture](./cv19-app-architecture.png)
+
+### Code structure
+* ```data```                - data and service layer
+    - ```covid-database```      - sql script to initialize, update, and work with database
+    - ```services```            - services, scripts to collect, transform and export data
+* ```scripts```             - devops and helper scripts for the project
+* ```tests```               - tests for the project
+    - ```data```                - tests to validate data: database and exported static data
+    - ```e2e```                 - end-2-end tests for WebApp and for the exported data
+    - ```jmeter```              - jmeter tests for loadtesting
+* ```webapp```              - source code of a Web Application based on React
+
+### Configuration
+
+Before build and deploy the application, you need to specify configuration 
+using system environment variables or specify it inside a ```.env``` file  at the root project's level.
+
+Please look into the ```.env.sample``` for details.
+
+From other side you can create ```~/cv19.xxx.conf``` configuration file inside your home directory 
+and specify this configuration file with a system environment variable ```CV19_ENV=xxx```.
+
+*Note*: ```.env``` file has more priority than ~/cv19.xxx.conf file.
+
+
+### Release
 
 1. Freeze all future changes (new functionality or fixes) should be inside the **develop** branch.
 2. The **develop** branch should be at the top of the **master** branch
@@ -78,26 +152,23 @@ git push origin develop
 git co master
 git merge develop
 ```
-4. Push **master** branch to the remote
+4. Create new tag with the new version
+```bash
+git tag <new version>                   # example: git tag 1.5.0
+git push origin <new version>           # example: git push origin 1.5.0
+```
+5. Push **master** branch to the remote
 ```bash
 git push origin master
 ```
-5. Create new tag with the new version
-```bash
-git tag <new version>                   # example: git tag 1.5.0
-git push origin <new bersion>           # example: git push origin 1.5.0
-```
-6. Now you are redy to deploy a new release version to the Production.
+6. Now you are ready to deploy a new release version to the Production.
 
+*NOTE*: You must tag the new version release source code in the master branch before the build 
+because the WebApp build script is using git tag to generate the _version.json file.
 
-### Automatic deployment
+### Build/deploy Web Application manually
 
-* For Production use [CV19-Production](http://34.197.134.62:8085/browse/CV19PROD-CV19PROD) build pipeline.
-* For Dev/Demo use [CV19-Development](http://34.197.134.62:8085/browse/CV19-CV19) build pipeline.
-
-### Manual build/deploy Web Application
-
-See [Configuration](#configuration) section before manuall deploy.
+See [Configuration](#configuration) section before manual deploy.
 
 ```bash
 cd <project directory>/webapp
@@ -105,9 +176,9 @@ npm install && \
 npm run build && \
 yes | npm run deploy
 ```
-This script will install all requirements packages for WebApp, build React application and deploy it to the S3 bucket.
+This script will install all required packages for WebApp, build React application and deploy it to the S3 bucket.
 
-You can specify a configuration and call this script:
+You can specify a configuration file ~/cv19.dev.conf and call this script:
 ```
 export CV19_ENV=dev
 cd <project directory>/webapp
@@ -116,41 +187,10 @@ npm run build && \
 yes | npm run deploy
 ```
 
-## Development
-
-We are using [AWS Codecommit](https://aws.amazon.com/codecommit/) to store source code 
-([How to connect](https://docs.aws.amazon.com/codecommit/latest/userguide/how-to-connect.html)).
-
-> Use need to use AWS User Key ID insted of username (example: ACKA3FDXXSAFYXXX5J5Y).
-
-Get source code:
-```bash
-git clone ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/cv19
-```
-
-Code structure:
-* ```data``` - contains scripts and tools to create/update Postgresql database
-    - ```covid-database``` - sql script to initialize and update database
-* ```lib```     - 
-* ```scripts``` - devops and helper scripts for project
-* ```tools```
-    - ```schemaspy``` - tool to generate database documentation
-* ```webapp``` - source code of a Web Application based on React
-
-### Configuration
-
-Before build and deploy, you need to specify configuration using system environment variables or specify ```.env``` file 
-at the root project's level. 
-
-Please look into the ```.env.sample``` for details.
-
-We can create ```cv19.xxx.conf``` configuration file from the ```.env.sample``` and 
-after that this configuration file can be loaded with a system environment variable ```CV19_ENV=xxx```.
-
 ### Create database
 
 ```bash
-./scripts/_migrate_database.sh init
+./data/covid-database/migrate-db.sh init
 ```
 
 ### Collect data
@@ -165,20 +205,18 @@ after that this configuration file can be loaded with a system environment varia
 
 All exported data will be stored inside the ```./build/covid/``` directory.
 
-Use a command ```./scripts/upload-covid-data-to-s3-bucket.sh``` to deploy all files from ```./build/covid``` to the S3 Bucket.
+Use a command ```./scripts/upload-covid-data-to-s3-bucket.sh``` to deploy all data files from ```./build/covid``` to the S3 Bucket.
 
-**NOTE:** Don't forget to remove all data inside the ```./build/``` directory which you are not planning to upload itto the S3 Bucket.
+**NOTE:** Don't forget to remove all data inside the ```./build/``` directory which you are not planning to upload into the S3 Bucket.
 
 
 ## Testing
 
-### [e2e testing](e2e/README.md)
-
-### [jmeter](tools/jmeter/README.md)
+* [e2e testing](tests/e2e/README.md)
+* [jmeter](tests/jmeter/README.md)
 
 
 ## Notes
-
 
 ### Useful/Helper scripts
 
@@ -207,6 +245,8 @@ done
 ```
 
 #### Collect latest data and upload it to the S3 Bucket
+
+This script can be executed by scheduler every day at 6:00 am to collect and export all new data.
 ```bash
 rm  -rf ./build
 yes | ./scripts/start-pull-data-services.sh \
@@ -214,3 +254,32 @@ yes | ./scripts/start-pull-data-services.sh \
 && yes | ./scripts/upload-covid-data-to-s3-bucket.sh
 ```
 
+#### Test collected and exported data
+
+This script can be executed after the previous script to validate collected data.
+
+```bash
+cd tests/e2e
+npm install
+npm run generate
+npm run test:database
+npm run test:api
+```
+
+
+## Links
+
+### Data sources: Covid-19
+* https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
+* http://covidtracking.com/api
+* https://usafacts.org/visualizations/coronavirus-covid-19-spread-map/
+* https://github.com/nytimes/covid-19-data
+* https://covid-19.datasettes.com/ -> https://github.com/simonw/covid-19-datasette
+* https://coronavirus.jhu.edu/us-map
+* https://coronavirus.maryland.gov/
+
+
+## License
+
+The source code inside this repository are licensed under the [Apache 2.0 License](/LICENSE) and 
+the data content is licensed under the [Creative Commons Attribution-ShareAlike 4.0 License](https://creativecommons.org/licenses/by-sa/4.0/).

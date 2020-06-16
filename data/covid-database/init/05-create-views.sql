@@ -1,5 +1,12 @@
+/*
+The view is using to group all Covid19 data by locations and date.
+Inside each of the groups, only one top record will be chosen with the lowest source_id.
+We can have multiple record from different sources for each location:
+for example - two Covid-19 record for state Maryland from JHU (source_id = 1) and covidtracking (stource_id = 2)
+This view will show only one record from JHU.
+*/
 CREATE MATERIALIZED VIEW covid_data_stat AS
-SELECT DISTINCT
+SELECT DISTINCT ON (c.id, s.id, r.fips, cd.datetime::TIMESTAMP::DATE)
   c.id AS country_id,
   s.id as state_id,
   r.fips,
@@ -30,7 +37,8 @@ SELECT DISTINCT
     WHEN (r.type is null and cd.state_id is null) THEN 'country'
     WHEN (r.type is null and cd.state_id is not null) THEN 'state'
     ELSE LOWER(r.type)
-  END AS location_type
+  END AS location_type,
+  cd.source_id
 FROM country AS c
 LEFT JOIN region AS r ON r.country_id = c.id
 LEFT JOIN state AS s ON s.country_id = c.id
@@ -42,7 +50,7 @@ LEFT JOIN covid_data AS cd
     ON cd.country_id = c.id
     AND COALESCE(cd.state_id, 'NULL') = COALESCE(s.id, 'NULL')
     AND COALESCE(cd.fips, 'NULL') = COALESCE(r.fips, 'NULL')
-ORDER BY c.id, s.id, r.fips, cd.source_updated DESC;
+ORDER BY c.id, s.id, r.fips, cd.datetime::TIMESTAMP::DATE, cd.source_id, cd.source_updated DESC;
 
 
 CREATE VIEW covid_data_stat_slim AS
@@ -64,6 +72,9 @@ SELECT
   cdv.location_type
 FROM covid_data_stat AS cdv;
 
+/*
+The view is using to select only latest (by time) Covid-19 data for each locations
+*/
 CREATE MATERIALIZED VIEW covid_data_stat_latest AS
 SELECT
     cdv.country_id,

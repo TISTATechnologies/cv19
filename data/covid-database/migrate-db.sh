@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# #############################################################################
+# Helper script to run all sql scripts in order from the init or update directories
+# Usage: migrate-db <init|update|refresh-data|help>
+# #############################################################################
+
 start_migration() {
     cd "$(dirname "$0")/../.."
     prg_dir=${PWD}
@@ -56,6 +61,12 @@ case "${arg}" in
     update) start_migration && update_db && end_migration;;
     init|create) start_migration && init_new_db && end_migration ;;
     refresh-data) start_migration && refrest_data && end_migration;;
-    help|--help) echo "Usage: $(basename "${0}") <init|update|refresh-data>"; exit 1;;
+    help|--help)
+        echo "Usage: $(basename "${0}") <init|update|refresh-data>"
+        echo "Commands:"
+        echo "  init         - Initialize a new database (./init/*.sql)"
+        echo "  update       - Update existed database (./update/*.sql)"
+        echo "  refresh-data - Refresh all materialized view in database"
+        exit 1;;
     *) echo "Error: unknown '${arg}' command."; exit 1;;
 esac
