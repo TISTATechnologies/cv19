@@ -1,5 +1,5 @@
-import * as serviceWorker from "../serviceWorker";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import * as serviceWorker from '../serviceWorker';
 
 const ServiceWorkerContext = React.createContext();
 
@@ -22,8 +22,8 @@ export const ServiceWorkerProvider = ({ children }) => {
     // on all the open tabs of our application, so that we don't leave
     // any tab in an incosistent state
     if (waitingServiceWorker) {
-      waitingServiceWorker.addEventListener("statechange", (event) => {
-        if (event.target.state === "activated") {
+      waitingServiceWorker.addEventListener('statechange', (event) => {
+        if (event.target.state === 'activated') {
           window.location.reload();
         }
       });
@@ -37,11 +37,11 @@ export const ServiceWorkerProvider = ({ children }) => {
         if (waitingServiceWorker) {
           // We send the SKIP_WAITING message to tell the Service Worker
           // to update its cache and flush the old one
-          waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
+          waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
         }
       },
     }),
-    [isUpdateAvailable, waitingServiceWorker]
+    [isUpdateAvailable, waitingServiceWorker],
   );
 
   return (
@@ -52,6 +52,4 @@ export const ServiceWorkerProvider = ({ children }) => {
 };
 
 // With this React Hook we'll be able to access `isUpdateAvailable` and `updateAssets`
-export const useServiceWorker = () => {
-  return React.useContext(ServiceWorkerContext);
-};
+export const useServiceWorker = () => React.useContext(ServiceWorkerContext);

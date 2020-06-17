@@ -1,41 +1,34 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {
-  Suspense,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
-import { fade, makeStyles } from "@material-ui/core/styles";
-import useGeolocation from "react-hook-geolocation";
-import Grid from "@material-ui/core/Grid";
-import Container from "@material-ui/core/Container";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import MyLocationIcon from "@material-ui/icons/MyLocation";
-import CloseIcon from "@material-ui/icons/Close";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Hidden from "@material-ui/core/Hidden";
-import Button from "@material-ui/core/Button";
+  Suspense, useState, useEffect, useMemo, useCallback,
+} from 'react';
+import { fade, makeStyles } from '@material-ui/core/styles';
+import useGeolocation from 'react-hook-geolocation';
+import Grid from '@material-ui/core/Grid';
+import Container from '@material-ui/core/Container';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import MyLocationIcon from '@material-ui/icons/MyLocation';
+import Hidden from '@material-ui/core/Hidden';
 
-import IconButton from "@material-ui/core/IconButton";
-import Link from "@material-ui/core/Link";
-import Snackbar from "@material-ui/core/Snackbar";
-import SnackbarContent from "@material-ui/core/SnackbarContent";
-import LinearProgress from "@material-ui/core/LinearProgress";
-import { useLocation, useHistory } from "react-router-dom";
+import IconButton from '@material-ui/core/IconButton';
+import Link from '@material-ui/core/Link';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { useLocation, useHistory } from 'react-router-dom';
 
-import Visible from "./components/Visible";
-import ErrorBoundary from "./components/ErrorBoundary";
-import ZipInput from "./components/ZipInput";
+import Visible from './components/Visible';
+import ErrorBoundary from './components/ErrorBoundary';
+import ZipInput from './components/ZipInput';
+import Refresher from './components/Refresher';
 
-import TistaCares50 from "./resources/TISTA_Philanthropy_50.png";
-import TistaCares25 from "./resources/TISTA_Philanthropy_25.png";
+import TistaCares50 from './resources/TISTA_Philanthropy_50.png';
+import TistaCares25 from './resources/TISTA_Philanthropy_25.png';
 
-import { removeDouble } from "./util/strings";
-import useLocalStorage from "./util/useLocalStorage";
+import { removeDouble } from './util/strings';
+import useLocalStorage from './util/useLocalStorage';
 import {
   fetchDataFromFips,
   fetchTrendFromFips,
@@ -46,97 +39,55 @@ import {
   fetchDataSources,
   fetchFipsFromZip,
   fetchHistoric,
-} from "./util/fetch";
-import { useServiceWorker } from "./util/useServiceWorker";
+} from './util/fetch';
+import { diffPercent } from './util/math';
+import { createUrl, createFipsUrl, decodeUrl } from './util/url';
 
-import "./App.css";
+import './App.css';
 
-import defaultUsa from "./resources/defaultUsa.json";
-import defaultStates from "./resources/defaultStates.json";
+import Logo from './resources/tista-logo-1.png';
 
-import Logo from "./resources/tista-logo-1.png";
+const UsaMap = React.lazy(() => import('./Panels/UsaMap'));
+const Feed = React.lazy(() => import('./Panels/Feed'));
+const LocalStatsTable = React.lazy(() => import('./Panels/LocalStatsTable'));
+const LocationsTable = React.lazy(() => import('./Panels/LocationsTable'));
+const HistoricRates = React.lazy(() => import('./Panels/HistoricRates'));
+const CdcNotice = React.lazy(() => import('./components/CdcNotice'));
 
-const UsaMap = React.lazy(() => import("./Panels/UsaMap"));
-const Feed = React.lazy(() => import("./Panels/Feed"));
-const LocalStatsTable = React.lazy(() => import("./Panels/LocalStatsTable"));
-const LocationsTable = React.lazy(() => import("./Panels/LocationsTable"));
-const HistoricRates = React.lazy(() => import("./Panels/HistoricRates"));
-
-const gtag =
-  window.gtag ||
-  (([a, b, c, d, e, f]) => {
-    console.log("No Google Analytics Installed");
+const gtag = window.gtag
+  || (() => {
+    // console.log('No Google Analytics Installed');
   });
 const fallback = <LinearProgress />;
 const emptyObject = {};
 const emptyArray = [];
 
-function diffPercent(today, delta) {
-  if (today - delta === 0) return Infinity;
-  return delta / (today - delta);
-}
-function createUrl(zipCode, county) {
-  const head = zipCode ? `${zipCode}-` : "";
-  const tail = county
-    .split(/ |,/)
-    .filter((x) => x)
-    .join("-")
-    .toLowerCase();
-  return `${head}${tail}`;
-}
-
-function createFipsUrl(fips) {
-  if (!fips) return "";
-  return `fips-${fips}`;
-}
-
-async function decodeUrl(url) {
-  const [zip, firstword] = url.toLowerCase().split("-");
-  if (zip === "fips") return ["", firstword];
-  if (!Number.parseInt(zip)) return ["", ""];
-  const fipsList = await fetchFipsFromZip(zip);
-  if (fipsList) {
-    const matches = fipsList.filter((f) => f.zip === zip);
-    if (matches) {
-      const match = matches.find((f) =>
-        f.name.toLowerCase().includes(firstword)
-      );
-      if (match) return [zip, match.fips];
-      return [zip, matches[0].fips];
-    }
-  }
-  return ["", ""];
-}
-
 const useStyles = makeStyles((theme) => ({
   logo: {
-    [theme.breakpoints.down("xs")]: {
+    [theme.breakpoints.down('xs')]: {
       width: 100,
     },
   },
   localStatsGrid: {
-    [theme.breakpoints.down("sm")]: {
-      flexFlow: "column-reverse",
+    [theme.breakpoints.down('sm')]: {
+      flexFlow: 'column-reverse',
       // padding: '0 !important',
     },
   },
   progress: {
-    width: "100%",
-    position: "absolute",
+    width: '100%',
+    position: 'absolute',
   },
   clickMe: {
-    cursor: "pointer",
+    cursor: 'pointer',
+    verticalAlign: 'inherit',
   },
   snackbar: {
-    color: "white",
+    color: 'white',
     backgroundColor: theme.palette.error.main,
   },
-  snackbarRefresh: {
-    color: "white",
-    backgroundColor: theme.palette.background.default,
-  },
   usaMap: {
-    backgroundColor: "grey",
+    backgroundColor: 'grey',
   },
   noteCard: {
     backgroundColor: theme.palette.warning.dark,
@@ -152,49 +103,49 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     // flexGrow: 1,
-    display: "none",
-    fontSize: "1em",
-    textTransform: "uppercase",
-    marginLeft: "0.5em",
-    [theme.breakpoints.up("lg")]: {
-      fontSize: "2em",
+    display: 'none',
+    fontSize: '1em',
+    textTransform: 'uppercase',
+    marginLeft: '0.5em',
+    [theme.breakpoints.up('lg')]: {
+      fontSize: '2em',
     },
-    [theme.breakpoints.up("md")]: {
-      fontSize: "1.5em",
-      display: "block",
+    [theme.breakpoints.up('md')]: {
+      fontSize: '1.5em',
+      display: 'block',
     },
   },
   search: {
-    position: "relative",
+    position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
-    "&:hover": {
+    '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
     marginLeft: 0,
-    minWidth: "100px",
+    minWidth: '100px',
     flexGrow: 1,
-    [theme.breakpoints.up("sm")]: {
+    [theme.breakpoints.up('sm')]: {
       marginLeft: theme.spacing(4),
     },
   },
   searchIcon: {
     padding: theme.spacing(0, 2),
-    height: "100%",
-    position: "absolute",
-    pointerEvents: "none",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputRoot: {
-    color: "inherit",
+    color: 'inherit',
     flexGrow: 1,
   },
   caresLink: {
     padding: theme.spacing(2),
-    color: "white",
-    [theme.breakpoints.up("sm")]: {
+    color: 'white',
+    [theme.breakpoints.up('sm')]: {
       // position: "absolute",
       // right: theme.spacing(2),
     },
@@ -202,82 +153,80 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function App() {
-  const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const history = useHistory();
-  const { pathname = " " } = useLocation();
-  const [myState, setMyState] = useState("");
-  const [myStateName, setMyStateName] = useState("");
+  const { pathname = ' ' } = useLocation();
+  const [myState, setMyState] = useState('');
+  const [myStateName, setMyStateName] = useState('');
   const [loadingZip, setLoadingZip] = useState(false);
   const [headlines, setHeadlines] = useState(emptyArray);
-  const [level, setLevel] = useState("usa");
-  const [localUsa, setLocalUsa] = useLocalStorage("usaStats", defaultUsa);
+  const [level, setLevel] = useState('usa');
+  const [localUsa, setLocalUsa] = useLocalStorage('usaStats', [emptyObject]);
   const [usaStats, setUsaStats] = useState(localUsa);
-  const [localState, setLocalState] = useLocalStorage(
-    "stateStats",
-    defaultStates
-  );
+  const [localState, setLocalState] = useLocalStorage('stateStats', [emptyObject]);
   const [stateStats, setStateStats] = useState(localState);
   const [countyStats, setCountyStats] = useState([emptyObject]);
-  const [location, setLocation] = useState("");
-  const [fips, setFips] = useState("");
-  const [lastFipsSearch, setLastFipsSearch] = useState("");
+  const [location, setLocation] = useState('');
+  const [fips, setFips] = useState('');
+  const [lastFipsSearch, setLastFipsSearch] = useState('');
   const [updateLocation, setUpdateLocation] = useState(false);
-  const [canUseGeo, setCanUseGeo] = useLocalStorage("canUseGeo", false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage(
-    "showCDC",
-    true
-  );
-  const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
+  const [canUseGeo, setCanUseGeo] = useLocalStorage('canUseGeo', false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
-  const [historic, setHistoric] = useState({active: []})
+  const [historic, setHistoric] = useState({ active: [] });
   const geoLocation = useGeolocation();
-  const [savedLocations, setSavedLocations] = useLocalStorage("MyLocations", [
+  const [savedLocations, setSavedLocations] = useLocalStorage('MyLocations', [
     {
-      name: "Montogomery County, MD",
-      fips: "24031",
-      zip: "20850",
+      name: 'Montogomery County, MD',
+      fips: '24031',
+      zip: '20850',
     },
     {
-      name: "Fairfax County, VA",
-      fips: "51059",
-      zip: "22003",
+      name: 'Fairfax County, VA',
+      fips: '51059',
+      zip: '22003',
     },
     {
-      name: "District of Columbia, DC",
-      fips: "11001",
-      zip: "20202",
+      name: 'District of Columbia, DC',
+      fips: '11001',
+      zip: '20202',
     },
   ]);
   const [myLocations, setMyLocations] = useState(savedLocations);
+  const [localNoticeOpen] = useLocalStorage('showCDC', true);
 
   const goToLevel = useCallback(
     (lvl) => {
       setLevel(lvl);
-      if (lvl === "usa") {
-        setMyState("");
-        history.push("");
+      if (lvl === 'usa') {
+        setMyState('');
+        history.push('');
       }
     },
-    [history]
+    [history],
   );
 
-  useEffect(() => {
-    setLocalNoticeOpen(noticeOpen);
-  }, [noticeOpen, setLocalNoticeOpen]);
+  const createAndNavigate = useCallback(
+    (row) => {
+      let url;
+      if (!row.zip && row.fips) url = createFipsUrl(row.fips);
+      else url = createUrl(row.zip, row.name);
+      if (url) history.push(url);
+    },
+    [history],
+  );
 
   // USA
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching USA`, "color: cyan");
+      // console.log('%cFetching USA', 'color: cyan');
       const { data, error } = await fetchDataFromUSA();
-      if (data & data.message) {
+      if (data && data.message) {
         setErrorMessage(error);
       } else if (data && data.length) {
         setUsaStats(data);
       } else {
-        setErrorMessage("Could not load USA data.");
+        setErrorMessage('Could not load USA data.');
       }
       if (error) {
         setErrorMessage(error);
@@ -293,15 +242,15 @@ function App() {
   // STATE
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching STATE`, "color: cyan");
+      // console.log('%cFetching STATE', 'color: cyan');
       const { data, error } = await fetchDataFromState();
-      if (data & data.message) {
+      if (data && data.message) {
         setErrorMessage(error);
       }
       if (data && data.length) {
         setStateStats(data);
       } else {
-        setErrorMessage("Could not load state data.");
+        setErrorMessage('Could not load state data.');
       }
       if (error) {
         setErrorMessage(error);
@@ -317,7 +266,7 @@ function App() {
   // COUNTY
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching COUNTY`, "color: cyan");
+      // console.log('%cFetching COUNTY', 'color: cyan');
       const { data, error } = await fetchDataFromFips(fips);
       if (error) {
         setErrorMessage(error);
@@ -327,36 +276,32 @@ function App() {
       } else if (data && data.length) {
         const [place] = data;
         setCountyStats({ ...place, name: removeDouble(place.name) });
-        console.log(`🔴 ${location}`);
-        goToLevel("county");
+        // console.log(`🔴 ${location}`);
+        goToLevel('county');
         setLoadingZip(false);
-        setFips("");
+        setFips('');
         setMyState(place.state_id);
-        setMyStateName(
-          stateStats.find((x) => x.state_id === place.state_id).name
-        );
-        gtag("event", "search", {
+        setMyStateName(stateStats.find((x) => x.state_id === place.state_id).name);
+        gtag('event', 'search', {
           event_label: `Zip Search Successful ${location}`,
-          event_callback: () => console.log("GTAG sent"),
         });
       } else {
         setErrorMessage(`Could not load county data for FIPS ${fips}.`);
-        gtag("event", "search", {
+        gtag('event', 'search', {
           event_label: `Zip Search Failed ${location}`,
-          event_callback: () => console.log("GTAG sent"),
         });
-        setFips("");
-        setLocation("");
+        setFips('');
+        setLocation('');
         setLoadingZip(false);
       }
     };
     const g = async () => {
       const search = location.slice(0, 3);
       if (lastFipsSearch !== search) {
-        console.log(`%cFetching options for ${location}`, "color: teal");
+        // console.log(`%cFetching options for ${location}`, 'color: teal');
         const data = await fetchFipsFromZip(location);
         if (data && data.length) {
-          console.log(`%c${data[0].zip}`, "color: darkgrey");
+          // console.log(`%c${data[0].zip}`, 'color: darkgrey');
           setZipOptions(data);
         }
         setLastFipsSearch(search);
@@ -372,22 +317,22 @@ function App() {
   }, [location, goToLevel, history, fips, lastFipsSearch, stateStats]);
 
   useEffect(() => {
-    console.log(`%c${countyStats.name}`, "color: salmon");
-    console.dir(countyStats);
+    // console.log(`%c${countyStats.name}`, 'color: salmon');
+    // console.dir(countyStats);
   }, [countyStats]);
 
   useEffect(() => {
     const f = async () => {
       const pathLocation = pathname.slice(1);
-      console.log(`%c${pathLocation}`, "color: orange");
+      // console.log(`%c${pathLocation}`, 'color: orange');
       if (pathLocation) {
         const [urlZip, urlFips] = await decodeUrl(pathLocation);
-        console.log(`🔍 ${urlFips}`);
+        // console.log(`🔍 ${urlFips}`);
         setFips(urlFips);
         setLocation(urlZip);
       } else {
-        setFips("");
-        goToLevel("usa");
+        setFips('');
+        goToLevel('usa');
       }
     };
     f();
@@ -396,28 +341,28 @@ function App() {
   // ZIP
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching ZIP`, "color: cyan");
+      // console.log('%cFetching ZIP', 'color: cyan');
       const { data, error } = await findLocationData(geoLocation);
       if (data && data.message) {
         setErrorMessage(error);
       } else if (data && data.county_fips) {
         createAndNavigate({ fips: data.county_fips });
-        setErrorMessage("Getting your location.");
+        setErrorMessage('Getting your location.');
       } else {
         setCanUseGeo(false);
-        setErrorMessage("Cannot find location.");
+        setErrorMessage('Cannot find location.');
       }
     };
     if (canUseGeo && updateLocation) {
       setUpdateLocation(false);
       f();
     }
-  }, [geoLocation, canUseGeo, setCanUseGeo, updateLocation]);
+  }, [geoLocation, canUseGeo, setCanUseGeo, updateLocation, createAndNavigate]);
 
   // FEED
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching FEED`, "color: cyan");
+      // console.log('%cFetching FEED', 'color: cyan');
       const { data, error } = await fetchStateHeadlines(myState);
       if (data && data.message) {
         setErrorMessage(data.message);
@@ -435,7 +380,7 @@ function App() {
   // Data sources
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching sources`, "color: cyan");
+      // console.log('%cFetching sources', 'color: cyan');
       const { data, error } = await fetchDataSources();
       if (data && data.message) {
         setErrorMessage(data.message);
@@ -451,8 +396,8 @@ function App() {
   // Historic
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching historic`, "color: cyan");
-      const target = level === "usa" ? undefined : countyStats.fips
+      // console.log('%cFetching historic', 'color: cyan');
+      const target = level === 'usa' ? undefined : countyStats.fips;
       const { data, error } = await fetchHistoric(target);
       if (data && data.message) {
         setErrorMessage(data.message);
@@ -465,17 +410,18 @@ function App() {
     f();
   }, [countyStats, level]);
 
-
   // My Counties
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching my locations`, "color: yellow");
       const list = [];
-      await savedLocations.reduce(async (memo, { fips, zip }) => {
+      // console.log('%cFetching my locations', 'color: yellow');
+      await savedLocations.reduce(async (memo, { fips: savedFips, zip }) => {
+        // console.log(`%c${savedFips}`, 'color: green; border: yellow 1px solid');
         await memo;
-        const { data } = await fetchTrendFromFips(fips);
+        const { data } = await fetchTrendFromFips(savedFips);
+        if (!data) return;
         const [d] = data;
-        console.log(`%c🟡 ${fips} ${d.name}`, "color: goldenrod");
+        // console.log(`%c🟡 ${savedFips} ${d.name}`, 'color: goldenrod');
         list.push({
           ...d,
           zip,
@@ -495,15 +441,15 @@ function App() {
   }, [savedLocations, setMyLocations]);
 
   const handleLocationChange = (e, value, reason) => {
-    console.log(`%c👍 ${reason}`, "color: pink");
+    // console.log(`%c👍 ${reason}`, 'color: pink');
     if (value) {
       createAndNavigate(value);
       // setLocation(value.zip);
     }
   };
 
-  const handleLocationInputChange = (e, value, reason) => {
-    console.log(`%c${value}`, "color: green");
+  const handleLocationInputChange = (e, value) => {
+    // console.log(`%c${value}`, 'color: green');
     setLocation(value);
   };
 
@@ -513,19 +459,17 @@ function App() {
   };
 
   const handleCloseSnack = () => {
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const addToMyLocations = (thisLocation) => {
-    const { fips } = thisLocation;
-    if (!fips) return;
-    const index = myLocations.findIndex((x) => x.fips === fips);
+    const { fips: localFips } = thisLocation;
+    if (!localFips) return;
+    const index = myLocations.findIndex((x) => x.fips === localFips);
     if (index < 0) {
       if (myLocations.length >= 10) {
-        console.log("LIST FULL");
-        setErrorMessage(
-          "Tracked county list is full. Please remove an entry to add a new county."
-        );
+        // console.log('LIST FULL');
+        setErrorMessage('Tracked county list is full. Please remove an entry to add a new county.');
         return;
       }
 
@@ -538,22 +482,14 @@ function App() {
         },
       ]);
     } else {
-      setErrorMessage("County is already tracked.");
-      return;
+      setErrorMessage('County is already tracked.');
     }
   };
 
-  const createAndNavigate = (row) => {
-    let url;
-    if (!row.zip && row.fips) url = createFipsUrl(row.fips);
-    else url = createUrl(row.zip, row.name);
-    if (url) history.push(url);
-  };
-
-  const removeFromMyLocations = (fips) => {
-    const index = myLocations.findIndex((x) => x.fips === fips);
+  const removeFromMyLocations = (removedFips) => {
+    const index = myLocations.findIndex((x) => x.fips === removedFips);
     if (index >= 0) {
-      console.log(`%cDELETING ${fips}`, "color: red");
+      // console.log(`%cDELETING ${removedFips}`, 'color: red');
       if (myLocations.length === 1) {
         setSavedLocations(emptyArray);
         setMyLocations(emptyArray);
@@ -565,7 +501,11 @@ function App() {
     }
   };
 
-  // const MemoFeed = useMemo();
+  const MemoFeed = useMemo(() => <Feed data={{ myState, headlines, loadingZip }} />, [
+    headlines,
+    loadingZip,
+    myState,
+  ]);
   // const MemoMap = useMemo();
   const MemoStatsUsa = useMemo(
     () => (
@@ -573,11 +513,11 @@ function App() {
         sources={sources}
         data={usaStats[0]}
         getFlag
-        level={"usa"}
-        mini={level !== "usa"}
+        level="usa"
+        mini={level !== 'usa'}
       />
     ),
-    [sources, usaStats, level]
+    [sources, usaStats, level],
   );
   const MemoStatsState = useMemo(
     () => (
@@ -585,16 +525,14 @@ function App() {
         sources={sources}
         data={stateStats.find((x) => x.state_id === myState)}
         getFlag
-        level={"state"}
+        level="state"
       />
     ),
-    [sources, stateStats, myState]
+    [sources, stateStats, myState],
   );
   const MemoStatsCounty = useMemo(
-    () => (
-      <LocalStatsTable sources={sources} data={countyStats} level={"county"} />
-    ),
-    [sources, countyStats]
+    () => <LocalStatsTable sources={sources} data={countyStats} level="county" />,
+    [sources, countyStats],
   );
 
   const classes = useStyles();
@@ -602,14 +540,20 @@ function App() {
     <div className={classes.root}>
       <AppBar position="sticky">
         <Toolbar>
-          <img
-            className={`${classes.clickMe} ${classes.logo}`}
-            src={Logo}
-            alt="TISTA Logo"
-            onClick={() => {
-              goToLevel("usa");
-            }}
-          />
+          <Hidden only="xs">
+            <input
+              type="image"
+              className={`${classes.clickMe} ${classes.logo}`}
+              src={Logo}
+              alt="TISTA Logo"
+              onClick={() => {
+                goToLevel('usa');
+              }}
+              onKeyDown={() => {
+                goToLevel('usa');
+              }}
+            />
+          </Hidden>
           <Typography variant="h5" className={classes.title}>
             ● COVID-19 Tracker
           </Typography>
@@ -617,7 +561,7 @@ function App() {
           <IconButton
             className={classes.menuButton}
             onClick={handleGeoToggle}
-            color={canUseGeo ? "inherit" : "default"}
+            color={canUseGeo ? 'inherit' : 'default'}
           >
             <MyLocationIcon />
           </IconButton>
@@ -630,15 +574,13 @@ function App() {
               inputValue={location}
               options={zipOptions}
               textFieldParams={{
-                placeholder: "Enter zip code",
+                placeholder: 'Enter zip code',
                 classes: {
                   root: classes.inputRoot,
                 },
               }}
             />
-            {loadingZip && (
-              <LinearProgress color="secondary" className={"progress"} />
-            )}
+            {loadingZip && <LinearProgress color="secondary" className="progress" />}
           </div>
           <Hidden mdDown>
             <Link
@@ -648,16 +590,12 @@ function App() {
               variant="body1"
               className={classes.caresLink}
               style={{
-                fontSize: "12px",
-                textAlign: "center",
-                padding: "8px 16px",
+                fontSize: '12px',
+                textAlign: 'center',
+                padding: '8px 16px',
               }}
             >
-              <img
-                src={TistaCares50}
-                alt="Tista Cares"
-                style={{ height: 40 }}
-              />
+              <img src={TistaCares50} alt="Tista Cares" style={{ height: 40 }} />
               <div>www.tistacares.com</div>
             </Link>
           </Hidden>
@@ -668,7 +606,7 @@ function App() {
               rel="noopener"
               variant="body1"
               className={classes.caresLink}
-              style={{ fontSize: "12px", textAlign: "center" }}
+              style={{ fontSize: '12px', textAlign: 'center' }}
             >
               <img src={TistaCares25} alt="Tista Cares" />
               <div>tistacares.com</div>
@@ -680,91 +618,55 @@ function App() {
       <Snackbar
         open={!!errorMessage}
         onClose={handleCloseSnack}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         autoHideDuration={3500}
       >
-        <SnackbarContent
-          variant="elevation"
-          message={errorMessage}
-          className={classes.snackbar}
-        />
+        <SnackbarContent variant="elevation" message={errorMessage} className={classes.snackbar} />
       </Snackbar>
 
-      <Snackbar
-        open={isUpdateAvailable}
-        onClose={updateAssets}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <SnackbarContent
-          variant="elevation"
-          message="A new version of this app is ready."
-          className={classes.snackbarRefresh}
-          action={
-            <Button color="secondary" size="small" onClick={updateAssets}>
-              REFRESH
-            </Button>
-          }
-        />
-      </Snackbar>
+      <Refresher />
 
       <Container maxWidth={false}>
         <Grid container spacing={2} justify="space-between">
           <Grid item container xs={12} justify="center">
-            <Grid item xs={12} sm={8}>
-              <Visible condition={noticeOpen}>
-                <ListItem className={classes.noteCard}>
-                  <ListItemText variant="h6" component="p" align="center">
-                    NOTE: New CDC guidance could cause an increase in the number
-                    of deaths attributed to COVID-19.{" "}
-                    <Link
-                      href="https://www.cdc.gov/nchs/data/nvss/coronavirus/Alert-2-New-ICD-code-introduced-for-COVID-19-deaths.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      color="textSecondary"
-                      underline="always"
-                    >
-                      See this report for more details.
-                    </Link>
-                  </ListItemText>
-                  <ListItemIcon>
-                    <IconButton onClick={() => setNoticeOpen(false)}>
-                      <CloseIcon />
-                    </IconButton>
-                  </ListItemIcon>
-                </ListItem>
-              </Visible>
-            </Grid>
+            <Visible condition={localNoticeOpen}>
+              <Suspense fallback={fallback}>
+                <CdcNotice />
+              </Suspense>
+            </Visible>
           </Grid>
+
           <Grid item xs={12}>
             <Link
+              component="button"
               className={classes.clickMe}
               variant="h4"
               color="textPrimary"
               underline="always"
               onClick={() => {
-                goToLevel("usa");
+                goToLevel('usa');
               }}
             >
               USA
             </Link>
-            <Visible condition={level !== "usa"}>
-              {" / "}
+            <Visible condition={level !== 'usa'}>
+              {' / '}
               <Typography
                 component="span"
                 variant="h4"
                 color="textPrimary"
-                onClick={() => goToLevel("county")}
+                onClick={() => goToLevel('county')}
               >
                 {myStateName}
               </Typography>
             </Visible>
-            <Visible condition={level !== "usa"}>
-              {" / "}
+            <Visible condition={level !== 'usa'}>
+              {' / '}
               <Typography
                 component="span"
                 variant="h4"
                 color="textPrimary"
-                onClick={() => goToLevel("county")}
+                onClick={() => goToLevel('county')}
               >
                 {`${countyStats.name}`}
               </Typography>
@@ -786,14 +688,14 @@ function App() {
                 <Suspense fallback={fallback}>{MemoStatsUsa}</Suspense>
               </ErrorBoundary>
             </Grid>
-            <Visible condition={level === "state" || level === "county"}>
+            <Visible condition={level === 'state' || level === 'county'}>
               <Grid item xs={12}>
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsState}</Suspense>
                 </ErrorBoundary>
               </Grid>
             </Visible>
-            <Visible condition={level === "county"}>
+            <Visible condition={level === 'county'}>
               <Grid item xs={12}>
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsCounty}</Suspense>
@@ -803,10 +705,10 @@ function App() {
           </Grid>
 
           <Grid item container xs={12} md={6} spacing={2}>
-            <Grid item xs={12} >
+            <Grid item xs={12}>
               <ErrorBoundary>
                 <Suspense fallback={fallback}>
-                  <UsaMap data={level !== "usa" ? countyStats : emptyObject} />
+                  <UsaMap data={level !== 'usa' ? countyStats : emptyObject} />
                 </Suspense>
               </ErrorBoundary>
             </Grid>
@@ -814,7 +716,7 @@ function App() {
             <Grid item xs={12}>
               <ErrorBoundary>
                 <Suspense fallback={fallback}>
-                  <HistoricRates level={level} county={countyStats} historic={historic}/>
+                  <HistoricRates level={level} county={countyStats} historic={historic} />
                 </Suspense>
               </ErrorBoundary>
             </Grid>
@@ -836,9 +738,7 @@ function App() {
 
           <Grid item xs={12}>
             <ErrorBoundary>
-              <Suspense fallback={fallback}>
-                <Feed data={{ myState, headlines, loadingZip }} />
-              </Suspense>
+              <Suspense fallback={fallback}>{MemoFeed}</Suspense>
             </ErrorBoundary>
           </Grid>
         </Grid>

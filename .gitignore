@@ -11,3 +11,4 @@ __*
 *.log
 /node_modules
 /webapp/public/static
+/webapp/public/data

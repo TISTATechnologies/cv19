@@ -1,49 +1,38 @@
-import React from "react";
-import Typography from "@material-ui/core/Typography";
-import Link from "@material-ui/core/Link";
-import LinearProgress from "@material-ui/core/LinearProgress";
-import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
-import { makeStyles } from "@material-ui/core/styles";
-import CardContent from "@material-ui/core/CardContent";
+import React from 'react';
+import Typography from '@material-ui/core/Typography';
+import Link from '@material-ui/core/Link';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import { makeStyles } from '@material-ui/core/styles';
+import CardContent from '@material-ui/core/CardContent';
+import { sortDate, determineAge } from '../util/dates';
+/*
+  Displays State's Executive Orders from API.
+  Objects newer than the 'daysStillFresh' are marked
+*/
 
 const daysStillFresh = 7;
 
-const sortDate = (a, b) => {
-  const aDate = Date.parse(a.created);
-  const bDate = Date.parse(b.created);
-  return bDate - aDate;
-};
-
-const daysDiff = (date1, date2) => {
-  const toDays = (dt) => dt / (1000 * 60 * 60 * 24);
-  return Math.abs(toDays(date1) - toDays(date2));
-};
-
-const myAge = (date) => {
-  const d = Date.parse(date);
-  return daysDiff(d, Date.now());
-};
-
 const useStyles = makeStyles((theme) => ({
   url: {
-    [theme.breakpoints.down("xs")]: {
-      fontSize: "1.2em",
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.2em',
     },
   },
   bullet: {
-    width: "35px",
-    marginRight: "0px",
-    textDecoration: "none",
-    display: "inline-block",
-    textAlign: "center",
+    width: '35px',
+    marginRight: '0px',
+    textDecoration: 'none',
+    display: 'inline-block',
+    textAlign: 'center',
   },
   fresh: {
-    color: "white",
+    color: 'white',
   },
   title: {
-    [theme.breakpoints.down("xs")]: {
-      fontSize: "1.4em",
+    [theme.breakpoints.down('xs')]: {
+      fontSize: '1.4em',
     },
   },
 }));
@@ -51,21 +40,25 @@ const useStyles = makeStyles((theme) => ({
 const Feed = ({ data }) => {
   const classes = useStyles();
   const { myState, headlines = [], loadingZip } = data;
-  if (loadingZip)
+  // show nothing if loaded without selected state
+  if (!myState) return null;
+
+  if (loadingZip) {
     return (
       <Card variant="outlined">
         <CardHeader
-          title={`COVID-19 Critical Executive Orders`}
+          title="COVID-19 Critical Executive Orders"
           titleTypographyProps={{
             className: classes.title,
           }}
         />
         <CardContent>
-          <LinearProgress style={{ width: "100%" }} />
+          <LinearProgress style={{ width: '100%' }} />
         </CardContent>
       </Card>
     );
-  if (!myState) return null;
+  }
+
   return (
     <Card variant="outlined">
       <CardHeader
@@ -76,35 +69,42 @@ const Feed = ({ data }) => {
         subheader="The most important executive orders for this state:"
       />
       <CardContent>
-        {headlines.sort(sortDate).map((f) => {
-          const age = myAge(f.created);
-          const isFresh = age <= daysStillFresh;
-          return (
-            <div>
-            <Link
-              key={f.url + f.created}
-              classes={{
-                root: classes.url,
-              }}
-              className={isFresh ? classes.fresh : ""}
-              href={f.url}
-              target="_blank"
-              rel="noreferrer noopener"
-              color="textSecondary"
-              underline="always"
-              display="block"
-              noWrap
-              variant="h6"
-            >
-              <span className={classes.bullet}>{isFresh ? "🆕" : "●"}</span>
-              {f.note}
-            </Link>
-            </div>
-          );
-        })}
+        {headlines
+          .sort(sortDate)
+          .map(({ url: feedUrl = 'blank', created: createdDate, note }, index) => {
+            const age = determineAge(createdDate);
+            const isFresh = age <= daysStillFresh;
+            const key = feedUrl + createdDate + note;
+            // console.log(`%c${index}:${key}`, 'color: pink');
+            return (
+              <div>
+                <Link
+                  key={key}
+                  classes={{
+                    root: classes.url,
+                  }}
+                  className={isFresh ? classes.fresh : ''}
+                  href={feedUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  color="textSecondary"
+                  underline="always"
+                  display="block"
+                  noWrap
+                  variant="h6"
+                >
+                  <span className={classes.bullet}>{isFresh ? '🆕' : '●'}</span>
+                  {note}
+                </Link>
+              </div>
+            );
+          })}
         {headlines.length < 1 ? (
           <Typography noWrap variant="h6">
-            No Executive Orders for {myState}.
+            No Executive Orders for
+            {' '}
+            {myState}
+            .
           </Typography>
         ) : null}
       </CardContent>

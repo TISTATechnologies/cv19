@@ -1,28 +1,22 @@
-import React from "react";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import { ThemeProvider } from "@material-ui/core/styles";
-import { HashRouter as Router } from "react-router-dom";
-import App from "./App";
+import React from 'react';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { ThemeProvider } from '@material-ui/core/styles';
+import { HashRouter as Router } from 'react-router-dom';
+import App from './App';
 
-import theme from "./util/theme";
-import {
-  ServiceWorkerProvider,
-  useServiceWorker,
-} from "./util/useServiceWorker";
+import theme from './util/theme';
+import { ServiceWorkerProvider } from './util/useServiceWorker';
 
-const Main = (props) => {
+const Main = () => (
   // :O
 
-  return (
-    <ServiceWorkerProvider>
-      <Router>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <App {...props} />
-        </ThemeProvider>
-      </Router>
-    </ServiceWorkerProvider>
-  );
-};
-
+  <ServiceWorkerProvider>
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </Router>
+  </ServiceWorkerProvider>
+);
 export default Main;

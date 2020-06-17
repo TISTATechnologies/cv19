@@ -23,7 +23,7 @@
   color: white;
   width: 170px;
   position: absolute;
-  top: -115px;
+  top: -70px;
   left: 10px;
   padding: 5px;
   border-radius: 2px;
@@ -81,7 +81,7 @@
   padding: 0.2em;
   color: #999;
   text-align: center;
-  font-size: 1.5em;
+  font-size: 1em;
   font-weight: 500;
   background: #999;
 }
@@ -95,10 +95,7 @@
 }
 
 .d3Map {
-  background-image: linear-gradient(
-    rgba(16, 16, 16, 0.1),
-    rgba(16, 16, 16, 0.5)
-  );
+  background-image: linear-gradient(rgba(16, 16, 16, 0.1), rgba(16, 16, 16, 0.5));
 }
 
 .tooltip-confirmed {

@@ -1,3 +1,2 @@
-export const removeDouble = (string) => {
-  return string.replace(/''/, `'`)
-}
+/* eslint-disable import/prefer-default-export */
+export const removeDouble = (string) => string.replace(/''/, "'");

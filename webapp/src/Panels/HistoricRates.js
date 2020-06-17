@@ -1,16 +1,15 @@
-import React, { useState, useLayoutEffect, useMemo, useRef } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import CardHeader from "@material-ui/core/CardHeader";
+import React, {
+  useState, useLayoutEffect, useMemo, useRef,
+} from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 
 import HistoricOptions from './HistoricOptions';
-import { init, draw } from "../d3/line/historic";
+import { init, draw } from '../d3/line/historic';
 
-
-
-const useStyles = makeStyles((theme) => ({}));
+const useStyles = makeStyles(() => ({}));
 
 const HistoricRates = ({ county, historic, level }) => {
   const [initialized, setInitialized] = useState(false);
@@ -19,16 +18,16 @@ const HistoricRates = ({ county, historic, level }) => {
     trend7: false,
     trend30: false,
     value: false,
-  })
+  });
   const sectionEl = useRef(null);
 
-  const action = <HistoricOptions selection={selection} setSelection={setSelection}/>
+  const action = <HistoricOptions selection={selection} setSelection={setSelection} />;
+
   const ready = useMemo(() => {
     const getLinesReady = () => {
-
       const width = sectionEl.current.clientWidth || 900;
       const height = 100;
-      console.log(`%c Ready LINES (${width}x${height})`, "color: lime");
+      // console.log(`%c Ready LINES (${width}x${height})`, 'color: lime');
       draw(width, height, historic, selection);
     };
     return getLinesReady;
@@ -41,8 +40,8 @@ const HistoricRates = ({ county, historic, level }) => {
     } else {
       ready();
     }
-    window.addEventListener("resize", ready);
-    return () => window.removeEventListener("resize", ready);
+    window.addEventListener('resize', ready);
+    return () => window.removeEventListener('resize', ready);
   }, [initialized, ready]);
 
   const classes = useStyles();
@@ -56,7 +55,7 @@ const HistoricRates = ({ county, historic, level }) => {
         subheader={action}
       />
       <CardContent>
-        <div id="historic" ref={sectionEl}  style={{width: '100%', }}/>
+        <div id="historic" ref={sectionEl} style={{ width: '100%' }} />
       </CardContent>
     </Card>
   );
