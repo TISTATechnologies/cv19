@@ -1,6 +1,6 @@
 const { Config } = require('../../helpers/config');
 const { exec } = require('../../helpers/db-helper');
-const countiesWithoutData = require('./us-counties-without-data.json')
+const countiesWithoutData = require('../us-counties-without-data.json')
 
 const config = new Config();
 const log = config.log;

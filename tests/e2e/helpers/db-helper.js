@@ -96,9 +96,14 @@ const loadStatesData = async (day) => {
 const loadCountiesData = async (day) => {
     log.info(`Load Counties data on the ${day} day`);
     return executeInDataBase(
-        'SELECT fips, state_id, location_name as name, population, confirmed, deaths, active, recovered '
-        + 'FROM covid_data_stat '
-        + 'WHERE country_id = \'US\' AND location_type = \'county\' AND date = $1 ORDER BY datetime DESC, fips;',
+        'SELECT r.fips, r.state_id, CONCAT(r.name, \', \', r.state_id) AS name, '
+        + '  p.population, COALESCE(cds.confirmed, 0) AS confirmed, COALESCE(cds.deaths, 0) AS deaths, '
+        + '  COALESCE(cds.active, 0) AS active, COALESCE(cds.recovered, 0) AS recovered '
+        + 'FROM region AS r '
+        + 'INNER JOIN region_population AS p ON p.country_id = r.country_id AND p.state_id = r.state_id AND p.fips = r.fips '
+        + 'LEFT JOIN covid_data_stat AS cds ON cds.country_id = r.country_id AND cds.state_id = r.state_id AND cds.fips = r.fips '
+        + '  AND cds.date = $1 '
+        + 'WHERE r.country_id = \'US\' AND LOWER(r.type) = \'county\' ORDER BY cds.datetime DESC, r.fips;',
         [day]);
 }
 
