@@ -7,7 +7,7 @@
 
 # testing
 /coverage
-/**/*data*.json
+/helpers/*data*.json
 report.*.json
 
 # production

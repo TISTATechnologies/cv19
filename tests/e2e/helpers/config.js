@@ -22,10 +22,10 @@ class Config {
         //     process.exit(1);
         }
         
-        this.appUrl = env('APP_URL');
-        this.apiUrl = env('REACT_APP_SERVER_URL');
-        this.apiStaticCovidUrl = env('REACT_APP_COVID_DATA_URL');
-        this.apiStaticCommonUrl = env('REACT_APP_COMMON_DATA_URL');
+        this.appUrl = env('APP_SERVER_URL', env('REACT_APP_SERVER_URL'));
+        this.apiUrl = env('API_SERVER_URL', env('REACT_API_SERVER_URL'));
+        this.apiStaticCovidUrl = env('COVID_DATA_URL', env('REACT_APP_COVID_DATA_URL'));
+        this.apiStaticCommonUrl = env('COMMON_DATA_URL', env('REACT_APP_COMMON_DATA_URL'));
         this.apiJwt = env('REACT_APP_JWT_TOKEN');
         this.apiTimeout = (+(env('API_TIMEOUT') || 30)) * 1000;     // Default 15 sec.
         this.zipCount = +(env('ZIP_COUNT') || env('ZIPS_COUNT') || 10);

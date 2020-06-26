@@ -1,6 +1,7 @@
 const { Config } = require('../../helpers/config');
 const { CovidData } = require('../../helpers/csv-helper');
 const { CovidStaticApi } = require('../../helpers/test-helper');
+const countiesWithoutData = require('../us-counties-without-data.json')
 
 const config = new Config();
 const cvData = new CovidData(config);
@@ -86,7 +87,9 @@ describe("Test Static API calls ", () => {
         log.info(`Start static api tests on the CV19 server: ${cvApi.apiDataUrl.href}`)
     })
     describe(`Test special locations (${yesterday})`, () => {
-        testStaticDataOnDayByFips('latest', cvData.specialLocationsFips);
+        const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
+        const specialLocationsFiltered = cvData.specialLocationsFips.filter((i) => !fipsWithNoData.includes(i));
+        testStaticDataOnDayByFips('latest', specialLocationsFiltered);
     });
     describe(`Test data (${yesterday})`, () => {
         testStaticDataOnDayByZips(yesterday);

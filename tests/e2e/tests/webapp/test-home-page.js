@@ -1,6 +1,7 @@
 const { Config } = require("../../helpers/config");
 const { CovidData } = require("../../helpers/csv-helper");
 const { CovidPage } = require("../../helpers/test-helper");
+const countiesWithoutData = require('../us-counties-without-data.json')
 
 Feature("e2e tests for CV19 Web Application");
 
@@ -14,6 +15,7 @@ BeforeSuite((I) => {
 });
 
 try {
+  const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
   for (let zip of cvData.getTestZips()) {
     Scenario(`Test data for ${zip}`, (I) => {
       log.info(`Testing data for ${zip}...`);
@@ -59,7 +61,7 @@ try {
           }
           log.debug(
             `Found real data county: ${
-              realData ? realData.county.name : "NULL"
+              realData ? `${realData.county.name} [${realData.county.fips}]` : "NULL"
             }`
           );
         } else {
@@ -77,8 +79,12 @@ try {
           realData,
           (zip || "").toUpperCase() === "US" ? "usa" : "state"
         );
-        log.debug(`Check county data on the page`);
-        cv19Page.expectCountyData(realData);
+        if (realData && realData.county && fipsWithNoData.includes(realData.county.fips)) {
+            log.debug(`Check county data on the page -> This fips [${realData.county.fips}] in the No Data list. Skip.`)
+        } else {
+            log.debug(`Check county data on the page`);
+            cv19Page.expectCountyData(realData);
+        }
         const links = cvData.getExecutiveLinksByState("US", realData.state.id);
         log.debug(`Check executive orders on the page`);
         cv19Page.expectExecutiveOrders(links);
