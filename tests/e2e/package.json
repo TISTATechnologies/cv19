@@ -7,11 +7,10 @@
     "test": "tests"
   },
   "dependencies": {
-    "codeceptjs": "^2.6.1",
+    "codeceptjs": "^2.6.6",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "jest": "^25.5.4",
-    "nightmare": "^3.0.2",
     "pg": "^8.0.2",
     "selenium-webdriver": "^4.0.0-alpha.7",
     "webdriverio": "^6.0.18"
