@@ -49,6 +49,7 @@ class CovidData {
         const rawdata = fs.readFileSync(this.config.zips_file);
         this.debug(`Parse zips into the memory`);
         this.zip2fips = {};
+        this.fips2zips = {};
         const zip2fipsRaw = JSON.parse(rawdata);
         for (let i = 0, len = zip2fipsRaw.length; i < len; i += 1) {
             const item = zip2fipsRaw[i];
@@ -56,8 +57,14 @@ class CovidData {
                 this.zip2fips[item.zip] = [];
             }
             this.zip2fips[item.zip].push(item.fips);
+
+            if (!(item.fips in this.fips2zips)) {
+                this.fips2zips[item.fips] = [];
+            }
+            this.fips2zips[item.fips].push(item.zip);
         }
         log.debug(`Loaded zips: found ${Object.keys(this.zip2fips).length} links.`);
+        log.debug(`Loaded fips: found ${Object.keys(this.fips2zips).length} links.`);
     }
 
     getTestZips() {
@@ -78,8 +85,12 @@ class CovidData {
         return (result || ['US']).filter((z) => z);
     }
 
-    getDataByFips(fips, day=undefined) {
+    getDataByFips(fips, day=undefined, fipsWithNoData=[]) {
         this.debug(`Looking data for ${fips} fips (${this.data.counties.length} items)`);
+        if (fips in fipsWithNoData) {
+            log.debug(`FIPS ${fips} is in the No Data List - Skip.`);
+            return null;
+        }
         for (let i = 0, len = this.data.counties.length; i < len; i += 1) {
             const item = this.data.counties[i];
             if (item && item.county && String(item.county.fips) === String(fips)) {
@@ -90,7 +101,7 @@ class CovidData {
         return null;
     }
 
-    getDataByZip(zip, day=undefined) {
+    getDataByZip(zip, day=undefined, fipsWithNoData=[]) {
         if (!this.data) {
             throw new Error(`Load test data first`);
         }
@@ -100,21 +111,35 @@ class CovidData {
         if ((zip || 'US').toUpperCase() === 'US') {
             values.push(this.data.US);
         } else {
-            const fips_list = this.zip2fips[zip];
-            if (!fips_list) {
+            const fipsList = this.zip2fips[zip];
+            if (!fipsList) {
                 this.debug(`Fips not found for ${zip} zip.`);
             } else {
-                this.debug(`Found fips: ${JSON.stringify(fips_list)}`);
-                for (let fips of fips_list) {
-                    const resItem = this.getDataByFips(fips, day);
-                    if (resItem) {
-                        values.push(resItem);
+                this.debug(`Found fips: ${JSON.stringify(fipsList)}`);
+                for (let fips of fipsList) {
+                    this.debug(`Check fips: ${fips} -> ${fipsWithNoData.includes(fips)} (no data list = ${fipsWithNoData.length})`)
+                    if (fipsWithNoData.includes(fips)) {
+                        log.debug(`The fips ${fips} is in the No Data List - Skip.`);
+                    } else {
+                        const resItem = this.getDataByFips(fips, day);
+                        if (resItem) {
+                            values.push(resItem);
+                        }
                     }
                 }
             }
         }
         this.debug(`Use data: ${JSON.stringify(values)}`);
         return  values;
+    }
+
+    getZipsByFips(fipsList) {
+        const resultZips = [];
+        for (let fips of (fipsList || [])) {
+            const zips = this.fips2zips[fips];
+            resultZips.push.apply(resultZips, zips);
+        }
+        return resultZips;
     }
 
     getExecutiveLinksByState(country_id, state_id, day=undefined) {

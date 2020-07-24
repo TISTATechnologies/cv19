@@ -441,7 +441,7 @@ function getAllMapData(countyHeat, EmpCounties) {
       population: h !== undefined ? h.population : undefined,
       geo_lat: h !== undefined ? h.geo_lat : undefined,
       geo_long: h !== undefined ? h.geo_long : undefined,
-      ratio: h !== undefined ? (h.confirmed / h.population) * 1e5 : undefined,
+      ratio: h !== undefined && (h.population || 0) > 0 ? (h.confirmed / h.population) * 1e5 : undefined,
     }));
     if (EmpCounties) {
       finalCounty = joinTables(EmpCounties, finalCounty, 'fips', 'fips', (g, h) => ({

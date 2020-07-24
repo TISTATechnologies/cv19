@@ -7,6 +7,7 @@ const config = new Config();
 const cvData = new CovidData(config);
 const cvApi = new CovidStaticApi(config);
 const log = config.log;
+const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
 
 const testZips = cvData.getTestZips();
 const yesterday = config.testDate;
@@ -64,10 +65,9 @@ const testStaticDataOnDayByFips = (day, fips_list) => {
     for (let i = 0, len = fips_list.length; i < len; i += 1) {
         const fips = fips_list[i];
         it(`Test data for ${fips} fips`, async () => {
-            const realDataItem = await cvData.getDataByFips(fips);
+            const realDataItem = await cvData.getDataByFips(fips, undefined, fipsWithNoData);
             await expectDataApiEqualRealData(day, realDataItem ? [realDataItem] : []);
         });
-
     };
 }
 const testStaticDataOnDayByZips = (day) => {
@@ -75,7 +75,7 @@ const testStaticDataOnDayByZips = (day) => {
     for (let i = 0, len = testZips.length; i < len; i += 1) {
         const zip = testZips[i];
         it(`Test data for ${zip} zip`, async () => {
-            const realDataItems = await cvData.getDataByZip(zip);
+            const realDataItems = await cvData.getDataByZip(zip, undefined, fipsWithNoData);
             await expectDataApiEqualRealData(day, realDataItems);
         });
     };
@@ -87,7 +87,6 @@ describe("Test Static API calls ", () => {
         log.info(`Start static api tests on the CV19 server: ${cvApi.apiDataUrl.href}`)
     })
     describe(`Test special locations (${yesterday})`, () => {
-        const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
         const specialLocationsFiltered = cvData.specialLocationsFips.filter((i) => !fipsWithNoData.includes(i));
         testStaticDataOnDayByFips('latest', specialLocationsFiltered);
     });
