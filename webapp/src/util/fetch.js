@@ -1,11 +1,11 @@
 import stateFips from '../resources/stateFips';
 
-let api = process.env.REACT_APP_SERVER_URL || '';
-let common = process.env.REACT_APP_COMMON_DATA_URL || '';
-let covid = process.env.REACT_APP_COVID_DATA_URL || '';
-const jwtToken = process.env.REACT_APP_JWT_TOKEN || false;
-const associateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
-const stamp = process.env.REACT_APP_TIMESTAMP || '';
+let common = window.CONFIG.commonDataUrl || process.env.REACT_APP_COMMON_DATA_URL;
+let covid = window.CONFIG.covidDataUrl || process.env.REACT_APP_COVID_DATA_URL;
+let internal = window.CONFIG.internalDataUrl || process.env.REACT_APP_INTERNAL_DATA_URL;
+const jwtToken = window.CONFIG.jwtToken || process.env.REACT_APP_JWT_TOKEN || false;
+const associateView = (window.CONFIG.viewAssociates || process.env.REACT_APP_VIEW_ASSOCIATES) === '1';
+const stamp = window.CONFIG.timestamp || process.env.REACT_APP_TIMESTAMP;
 const { fetch } = window;
 const headers = new Headers();
 
@@ -15,9 +15,6 @@ if (common.substr(-1) !== '/') {
 }
 if (covid.substr(-1) !== '/') {
   covid = `${covid}/`;
-}
-if (api.substr(-1) !== '/') {
-  api = `${api}/`;
 }
 
 if (jwtToken) {
@@ -123,11 +120,15 @@ export async function findLocationData(query) {
 }
 
 export async function fetchEmployeeData() {
-  if (associateView) {
-    const response = await fetch(`${process.env.PUBLIC_URL}data/special-locations.json`);
-    const data = await response.json();
-    if (data.message) return { error: data.message };
-    return { data };
+  try {
+    if (associateView && internal) {
+      const response = await fetch(`${internal}/special-locations.json`);
+      const data = await response.json();
+      if (data.message) return { error: data.message };
+      return { data };
+    }
+  } catch (ex) {
+    console.error(ex);
   }
   return { data: null };
 }
@@ -148,10 +149,17 @@ export async function fetchHistoric(fips) {
 }
 
 export async function fetchAidData() {
-  const response = await fetch(`${process.env.PUBLIC_URL}data/aidData.json`);
-  const data = await response.json();
-  if (data.message) return { error: data.message };
-  return { data };
+  try {
+    if (internal) {
+        const response = await fetch(`${internal}/aidData.json`);
+        const data = await response.json();
+        if (data.message) return { error: data.message };
+        return { data };
+    }
+  } catch (ex) {
+    console.error(ex);
+  }
+  return { data: null };
 }
 
 export async function fetchGeo() {

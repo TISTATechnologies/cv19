@@ -24,6 +24,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "build": "bash ./scripts/build-webapp.sh",
+    "update-config": "bash ./scripts/update-config-json.sh",
     "build:webapp": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

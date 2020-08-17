@@ -1,0 +1,62 @@
+name: Run data collection
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date'
+        required: true
+        default: 'latest'
+
+jobs:
+
+  update-data:
+    runs-on: ubuntu-latest
+    name: Collect and Update data
+    env:
+      DEBUG: ${{ secrets.DEBUG }}
+      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGSCHEMA: ${{ secrets.PGSCHEMA }}
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        working-directory: data/services/cv19srv
+        run: pip3 install -U pip setuptools ; pip3 install -r ./requirements.txt
+      - name: Pull new data from the public data sources
+        run: yes | ./scripts/start-pull-data-services.sh ${{ github.event.inputs.date }}
+      - name: Export latest data from the database into the json files
+        run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${{ github.event.inputs.date }}
+      - name: Upload data to the AWS S3 Bucket
+        run: yes | ./scripts/upload-covid-data-to-s3-bucket.sh
+
+  test-data:
+    needs: [update-data]
+    runs-on: ubuntu-latest
+    name: Test data
+    env:
+      DEBUG: ${{ secrets.DEBUG }}
+      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGSCHEMA: ${{ secrets.PGSCHEMA }}
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+    defaults:
+      run:
+        working-directory: tests/e2e
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install requirements for the tests
+        run: npm install
+      - name: Generate data for tests
+        run: run generate
+      - name: Test static data
+        run: run test:api

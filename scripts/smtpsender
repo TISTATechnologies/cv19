@@ -16,9 +16,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def env(name, default=None):
-    return os.getenv(name, os.getenv('bamboo_' + name, default))
-
+env = lambda name, default=None: os.getenv(name, os.getenv('bamboo_' + name, default))
 
 DEBUG = env('DEBUG') == 'true'
 SMTP_SERVER_HOST = env('SMTP_SERVER_HOST', 'email-smtp.us-east-1.amazonaws.com')
@@ -26,45 +24,41 @@ SMTP_SERVER_PORT = int(env('SMTP_SERVER_PORT', '587'))
 SMTP_USERNAME = env('SMTP_USERNAME')
 SMTP_PASSWORD = env('SMTP_PASSWORD')
 SMTP_FROM_EMAIL = env('SMTP_FROM_EMAIL', 'no-reply@tistatech.com')
-SMTP_FROM_NAME = env('SMTP_FROM_NAME', 'Notification')
+SMTP_FROM_NAME = env('SMTP_FROM_NAME', 'CV19 Notification')
 SMTP_PASSWORD = env('SMTP_PASSWORD')
 
-RECIPIENT  = env('RECIPIENT', env('TO'))
+RECIPIENT = env('RECIPIENT', env('TO'))
 SUBJECT = env('SUBJECT', sys.argv[1] if len(sys.argv) > 1 else 'Tista notification')
 BODY = sys.argv[2] if len(sys.argv) > 2 else None
 if not BODY:
     print('Reading body from the stdin:')
     BODY = sys.stdin.read()
 
-BODY_HTML = (f'<html>'
-f'<head><title>{SUBJECT}<title></head><body>'
-f'{BODY}'
-f'</body></html>')
-
-msg = MIMEMultipart('alternative')  # correct MIME is multipart/alternative
+msg = MIMEMultipart()
+msg['Subject'] = SUBJECT
 msg['From'] = SMTP_FROM_EMAIL if not SMTP_FROM_NAME else email.utils.formataddr((SMTP_FROM_NAME, SMTP_FROM_EMAIL))
 msg['To'] = RECIPIENT
-msg['Subject'] = SUBJECT
 
 print(f'Sending message to {msg["To"]} from {msg["From"]}: {msg["Subject"]} ...')
 if DEBUG:
     print(f'Smtp Server: {SMTP_SERVER_HOST}:{SMTP_SERVER_PORT}')
     print(f'Credentials: {SMTP_USERNAME} / {"*" * len(SMTP_PASSWORD)}')
-# msg.attach(MIMEText("plain text message", 'plain'))
-msg.attach(MIMEText(BODY_HTML, 'html'))
-try:  
+    print(f'Body length: {len(BODY)}')
+msg.attach(MIMEText(BODY, 'plain'))
+
+try:
     server = smtplib.SMTP(SMTP_SERVER_HOST, SMTP_SERVER_PORT)
     server.set_debuglevel(DEBUG)
     server.ehlo()
     server.starttls()
-    #stmplib docs recommend calling ehlo() before & after starttls()
+    # stmplib docs recommend calling ehlo() before & after starttls()
     server.ehlo()
     if SMTP_USERNAME:
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
     server.sendmail(SMTP_FROM_EMAIL, RECIPIENT, msg.as_string())
     server.close()
-except Exception as e:
-    print("Error: ", e)
+except Exception as ex:
+    print("Error: ", ex)
     sys.exit(1)
 else:
     print("Email sent successfully.")

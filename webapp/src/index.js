@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import loadConfig from './util/loadConfig';
 
 import './index.css';
-import Main from './Main';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Main />
-  </React.StrictMode>,
-  document.getElementById('root'),
-);
+// After config file is loaded, then render the app
+loadConfig(() => {
+  const Main = React.lazy(() => import('./Main'));
+  ReactDOM.render(
+    <React.StrictMode>
+      <Suspense fallback={<div />}>
+        <Main />
+      </Suspense>
+    </React.StrictMode>,
+    document.getElementById('root'),
+  );
+});

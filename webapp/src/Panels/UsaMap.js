@@ -15,7 +15,7 @@ import {
   fetchAllCountyData, fetchEmployeeData, fetchGeo, fetchAidData,
 } from '../util/fetch';
 
-const showAssociateView = process.env.REACT_APP_VIEW_ASSOCIATES === '1';
+const showAssociateView = (window.CONFIG.viewAssociates || process.env.REACT_APP_VIEW_ASSOCIATES) === '1';
 
 const mapNames = {
   confirmed: {

@@ -1,28 +1,26 @@
 #!/usr/bin/env bash
-download_flag() {
-    file=${1}.svg
-    mkdir "$(dirname "${file}")" 2>/dev/null
-    wget -qO "${file}" -- "http://flags.ox3.in/svg/${file}"
-    if [ $? -ne 0 ]; then echo "Error: not found: ${file}."; return 1;
-    echo "Flag ${file} downloaded"; fi
-}
-
-download_flags() {
-    echo "Download flags for countries"
-    echo "Read county ids or state ids from the stdin"
-    while read id; do
-        echo "Processing ${id}..."
-        download_flag "${id}"
-    done
-}
+output_dir=./build/static/img/
+url=https://github.com/oxguy3/flags/archive/gh-pages.zip
+tmpdir=$(mktemp -d)
 
 # Create 'img' subdirectory in the static section of the site
 cd $(dirname "${0}")/..
-output_dir=./build/static/img/
 mkdir -p "${output_dir}" 2>/dev/null
 cd "${output_dir}"
+output_dir=${PWD}
+echo "Output directory ${output_dir}"
+echo "Temp directory ${tmpdir}"
 
-# Parse all states from the states.csv file and download flags for them
-echo "Working diretory ${PWD}"
-(cat "../../../../data/covid-database/init/data-us-states.csv" | awk -F',' '{print "us/"tolower($1)}' | sort -u;
- echo "us") | download_flags
+# Dowbload repository with flags and extract us flags only
+echo "Download flags repository: ${url}"
+wget -q -O "${tmpdir}/flags.zip" "${url}" \
+&& cd "${tmpdir}" \
+&& echo "Extract US flags into ${PWD}" \
+&& unzip flags.zip 'flags-gh-pages/svg/us*' \
+&& cp -vfaT ./flags-gh-pages/svg "${output_dir}" \
+&& echo "Now all flags are stored in ${output_dir} directory"
+cd "${output_dir}"
+
+# Cleanup
+rm -rf "${tmpdir}"
+

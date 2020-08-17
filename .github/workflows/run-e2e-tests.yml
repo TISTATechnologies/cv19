@@ -1,0 +1,56 @@
+name: Run e2e tests
+on:
+  workflow_dispatch:
+    inputs:
+      build_env:
+        description: 'Environment'
+        required: true
+        default: 'develop'
+
+jobs:
+
+  test-server:
+    runs-on: ubuntu-latest
+    name: Run e2e tests
+    defaults:
+      run:
+        working-directory: tests/e2e
+    env:
+      DEBUG: ${{ secrets.DEBUG }}
+      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      PGSCHEMA: ${{ secrets.PGSCHEMA }}
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Start selenoid
+        uses: Xotabu4/selenoid-github-action@v1
+      - name: Check selenium server status
+        env:
+          SELENIUM_SERVER: ${{secrets.SELENIUM_SERVER}}
+        run: |
+          SELENIUM_SERVER=${SELENIUM_SERVER:-"localhost:4444"}
+          echo "Check connection to http://${SELENIUM_SERVER}"
+          curl -s "http://${SELENIUM_SERVER}" | grep "You are using Selenoid" || (echo "Connection to http://${SELENIUM_SERVER} error." && exit 1)
+          echo "Success"
+      - name: Install all node dependencies
+        run: npm install
+      - name: Load current data from the database
+        run: npm run generate
+      - name: Run e2e tests for static api
+        env:
+          ZIPS: ${{secrets.TEST_ZIPS}}
+        run: npm run test:api
+      - name: Run data test
+        run: npm run test:database
+      - name: Run e2e tests for web app (static zips list)
+        env:
+          ZIPS: ${{secrets.TEST_ZIPS}}
+        run: npm run test:webapp
+      - name: Run e2e tests for web app (random list)
+        env:
+          ZIPS: ${{secrets.TEST_ZIPS_COUNT}}
+        run: npm run test:webapp
