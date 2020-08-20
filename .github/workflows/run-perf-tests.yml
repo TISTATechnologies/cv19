@@ -1,0 +1,65 @@
+name: Run performance test
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'Webapp url'
+        required: true
+        default: 'https://covid19.tistatech.com'
+      api_url:
+        description: 'Data url'
+        required: true
+        default: 'https://data.tistatech.com'
+      vusers_total:
+        description: 'Number of concurrent users'
+        required: true
+        default: '1000'
+      vusers_per_sec:
+        description: 'The rate per second in which users are spawned'
+        required: true
+        default: '100'
+      duration_sec:
+        description: 'Stop after the specified amount of time (sec.)'
+        required: true
+        default: '60'
+      threshold_avg:
+        description: 'Threshold for average response time (ms.)'
+        required: true
+        default: '400'
+      threshold_95:
+        description: 'Threshold for 95th percentile response time (ms.)'
+        required: true
+        default: '800'
+      threshold_fails:
+        description: 'Threshold for fails ratio (%)'
+        required: true
+        default: '1'
+
+jobs:
+
+  test-server:
+    runs-on: ubuntu-latest
+    name: Run Locust test
+    defaults:
+      run:
+        working-directory: tests/locust
+    env:
+      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip3 install -U pip setuptools; pip3 install locust
+      - name: Run test script
+        env:
+          APP_URL: ${{github.event.inputs.app_url}}
+          API_URL: ${{github.event.inputs.api_url}}
+          VUSERS_TOTAL: ${{github.event.inputs.vusers_total}}
+          VUSERS_PER_SEC: ${{github.event.inputs.vusers_per_sec}}
+          DURATION_SEC: ${{github.event.inputs.duration_sec}}
+          THRESHOLD_AVG: ${{github.event.inputs.threshold_avg}}
+          THRESHOLD_95: ${{github.event.inputs.threshold_95}}
+          THRESHOLD_FAILS: ${{github.event.inputs.threshold_fails}}
+        run: |
+          echo "Start test with parameters=${{toJson(github.event.inputs)}}"
+          ${HOME}/.local/bin/locust -f ./cv19-webapp.py --headless -u ${VUSERS_TOTAL} -r ${VUSERS_PER_SEC} --run-time ${DURATION_SEC}s --host "${API_URL}"
+          echo "End test with parameters=${{toJson(github.event.inputs)}}"
