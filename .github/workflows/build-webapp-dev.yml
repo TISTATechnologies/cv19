@@ -1,0 +1,110 @@
+name: Build and deploy [dev/demo]
+
+on:
+  push: {branches: develop}
+  workflow_dispatch:
+    inputs:
+      build_env:
+        description: 'Environment'
+        required: true
+        default: 'development'
+      view_associates:
+        description: 'View Associates'
+        required: true
+        default: '1'
+
+jobs:
+  build-deploy-webapp:
+    name: Build and Deploy CV19 WebApp
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+    env:
+      DEBUG: ${{ secrets.DEBUG }}
+      BUILD_LOG: ./build-${{ github.run_id }}.log
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      INTERNAL_DATA_URL: ${{ secrets.INTERNAL_DATA_URL }}
+      BUILD_ENV: ${{ github.event.inputs.build_env }}
+      REACT_APP_VIEW_ASSOCIATES: ${{ github.event.inputs.view_associates }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Fetch the whole git history (including tags)
+        run: git fetch --tags --prune --unshallow
+
+      - name: Parse parameters and sys.env
+        run: |
+          NODE_ENV=${BUILD_ENV:-"development"}
+          BUILD_NUMBER=${GITHUB_RUN_NUMBER:-"0"}
+          ZIPS_COUNT=${{ secrets.TEST_ZIPS_COUNT}}
+          ZIPS=${{ secrets.TEST_ZIPS}}
+          APP_SERVER_URL=${{ secrets.DEMO_APP_SERVER_URL}}
+          if [ "${NODE_ENV}" == "development" ]; then
+            S3_BUCKET="${{ secrets.DEV_S3_BUCKET }}"
+            GOOGLE_ANALYTICS_KEY="${{ secrets.DEV_GOOGLE_ANALYTICS_KEY }}"
+            REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES:-"1"}
+            APP_SERVER_URL=${{ secrets.DEV_APP_SERVER_URL}}
+          else if [ "${NODE_ENV}" == "demo" ]; then
+            S3_BUCKET="${{ secrets.DEMO_S3_BUCKET }}"
+            GOOGLE_ANALYTICS_KEY="${{ secrets.DEMO_GOOGLE_ANALYTICS_KEY }}"
+            REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES:-"0"}
+            APP_SERVER_URL=${{ secrets.DEMO_APP_SERVER_URL}}
+          else
+            echo "Error: Incorrect Environment value: build_env = ${NODE_ENV}"
+            exit 1
+          fi; fi
+          echo "::add-path::${PWD}/../.github/scripts"
+          echo "::set-env name=BUILD_NUMBER::${BUILD_NUMBER}"
+          echo "::set-env name=NODE_ENV::${NODE_ENV}"
+          echo "::set-env name=S3_BUCKET::${S3_BUCKET}"
+          echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
+          echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
+          echo "::set-env name=APP_SERVER_URL::${APP_SERVER_URL}"
+          echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
+          echo "::set-env name=ZIPS::${ZIPS}"
+
+      - name: Show test parameters
+        run: |
+          (echo "NODE_ENV=${NODE_ENV}"
+          echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
+          echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"
+          echo "APP_SERVER_URL=$(echo "${APP_SERVER_URL}" | sed -e 's/\(.\)/\1_/g')"
+          echo "ZIPS_COUNT=$(echo "${ZIPS_COUNT}" | sed -e 's/\(.\)/\1_/g')"
+          echo "ZIPS=$(echo "${ZIPS}" | sed -e 's/\(.\)/\1_/g')"
+          ) | "${PWD}/../.github/scripts/write-to-log.sh"
+
+      - name: Show last commits
+        run: |
+          set -o pipefail
+          (echo "Last commits in ${{github.repository}}"; git log --oneline -n 5 2>&1
+          echo "Last tag in ${{github.repository}}"; git tag 2>&1 | tail -n 1
+          ) | write-to-log.sh
+
+      - name: Install dependencies
+        run: |
+          set -o pipefail
+          (echo "Install dependencies"; npm install 2>&1) | write-to-log.sh
+
+      - name: Build
+        run: |
+          set -o pipefail
+          (echo "Build ${{github.repository}} (BUILD_NUMBER=${BUILD_NUMBER}) [env=${NODE_ENV}]"
+          npm run build 2>&1) | write-to-log.sh
+
+      - name: Deploy
+        run: |
+          set -o pipefail
+          (echo "Deploy static site from ${{github.repository}} [env=${NODE_ENV}]"
+          npm run deploy -- --silent 2>&1) | write-to-log.sh
+
+      - name: Send notification
+        if: ${{ always() }}
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DEBUG: false
+        run: send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}" "${BUILD_LOG}"

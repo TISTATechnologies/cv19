@@ -5,7 +5,19 @@ on:
       build_env:
         description: 'Environment'
         required: true
-        default: 'develop'
+        default: 'development'
+      app_url:
+        description: 'Webapp url'
+        required: true
+        default: 'https://covid19-dev.tistatech.com'
+      zips_count:
+        description: 'Test zips count'
+        required: true
+        default: '10'
+      zips:
+        description: 'Test zips'
+        required: true
+        default: '20001,20850,12345'
 
 jobs:
 
@@ -17,15 +29,50 @@ jobs:
         working-directory: tests/e2e
     env:
       DEBUG: ${{ secrets.DEBUG }}
-      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      BUILD_LOG: ./build-${{ github.run_id }}.log
       PGHOST: ${{ secrets.PGHOST }}
       PGPORT: ${{ secrets.PGPORT }}
       PGDATABASE: ${{ secrets.PGDATABASE }}
       PGSCHEMA: ${{ secrets.PGSCHEMA }}
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      COMMON_DATA_URL: ${{ secrets.COMMON_DATA_URL }}
+      COVID_DATA_URL: ${{ secrets.COVID_DATA_URL }}
+      BUILD_ENV: ${{ github.event.inputs.build_env }}
+      APP_SERVER_URL: ${{ github.event.inputs.app_url }}
+      ZIPS_COUNT: ${{ github.event.inputs.zips_count }}
+      ZIPS: ${{ github.event.inputs.zips }}
     steps:
       - uses: actions/checkout@v2
+
+      - name: Parse parameters and sys.env
+        run: |
+          if [ "${BUILD_ENV}" == "development" ]; then
+            NODE_ENV="development"
+          else if [ "${BUILD_ENV}" == "demo" ]; then
+            NODE_ENV="demo"
+          else
+            NODE_ENV="production"
+          fi; fi
+          if [ -z "${APP_SERVER_URL}" ]; then
+            echo "Error: required app-Url parameter."
+            exit 1
+          fi
+          ZIPS_COUNT="${ZIPS_COUNT:-"10"}"
+          ZIPS="${ZIPS:-"20001,20850"}"
+          echo "::add-path::${PWD}/../.github/scripts"
+          echo "::set-env name=NODE_ENV::${NODE_ENV}"
+          echo "::set-env name=APP_SERVER_URL::${APP_SERVER_URL}"
+          echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
+          echo "::set-env name=ZIPS::${ZIPS}"
+
+      - name: Show test parameters
+        run: |
+          echo "NODE_ENV=${NODE_ENV}"
+          echo "APP_SERVER_URL=${APP_SERVER_URL}"
+          echo "ZIPS_COUNT=${ZIPS_COUNT}"
+          echo "ZIPS=${ZIPS}"
+
       - name: Start selenoid
         uses: Xotabu4/selenoid-github-action@v1
       - name: Check selenium server status
@@ -41,16 +88,10 @@ jobs:
       - name: Load current data from the database
         run: npm run generate
       - name: Run e2e tests for static api
-        env:
-          ZIPS: ${{secrets.TEST_ZIPS}}
         run: npm run test:api
       - name: Run data test
         run: npm run test:database
       - name: Run e2e tests for web app (static zips list)
-        env:
-          ZIPS: ${{secrets.TEST_ZIPS}}
         run: npm run test:webapp
       - name: Run e2e tests for web app (random list)
-        env:
-          ZIPS: ${{secrets.TEST_ZIPS_COUNT}}
         run: npm run test:webapp

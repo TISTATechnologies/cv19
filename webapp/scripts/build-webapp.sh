@@ -2,6 +2,7 @@
 create_version_file() {
     mkdir ./build/ 2>/dev/null
     version_file=./build/_version.json
+    echo "Generating ${version_file} file..."
     echo "{" > "${version_file}"
     if [ -n "${BUILD_NUMBER}" ]; then
     echo "  \"version\": \"${REACT_APP_VERSION}.${BUILD_NUMBER}\"," >> "${version_file}"
@@ -10,6 +11,8 @@ create_version_file() {
     fi
     echo "  \"buildtime\": \"${REACT_APP_BUILD_TIME}\"" >> "${version_file}"
     echo "}" >> "${version_file}"
+    echo "Generate ${version_file} file - complete"
+    cat "${version_file}"
 }
 
 cd "$(dirname "${0}")/../.."
