@@ -12,11 +12,11 @@ on:
         default: 'https://covid19-dev.tistatech.com'
       zips_count:
         description: 'Test zips count'
-        required: true
+        required: false
         default: '10'
       zips:
         description: 'Test zips'
-        required: true
+        required: false
         default: '20001,20850,12345'
 
 jobs:
@@ -58,14 +58,17 @@ jobs:
             echo "Error: required app-Url parameter."
             exit 1
           fi
-          ZIPS_COUNT="${ZIPS_COUNT:-"10"}"
-          ZIPS="${ZIPS:-"20001,20850"}"
+          ZIPS_COUNT="${ZIPS_COUNT:-"${{ secrets.TEST_ZIPS_COUNT}}"}"
+          ZIPS="${ZIPS:-"${{ secrets.TEST_ZIPS}}"}"
           echo "::add-path::${PWD}/../.github/scripts"
           echo "::set-env name=NODE_ENV::${NODE_ENV}"
           echo "::set-env name=APP_SERVER_URL::${APP_SERVER_URL}"
           echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
           echo "::set-env name=ZIPS::${ZIPS}"
 
+      - name: Get public IP address
+        run: |
+          echo "IP address: $(wget -q -O - icanhazip.com)"
       - name: Show test parameters
         run: |
           echo "NODE_ENV=${NODE_ENV}"
