@@ -68,6 +68,13 @@ jobs:
 
       - name: Show test parameters
         run: |
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: build_env=${{ github.event.inputs.dabuild_envte }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          ) | "${PWD}/../.github/scripts/write-to-log.sh"
+
           (echo "NODE_ENV=${NODE_ENV}"
           echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"

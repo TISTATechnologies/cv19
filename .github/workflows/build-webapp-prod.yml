@@ -48,6 +48,13 @@ jobs:
           echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
           echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
 
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: build_env=${{ github.event.inputs.dabuild_envte }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          ) | "${PWD}/../.github/scripts/write-to-log.sh"
+
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"
           echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
@@ -126,6 +133,13 @@ jobs:
           echo "::set-env name=S3_BUCKET::${S3_BUCKET}"
           echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
           echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
+
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: build_env=${{ github.event.inputs.dabuild_envte }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          ) | "${PWD}/../.github/scripts/write-to-log.sh"
 
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"
