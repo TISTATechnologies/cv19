@@ -1,5 +1,7 @@
 name: Run e2e tests
 on:
+  schedule:
+    - cron: "30 6 * * *"
   workflow_dispatch:
     inputs:
       build_env:
@@ -55,8 +57,12 @@ jobs:
             NODE_ENV="production"
           fi; fi
           if [ -z "${APP_SERVER_URL}" ]; then
-            echo "Error: required app-Url parameter."
-            exit 1
+            if [ "${NODE_ENV}" != "production" ]; then
+              echo "Error: required app-Url parameter."
+              exit 1
+            else
+              APP_SERVER_URL=${{ secrets.PROD_APP_SERVER_URL }}
+            fi
           fi
           ZIPS_COUNT="${ZIPS_COUNT:-"${{ secrets.TEST_ZIPS_COUNT}}"}"
           ZIPS="${ZIPS:-"${{ secrets.TEST_ZIPS}}"}"

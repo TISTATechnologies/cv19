@@ -1,5 +1,7 @@
 name: Run data collection
 on:
+  schedule:
+    - cron: "* 6 * * *"
   workflow_dispatch:
     inputs:
       date:
