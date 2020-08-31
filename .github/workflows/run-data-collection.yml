@@ -14,7 +14,7 @@ jobs:
     name: Collect and Update data
     env:
       DEBUG: ${{ secrets.DEBUG }}
-      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      BUILD_LOG: ./build-${{ github.run_id }}.log
       PGHOST: ${{ secrets.PGHOST }}
       PGPORT: ${{ secrets.PGPORT }}
       PGDATABASE: ${{ secrets.PGDATABASE }}
@@ -29,6 +29,12 @@ jobs:
       - name: Get public IP address
         run: |
           echo "IP address: $(wget -q -O - icanhazip.com)"
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Show python information
+        run: python3 --version && pip3 --version
       - name: Install dependencies
         working-directory: data/services/cv19srv
         run: pip3 install -U pip setuptools ; pip3 install -r ./requirements.txt
@@ -37,6 +43,8 @@ jobs:
       - name: Export latest data from the database into the json files
         run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${{ github.event.inputs.date }}
       - name: Upload data to the AWS S3 Bucket
+        env:
+          COVID_DATA_S3_BUCKET: ${{ secrets.COVID_DATA_S3_BUCKET }}
         run: yes | ./scripts/upload-covid-data-to-s3-bucket.sh
 
   test-data:
@@ -45,7 +53,7 @@ jobs:
     name: Test data
     env:
       DEBUG: ${{ secrets.DEBUG }}
-      BUILD_LOG: /tmp/build-${{ github.run_id }}.log
+      BUILD_LOG: ./build-${{ github.run_id }}.log
       PGHOST: ${{ secrets.PGHOST }}
       PGPORT: ${{ secrets.PGPORT }}
       PGDATABASE: ${{ secrets.PGDATABASE }}
@@ -63,6 +71,9 @@ jobs:
       - name: Install requirements for the tests
         run: npm install
       - name: Generate data for tests
-        run: run generate
+        run: npm run generate
       - name: Test static data
-        run: run test:api
+        env:
+          COMMON_DATA_URL: ${{ secrets.COMMON_DATA_URL }}
+          COVID_DATA_URL: ${{ secrets.COVID_DATA_URL }}
+        run: npm run test:api
