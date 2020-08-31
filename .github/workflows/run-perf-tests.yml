@@ -63,3 +63,22 @@ jobs:
           echo "Start test with parameters=${{toJson(github.event.inputs)}}"
           ${HOME}/.local/bin/locust -f ./cv19-webapp.py --headless -u ${VUSERS_TOTAL} -r ${VUSERS_PER_SEC} --run-time ${DURATION_SEC}s --host "${API_URL}"
           echo "End test with parameters=${{toJson(github.event.inputs)}}"
+
+      - name: Send notification
+        if: ${{ always() }}
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DEBUG: false
+        run: |
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params:"
+          echo "- app_url=${{ github.event.inputs.app_url }}"
+          echo "- api_url=${{ github.event.inputs.api_url }}"
+          echo "- vusers_total=${{ github.event.inputs.vusers_total }}"
+          echo "- vusers_per_sec=${{ github.event.inputs.vusers_per_sec }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
+          | ../../.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"

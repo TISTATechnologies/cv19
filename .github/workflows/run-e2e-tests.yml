@@ -98,3 +98,22 @@ jobs:
         run: npm run test:webapp
       - name: Run e2e tests for web app (random list)
         run: npm run test:webapp
+
+      - name: Send notification
+        if: ${{ always() }}
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DEBUG: false
+        run: |
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params:"
+          echo "- build_env=${{ github.event.inputs.build_env }}"
+          echo "- app_url=${{ github.event.inputs.app_url }}"
+          echo "- zips_count=${{ github.event.inputs.zips_count }}"
+          echo "- zips=${{ github.event.inputs.zips }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
+          | ../../.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"

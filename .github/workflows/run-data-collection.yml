@@ -47,10 +47,26 @@ jobs:
           COVID_DATA_S3_BUCKET: ${{ secrets.COVID_DATA_S3_BUCKET }}
         run: yes | ./scripts/upload-covid-data-to-s3-bucket.sh
 
+      - name: Send notification
+        if: ${{ always() }}
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DEBUG: false
+        run: |
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: date=${{ github.event.inputs.date }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
+          | ./.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"
+
+
   test-data:
     needs: [update-data]
     runs-on: ubuntu-latest
-    name: Test data
+    name: Test new data
     env:
       DEBUG: ${{ secrets.DEBUG }}
       BUILD_LOG: ./build-${{ github.run_id }}.log
@@ -77,3 +93,18 @@ jobs:
           COMMON_DATA_URL: ${{ secrets.COMMON_DATA_URL }}
           COVID_DATA_URL: ${{ secrets.COVID_DATA_URL }}
         run: npm run test:api
+
+      - name: Send notification
+        if: ${{ always() }}
+        env:
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          DEBUG: false
+        run: |
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: date=${{ github.event.inputs.date }}"
+          echo "Status: ${{job.status}}"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
+          | ../../.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"
