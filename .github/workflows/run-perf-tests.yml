@@ -81,5 +81,7 @@ jobs:
           echo "- vusers_total=${{ github.event.inputs.vusers_total }}"
           echo "- vusers_per_sec=${{ github.event.inputs.vusers_per_sec }}"
           echo "Status: ${{job.status}}"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
           echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
           | ../../.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"

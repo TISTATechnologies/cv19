@@ -73,6 +73,8 @@ jobs:
           echo "Name: ${GITHUB_WORKFLOW}"
           echo "Params: build_env=${{ github.event.inputs.dabuild_envte }}"
           echo "Status: ${{job.status}}"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
           echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           ) | "${PWD}/../.github/scripts/write-to-log.sh"
 

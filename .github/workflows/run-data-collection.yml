@@ -27,6 +27,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      PROCESSING_DATE: ${{ github.event.inputs.date }}
     steps:
       - uses: actions/checkout@v2
       - name: Get public IP address
@@ -38,13 +39,18 @@ jobs:
           python-version: 3.8
       - name: Show python information
         run: python3 --version && pip3 --version
+      - name: Parse parameters and sys.env
+        run: |
+          PROCESSING_DATE=${PROCESSING_DATE:-"latest"}
+          echo "::add-path::${PWD}/../.github/scripts"
+          echo "::set-env name=DATE::${PROCESSING_DATE}"
       - name: Install dependencies
         working-directory: data/services/cv19srv
         run: pip3 install -U pip setuptools ; pip3 install -r ./requirements.txt
       - name: Pull new data from the public data sources
-        run: yes | ./scripts/start-pull-data-services.sh ${{ github.event.inputs.date }}
+        run: yes | ./scripts/start-pull-data-services.sh ${PROCESSING_DATE}
       - name: Export latest data from the database into the json files
-        run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${{ github.event.inputs.date }}
+        run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${PROCESSING_DATE}
       - name: Upload data to the AWS S3 Bucket
         env:
           COVID_DATA_S3_BUCKET: ${{ secrets.COVID_DATA_S3_BUCKET }}
@@ -60,8 +66,10 @@ jobs:
         run: |
           (echo "GitHub actions finished"
           echo "Name: ${GITHUB_WORKFLOW}"
-          echo "Params: date=${{ github.event.inputs.date }}"
+          echo "Params: date=${PROCESSING_DATE}"
           echo "Status: ${{job.status}}"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
           echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
           | ./.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"
 
@@ -80,6 +88,7 @@ jobs:
       PGSCHEMA: ${{ secrets.PGSCHEMA }}
       PGUSER: ${{ secrets.PGUSER }}
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PROCESSING_DATE: ${{ github.event.inputs.date }}
     defaults:
       run:
         working-directory: tests/e2e
@@ -88,6 +97,11 @@ jobs:
       - name: Get public IP address
         run: |
           echo "IP address: $(wget -q -O - icanhazip.com)"
+      - name: Parse parameters and sys.env
+        run: |
+          PROCESSING_DATE=${PROCESSING_DATE:-"latest"}
+          echo "::add-path::${PWD}/../.github/scripts"
+          echo "::set-env name=DATE::${PROCESSING_DATE}"
       - name: Install requirements for the tests
         run: npm install
       - name: Generate data for tests
@@ -108,7 +122,9 @@ jobs:
         run: |
           (echo "GitHub actions finished"
           echo "Name: ${GITHUB_WORKFLOW}"
-          echo "Params: date=${{ github.event.inputs.date }}"
+          echo "Params: date=${PROCESSING_DATE}"
           echo "Status: ${{job.status}}"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
           echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}") \
           | ../../.github/scripts/send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}"
