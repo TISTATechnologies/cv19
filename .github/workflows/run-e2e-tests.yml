@@ -93,6 +93,7 @@ jobs:
           echo "Check connection to http://${SELENIUM_SERVER}"
           curl -s "http://${SELENIUM_SERVER}" | grep "You are using Selenoid" || (echo "Connection to http://${SELENIUM_SERVER} error." && exit 1)
           echo "Success"
+
       - name: Install all node dependencies
         run: npm install
       - name: Load current data from the database

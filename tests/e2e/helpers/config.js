@@ -39,7 +39,7 @@ class Config {
         this.special_locations_file = env('SPECIAL_LOCATIONS_FILE')
             || path.join(__dirname, 'cv19-special-locations-data.json');
 
-        this.window_width = +(env('DEF_WINDOW_WIDTH') || 1200);
+        this.window_width = +(env('DEF_WINDOW_WIDTH') || 1900);
         this.window_height = +(env('DEF_WINDOW_HEIGHT') || 1080);
         this.headless = (env('HEADLESS') !== 'false');
         const testServer = ((env('SELENIUM_SERVER') || 'localhost') + ':4444').split(':');

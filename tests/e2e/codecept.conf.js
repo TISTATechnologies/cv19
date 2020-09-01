@@ -25,6 +25,10 @@ const useWebDriver = () => {
     args.push('--allow-running-insecure-content');
     args.push('--ignore-certificate-errors');
     args.push('--log-level=3');
+    // args.push("--enable-javascript")
+    // args.push('--enable-logging');
+    // args.push('--auto-open-devtools-for-tabs');
+    // args.push('--verbose');
     // args.push('--page-load-strategy=normal');
 
     const chromeOptions = { args: args };
@@ -38,7 +42,7 @@ const useWebDriver = () => {
             smartWait: 5000,
             getPageTimeout: 20000,
             scriptsTimeout: 20000,
-            restart: true
+            restart: true,
           }
     };
 }
@@ -80,6 +84,16 @@ exports.config = {
     },
     screenshotOnFail: {
       enabled: true
-    }
+    },
+    selenoid: {
+      enabled: true,
+      deletePassed: true,
+      autoCreate: false,
+      autoStart: false,
+      sessionTimeout: '30m',
+      enableVideo: false,
+      enableLog: false,
+      enableVnc: false
+    },
   }
 }
