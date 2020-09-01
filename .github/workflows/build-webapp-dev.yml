@@ -17,6 +17,7 @@ jobs:
   build-deploy-webapp:
     name: Build and Deploy CV19 WebApp
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: webapp

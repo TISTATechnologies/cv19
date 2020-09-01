@@ -38,8 +38,9 @@ on:
 jobs:
 
   test-server:
-    runs-on: ubuntu-latest
     name: Run Locust test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: tests/locust

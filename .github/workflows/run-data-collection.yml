@@ -12,8 +12,9 @@ on:
 jobs:
 
   update-data:
-    runs-on: ubuntu-latest
     name: Collect and Update data
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       DEBUG: ${{ secrets.DEBUG }}
       BUILD_LOG: ./build-${{ github.run_id }}.log
@@ -66,9 +67,10 @@ jobs:
 
 
   test-data:
-    needs: [update-data]
-    runs-on: ubuntu-latest
     name: Test new data
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [update-data]
     env:
       DEBUG: ${{ secrets.DEBUG }}
       BUILD_LOG: ./build-${{ github.run_id }}.log

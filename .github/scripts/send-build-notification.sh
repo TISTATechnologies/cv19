@@ -10,7 +10,6 @@ read_body() {
 export SMTP_USERNAME=${SMTP_USERNAME}
 export SMTP_PASSWORD=${SMTP_PASSWORD}
 export SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
-export NODE_ENV=${NODE_ENV:-"development"}
 export RECIPIENT=${1}
 JOB_STATUS=${2}
 LOG_FILE=${3}
@@ -25,4 +24,4 @@ BRANCH=$(echo "${GITHUB_REF}" | sed 's/^refs\/heads\///g')
 REPO=${GITHUB_REPOSITORY}
 echo "Execute ${SMTPSENDER}"
 read_body "${LOG_FILE}" \
-| "${SMTPSENDER}" "[${REPO}] Run ${JOB_STATUS}: ${JOB_NAME} - ${BRANCH} [env=${NODE_ENV}]"
+| "${SMTPSENDER}" "[${REPO}] Run ${JOB_STATUS}: ${JOB_NAME} - ${BRANCH}"

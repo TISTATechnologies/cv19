@@ -12,6 +12,7 @@ jobs:
   build-deploy-webapp-prod:
     name: Build and Deploy CV19 WebApp (PROD)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: webapp
@@ -98,6 +99,7 @@ jobs:
   build-deploy-webapp-prod-internal:
     name: Build and Deploy CV19 WebApp (PROD-INTERNAL)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: webapp
