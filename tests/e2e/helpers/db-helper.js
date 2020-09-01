@@ -188,6 +188,7 @@ const main = async () => {
         fs.writeFileSync(config.special_locations_file, specialLocationsObj);
     } catch (err) {
         log.error(`Error: ${err.stack || err}`);
+        throw err;
     }
 }
 

@@ -4,6 +4,7 @@ from cv19srv.config import config
 
 from cv19srv import collector
 from cv19srv import export
+from cv19srv import database
 
 __version__ = '1.0.0'
 __author__ = 'Tista'
@@ -17,7 +18,7 @@ class CV19:
         log.debug(f'{self.__class__.__name__} config: {config}')
 
     def show_help(self):
-        print('Usage: cv19srv <collect|export> [engine] [args...]')
+        print('Usage: cv19srv <collect|export|check-database> [engine] [args...]')
         print('Command: collect')
         print(f'  engines: {", ".join(collector.ENGINES)}, all')
         print(f'  args   : [YYYY-MM-DD|latest]')
@@ -34,9 +35,7 @@ class CV19:
 
     def run(self, args):
         try:
-            if len(args) <= 1:
-                return self.show_help()
-            if [a for a in args if a.lstrip('-') == 'help']:
+            if len(args) <= 0 or [a for a in args if a.lstrip('-') == 'help']:
                 return self.show_help()
             cmd = args[0]
             log.debug(f'Command line: {cmd} {args}')
@@ -48,6 +47,8 @@ class CV19:
                 engine = sys.argv[2] if len(sys.argv) > 2 else None
                 args = sys.argv[3:]
                 return export.run(engine, args)
+            if cmd == 'check-database':
+                return database.check()
             if cmd.lstrip('-') == 'help':
                 return self.show_help()
             log.error(f'Unknown command {cmd}')

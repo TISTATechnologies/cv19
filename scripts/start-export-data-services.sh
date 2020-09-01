@@ -47,6 +47,8 @@ read -p "Continue to export data (y/N)? " opt
 if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
 cd data/services/cv19srv
+title "Check database status" && \
+python3 cv19srv check-database && \
 title "Export all covid data" && \
 python3 cv19srv export all "${period}" "${output_dir}" $@ && \
 cd - >/dev/null && \

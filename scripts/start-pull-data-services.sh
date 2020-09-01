@@ -43,6 +43,8 @@ read -p "Continue to load data (y/N)? " opt
 if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
 cd data/services/cv19srv
+title "Check database status" && \
+python3 cv19srv check-database && \
 title "Pull executive news links" && \
 python3 cv19srv collect executive-news && \
 title "Pull data from the JHU dataset" && \
