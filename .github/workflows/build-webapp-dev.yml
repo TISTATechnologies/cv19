@@ -69,15 +69,6 @@ jobs:
 
       - name: Show test parameters
         run: |
-          (echo "GitHub actions finished"
-          echo "Name: ${GITHUB_WORKFLOW}"
-          echo "Params: build_env=${{ github.event.inputs.dabuild_envte }}"
-          echo "Status: ${{job.status}}"
-          echo "Event: ${GITHUB_EVENT_NAME}"
-          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
-          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          ) | "${PWD}/../.github/scripts/write-to-log.sh"
-
           (echo "NODE_ENV=${NODE_ENV}"
           echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"
@@ -117,4 +108,17 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
           DEBUG: false
-        run: send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}" "${BUILD_LOG}"
+        run: |
+          new_log=./build-${{ github.run_id }}-dev.log
+          (echo "GitHub actions finished"
+          echo "Name: ${GITHUB_WORKFLOW}"
+          echo "Params: build_env=${{ github.event.inputs.build_env }}"
+          echo "Status: ${{job.status}}"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
+          echo "Log: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          echo "--------------------"
+          ) > "${new_log}"
+          cat "${BUILD_LOG}" >> "${new_log}"
+          rm "${BUILD_LOG}"
+          send-build-notification.sh "${{secrets.RECIPIENT}}" "${{job.status}}" "${new_log}"

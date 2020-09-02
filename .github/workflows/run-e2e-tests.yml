@@ -1,7 +1,7 @@
 name: Run e2e tests
 on:
   schedule:
-    - cron: "30 6 * * *"
+    - cron: "35 6 * * *"
   workflow_dispatch:
     inputs:
       build_env:
@@ -15,11 +15,13 @@ on:
       zips_count:
         description: 'Test zips count'
         required: false
-        default: '10'
+        default: '25'
       zips:
-        description: 'Test zips'
+        description: 'Test zips (comma separated)'
         required: false
-        default: '20001,20850,12345'
+      test_date:
+        description: 'Test date'
+        required: false
 
 jobs:
 
@@ -45,6 +47,7 @@ jobs:
       APP_SERVER_URL: ${{ github.event.inputs.app_url }}
       ZIPS_COUNT: ${{ github.event.inputs.zips_count }}
       ZIPS: ${{ github.event.inputs.zips }}
+      TEST_DATE: ${{ github.event.inputs.test_date }}
     steps:
       - uses: actions/checkout@v2
 
@@ -118,10 +121,10 @@ jobs:
           (echo "GitHub actions finished"
           echo "Name: ${GITHUB_WORKFLOW}"
           echo "Params:"
-          echo "- build_env=${{ github.event.inputs.build_env }}"
-          echo "- app_url=${{ github.event.inputs.app_url }}"
-          echo "- zips_count=${{ github.event.inputs.zips_count }}"
-          echo "- zips=${{ github.event.inputs.zips }}"
+          echo "- env=${NODE_ENV}"
+          echo "- app_url=${APP_SERVER_URL}"
+          echo "- zips_count=${ZIPS_COUNT}"
+          echo "- zips=${ZIPS}"
           echo "Status: ${{job.status}}"
           echo "Event: ${GITHUB_EVENT_NAME}"
           echo "Time: $(date +"%Y-%m-%d %H:%M:%S%z (%Z)")"
