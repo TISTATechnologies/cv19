@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme) => ({
 
 const bigNumberFormat = new Intl.NumberFormat('en', {});
 const updatedTimeFormat = (date) => (date.toString() !== 'Invalid Date'
-  ? `Last updated: ${date.toLocaleDateString('en', {
+  ? `Last updated: ${date.toLocaleString('en', {
     timeStyle: 'short',
     dateStyle: 'long',
   })}`
@@ -264,7 +264,7 @@ const LocalStatsTable = ({
               <Grid item xs={12} sm={6}>
                 <Typography variant="body2">
                   {lastUpdated.toString() !== 'Invalid Date'
-                    ? `Last updated: ${lastUpdated.toLocaleDateString('en', {
+                    ? `Last updated: ${lastUpdated.toLocaleString('en', {
                       timeStyle: 'long',
                       dateStyle: 'long',
                     })}`
