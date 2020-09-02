@@ -6,7 +6,7 @@ from cv19srv import collector
 from cv19srv import export
 from cv19srv import database
 
-__version__ = '1.0.0'
+__version__ = '1.9.0'
 __author__ = 'Tista'
 
 
