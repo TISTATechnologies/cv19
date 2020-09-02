@@ -48,6 +48,8 @@ jobs:
       BUILD_LOG: /tmp/build-${{ github.run_id }}.log
     steps:
       - uses: actions/checkout@v2
+      - name: Show parameters and sys.env
+        run: echo "Test parameters = ${{toJson(github.event.inputs)}}"
       - name: Install dependencies
         run: pip3 install -U pip setuptools; pip3 install locust
       - name: Run test script
