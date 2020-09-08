@@ -30,9 +30,11 @@ jobs:
       PROCESSING_DATE: ${{ github.event.inputs.date }}
     steps:
       - uses: actions/checkout@v2
-      - name: Get public IP address
-        run: |
-          echo "IP address: $(wget -q -O - icanhazip.com)"
+      - name: Pre-Build Notification
+        env:
+          GH_NOTIFICATION_LAMBDA_NAME: ${{ secrets.GH_NOTIFICATION_LAMBDA_NAME }}
+          GH_NOTIFICATION_LAMBDA_KEY: ${{ secrets.GH_NOTIFICATION_LAMBDA_KEY }}
+        run: ./.github/scripts/pre-build-event.sh
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
@@ -94,9 +96,14 @@ jobs:
         working-directory: tests/e2e
     steps:
       - uses: actions/checkout@v2
-      - name: Get public IP address
-        run: |
-          echo "IP address: $(wget -q -O - icanhazip.com)"
+      - name: Pre-Build Notification
+        env:
+          GH_NOTIFICATION_LAMBDA_NAME: ${{ secrets.GH_NOTIFICATION_LAMBDA_NAME }}
+          GH_NOTIFICATION_LAMBDA_KEY: ${{ secrets.GH_NOTIFICATION_LAMBDA_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: ../../.github/scripts/pre-build-event.sh
       - name: Parse parameters and sys.env
         run: |
           PROCESSING_DATE=${PROCESSING_DATE:-"latest"}

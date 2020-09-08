@@ -9,6 +9,7 @@
 
 __*
 *.log
+*.out
 /node_modules
 /webapp/public/static
 /webapp/public/data

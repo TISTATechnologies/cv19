@@ -50,7 +50,14 @@ jobs:
       TEST_DATE: ${{ github.event.inputs.test_date }}
     steps:
       - uses: actions/checkout@v2
-
+      - name: Pre-Build Notification
+        env:
+          GH_NOTIFICATION_LAMBDA_NAME: ${{ secrets.GH_NOTIFICATION_LAMBDA_NAME }}
+          GH_NOTIFICATION_LAMBDA_KEY: ${{ secrets.GH_NOTIFICATION_LAMBDA_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: ../../.github/scripts/pre-build-event.sh
       - name: Parse parameters and sys.env
         run: |
           if [ "${BUILD_ENV}" == "development" ]; then
@@ -76,9 +83,6 @@ jobs:
           echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
           echo "::set-env name=ZIPS::${ZIPS}"
 
-      - name: Get public IP address
-        run: |
-          echo "IP address: $(wget -q -O - icanhazip.com)"
       - name: Show test parameters
         run: |
           echo "NODE_ENV=${NODE_ENV}"
