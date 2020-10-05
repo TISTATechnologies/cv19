@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import MyLocationIcon from '@material-ui/icons/MyLocation';
 import Hidden from '@material-ui/core/Hidden';
 
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Link from '@material-ui/core/Link';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -39,6 +40,7 @@ import {
   fetchDataSources,
   fetchFipsFromZip,
   fetchHistoric,
+  fetchMetroZones,
 } from './util/fetch';
 import { diffPercent } from './util/math';
 import { createUrl, createFipsUrl, decodeUrl } from './util/url';
@@ -150,6 +152,12 @@ const useStyles = makeStyles((theme) => ({
       // right: theme.spacing(2),
     },
   },
+  metroButton: {
+    backgroundColor: theme.palette.warning.light,
+    [theme.breakpoints.up('lg')]: {
+      marginLeft: theme.spacing(2),
+    },
+  },
 }));
 
 function App() {
@@ -175,6 +183,8 @@ function App() {
   const [zipOptions, setZipOptions] = useState([]);
   const [historic, setHistoric] = useState({ active: [] });
   const geoLocation = useGeolocation();
+  const [hasMetro, setHasMetro] = useState(false);
+  const [metroZones, setMetroZones] = useState(null);
   const [savedLocations, setSavedLocations] = useLocalStorage('MyLocations', [
     {
       name: 'Montogomery County, MD',
@@ -266,7 +276,7 @@ function App() {
   // COUNTY
   useEffect(() => {
     const f = async () => {
-      // console.log('%cFetching COUNTY', 'color: cyan');
+      console.log(`%cFetching COUNTY ${fips}`, 'color: cyan');
       const { data, error } = await fetchDataFromFips(fips);
       if (error) {
         setErrorMessage(error);
@@ -276,12 +286,21 @@ function App() {
       } else if (data && data.length) {
         const [place] = data;
         setCountyStats({ ...place, name: removeDouble(place.name) });
-        // console.log(`🔴 ${location}`);
-        goToLevel('county');
+        console.log(`🔴 ${location}`);
+        if (fips.toUpperCase().includes('US')) {
+          goToLevel('metro');
+        } else {
+          goToLevel('county');
+          setMyState(place.state_id);
+          const state = stateStats.find((x) => x.state_id === place.state_id);
+          if (state) {
+            setMyStateName(state.name);
+          } else {
+            setMyStateName('');
+          }
+        }
         setLoadingZip(false);
         setFips('');
-        setMyState(place.state_id);
-        setMyStateName(stateStats.find((x) => x.state_id === place.state_id).name);
         gtag('event', 'search', {
           event_label: `Zip Search Successful ${location}`,
         });
@@ -317,9 +336,40 @@ function App() {
   }, [location, goToLevel, history, fips, lastFipsSearch, stateStats]);
 
   useEffect(() => {
-    // console.log(`%c${countyStats.name}`, 'color: salmon');
+    console.log(`%c${countyStats.name}`, 'color: salmon');
     // console.dir(countyStats);
-  }, [countyStats]);
+    const f = (zones) => {
+      const metrozone = zones.find((z) => z.county === countyStats.fips);
+      console.log(`set to ${metrozone}`);
+      setHasMetro(metrozone);
+    };
+    const g = async () => {
+      const { data, error } = await fetchMetroZones();
+      if (error) {
+        setErrorMessage(error);
+      } else if (data) {
+        const zones = data.reduce(
+          (acc, next) => [
+            ...acc,
+            ...next.counties.map(({ fips: cfips }) => ({
+              county: cfips,
+              name: next.name,
+              fips: next.fips,
+            })),
+          ],
+          [],
+        );
+        console.log('building zone list', zones);
+        setMetroZones(zones);
+        f(zones);
+      }
+    };
+    if (metroZones && metroZones.length) {
+      f(metroZones);
+    } else {
+      g();
+    }
+  }, [countyStats, metroZones]);
 
   useEffect(() => {
     const f = async () => {
@@ -440,8 +490,7 @@ function App() {
     }
   }, [savedLocations, setMyLocations]);
 
-  const handleLocationChange = (e, value, reason) => {
-    // console.log(`%c👍 ${reason}`, 'color: pink');
+  const handleLocationChange = (e, value) => {
     if (value) {
       createAndNavigate(value);
       // setLocation(value.zip);
@@ -514,7 +563,7 @@ function App() {
         data={usaStats[0]}
         getFlag
         level="usa"
-        mini={level !== 'usa'}
+        mini={level === 'county'}
       />
     ),
     [sources, usaStats, level],
@@ -636,7 +685,7 @@ function App() {
             </Visible>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={12} lg={6}>
             <Link
               component="button"
               className={classes.clickMe}
@@ -649,7 +698,7 @@ function App() {
             >
               USA
             </Link>
-            <Visible condition={level !== 'usa'}>
+            <Visible condition={level !== 'usa' && level !== 'metro'}>
               {' / '}
               <Typography
                 component="span"
@@ -662,15 +711,22 @@ function App() {
             </Visible>
             <Visible condition={level !== 'usa'}>
               {' / '}
-              <Typography
-                component="span"
-                variant="h4"
-                color="textPrimary"
-                onClick={() => goToLevel('county')}
-              >
+              <Typography component="span" variant="h4" color="textPrimary">
                 {`${countyStats.name}`}
               </Typography>
             </Visible>
+          </Grid>
+          <Grid item xs={12} lg={6}>
+            {hasMetro ? (
+              <Button
+                className={classes.metroButton}
+                variant="contained"
+                color="secondary"
+                onClick={() => createAndNavigate(hasMetro)}
+              >
+                {hasMetro.name}
+              </Button>
+            ) : null}
           </Grid>
 
           <Grid
@@ -695,7 +751,7 @@ function App() {
                 </ErrorBoundary>
               </Grid>
             </Visible>
-            <Visible condition={level === 'county'}>
+            <Visible condition={level === 'county' || level === 'metro'}>
               <Grid item xs={12}>
                 <ErrorBoundary>
                   <Suspense fallback={fallback}>{MemoStatsCounty}</Suspense>
@@ -737,9 +793,11 @@ function App() {
           </Grid>
 
           <Grid item xs={12}>
-            <ErrorBoundary>
-              <Suspense fallback={fallback}>{MemoFeed}</Suspense>
-            </ErrorBoundary>
+            <Visible condition={level === 'county'}>
+              <ErrorBoundary>
+                <Suspense fallback={fallback}>{MemoFeed}</Suspense>
+              </ErrorBoundary>
+            </Visible>
           </Grid>
         </Grid>
       </Container>

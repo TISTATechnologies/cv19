@@ -41,7 +41,7 @@ const Feed = ({ data }) => {
   const classes = useStyles();
   const { myState, headlines = [], loadingZip } = data;
   // show nothing if loaded without selected state
-  if (!myState) return null;
+  if (!myState || myState === 'US') return null;
 
   if (loadingZip) {
     return (
@@ -69,36 +69,33 @@ const Feed = ({ data }) => {
         subheader="The most important executive orders for this state:"
       />
       <CardContent>
-        {headlines
-          .sort(sortDate)
-          .map(({ url: feedUrl = 'blank', created: createdDate, note }, index) => {
-            const age = determineAge(createdDate);
-            const isFresh = age <= daysStillFresh;
-            const key = feedUrl + createdDate + note;
-            // console.log(`%c${index}:${key}`, 'color: pink');
-            return (
-              <div>
-                <Link
-                  key={key}
-                  classes={{
-                    root: classes.url,
-                  }}
-                  className={isFresh ? classes.fresh : ''}
-                  href={feedUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  color="textSecondary"
-                  underline="always"
-                  display="block"
-                  noWrap
-                  variant="h6"
-                >
-                  <span className={classes.bullet}>{isFresh ? '🆕' : '●'}</span>
-                  {note}
-                </Link>
-              </div>
-            );
-          })}
+        {headlines.sort(sortDate).map(({ url: feedUrl = 'blank', created: createdDate, note }) => {
+          const age = determineAge(createdDate);
+          const isFresh = age <= daysStillFresh;
+          const key = feedUrl + createdDate + note;
+          return (
+            <div>
+              <Link
+                key={key}
+                classes={{
+                  root: classes.url,
+                }}
+                className={isFresh ? classes.fresh : ''}
+                href={feedUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                color="textSecondary"
+                underline="always"
+                display="block"
+                noWrap
+                variant="h6"
+              >
+                <span className={classes.bullet}>{isFresh ? '🆕' : '●'}</span>
+                {note}
+              </Link>
+            </div>
+          );
+        })}
         {headlines.length < 1 ? (
           <Typography noWrap variant="h6">
             No Executive Orders for

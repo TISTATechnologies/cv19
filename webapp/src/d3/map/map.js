@@ -8,6 +8,7 @@ let globalScale = 1;
 
 let countyGeo = [];
 let stateGeo = [];
+let metroGeo = [];
 
 const bigFormat = new Intl.NumberFormat('en', {});
 
@@ -339,7 +340,9 @@ function joinTables(lookupTable, mainTable, lookupKey, mainKey, select) {
   return output;
 }
 
-function initMap(width = 950, height = 300, countyMap, stateMap, aidData) {
+function initMap({
+  width = 950, height = 300, countyMap, stateMap, aidData, metroMap,
+}) {
   console.log('%cINIT MAP ', 'color: limegreen');
 
   countyGeo = countyMap.features.map((x) => ({
@@ -350,6 +353,15 @@ function initMap(width = 950, height = 300, countyMap, stateMap, aidData) {
     ...x,
     fips: x.properties.STATE,
   }));
+
+  metroGeo = metroMap.features.map((x) => ({
+    ...x,
+    fips: x.properties.STATE + x.properties.COUNTY,
+    metro: true,
+  }));
+
+  countyGeo = [...countyGeo, ...metroGeo];
+
   const svg = d3
     .selectAll('section')
     .append('svg')
@@ -441,7 +453,8 @@ function getAllMapData(countyHeat, EmpCounties) {
       population: h !== undefined ? h.population : undefined,
       geo_lat: h !== undefined ? h.geo_lat : undefined,
       geo_long: h !== undefined ? h.geo_long : undefined,
-      ratio: h !== undefined && (h.population || 0) > 0 ? (h.confirmed / h.population) * 1e5 : undefined,
+      ratio:
+        h !== undefined && (h.population || 0) > 0 ? (h.confirmed / h.population) * 1e5 : undefined,
     }));
     if (EmpCounties) {
       finalCounty = joinTables(EmpCounties, finalCounty, 'fips', 'fips', (g, h) => ({
@@ -538,7 +551,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
     .attr('d', geoPath)
     .transition(t)
     .delay((d, i) => (i % 10) * 50)
-    .attr('fill', colorFunction)
+    .attr('fill', (d) => (d.metro ? 'none' : colorFunction(d)))
     .attr('opacity', '0.9')
     .attr('stroke', '#444')
     .attr('stroke-opacity', 0.2);
@@ -546,6 +559,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
   const zoom = d3.zoom().scaleExtent([0.8, 40]).on('zoom', zoomed);
 
   function drawLocation(drawnLoc) {
+    console.dir(drawnLoc);
     counties
       .select(`.fips${drawnLoc.fips}`)
       .attr('opacity', '1')
@@ -554,6 +568,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
       .attr('stroke-opacity', 1)
       .attr('class', 'active');
   }
+
   function zoomToUsa() {
     const moveX = Math.min(0, width / 2);
     const moveY = Math.min(0, height / 2);
@@ -579,7 +594,7 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
   }
 
   svg.call(zoom);
-  if (location.geo_lat) {
+  if (location.geo_lat && location.geo_long) {
     toLocation(location);
     if (myMap !== 'aid') drawLocation(location);
   } else {

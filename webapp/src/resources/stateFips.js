@@ -56,4 +56,5 @@ export default [
   ['Northern Mariana Islands', 'MP', '69'],
   ['Puerto Rico', 'PR', '72'],
   ['Virgin Islands', 'VI', '78'],
+  ['US Metro Areas', 'US', 'US'],
 ];

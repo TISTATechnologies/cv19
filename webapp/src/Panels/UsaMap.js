@@ -42,6 +42,7 @@ const UsaMap = ({ data }) => {
   const [aid, setAid] = useState([]);
   const [countyMap, setCountyMap] = useState({ features: [] });
   const [stateMap, setStateMap] = useState({ features: [] });
+  const [metroMap, setMetroMap] = useState({ features: [] });
   const [isGeoSaved, setIsGeoSaved] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [isHeatSaved, setIsHeatSaved] = useState(false);
@@ -64,6 +65,7 @@ const UsaMap = ({ data }) => {
       const { data: geoData } = await fetchGeo();
       setCountyMap(geoData[0]);
       setStateMap(geoData[1]);
+      setMetroMap(geoData[2]);
       setIsGeoSaved(true);
     };
     if (!isGeoSaved) {
@@ -123,7 +125,14 @@ const UsaMap = ({ data }) => {
   useLayoutEffect(() => {
     if (isGeoSaved && isAidSaved) {
       if (!initialized) {
-        initMap(200, 500, countyMap, stateMap, aid);
+        initMap({
+          width: 200,
+          height: 500,
+          countyMap,
+          stateMap,
+          aidData: aid,
+          metroMap,
+        });
         setInitialized(true);
       } else {
         readiedMap();
@@ -142,6 +151,7 @@ const UsaMap = ({ data }) => {
     myMap,
     readiedMap,
     stateMap,
+    metroMap,
   ]);
 
   const handleRadioChange = ({ target }) => {
