@@ -13,15 +13,17 @@ describe("Check common tables in database", () => {
     it(`US state count correct`, async () => {
         const sql = 'SELECT type, COUNT(*) FROM state GROUP BY type ORDER BY type;'
         const res = await exec(sql);
-        expect(res).toHaveLength(4); 
-        expect(res[0]['type']).toEqual('associated state'); 
-        expect(res[0]['count']).toEqual('3'); 
-        expect(res[1]['type']).toEqual('federal district'); 
-        expect(res[1]['count']).toEqual('1'); 
-        expect(res[2]['type']).toEqual('state'); 
-        expect(res[2]['count']).toEqual('50'); 
-        expect(res[3]['type']).toEqual('territory'); 
-        expect(res[3]['count']).toEqual('5'); 
+        expect(res).toHaveLength(5);
+        expect(res[0]['type']).toEqual('area'); 
+        expect(res[0]['count']).toEqual('1');
+        expect(res[1]['type']).toEqual('associated state');
+        expect(res[1]['count']).toEqual('3');
+        expect(res[2]['type']).toEqual('federal district');
+        expect(res[2]['count']).toEqual('1');
+        expect(res[3]['type']).toEqual('state');
+        expect(res[3]['count']).toEqual('50');
+        expect(res[4]['type']).toEqual('territory');
+        expect(res[4]['count']).toEqual('5');
     });
 
     it(`US counties count correct`, async () => {
@@ -29,18 +31,20 @@ describe("Check common tables in database", () => {
             + 'INNER JOIN state s ON s.id = r.state_id AND s.country_id = r.country_id '
             + 'WHERE r.type = \'county\' AND r.country_id = \'US\' GROUP BY s.type ORDER BY s.type;'
         const res = await exec(sql);
-        expect(res).toHaveLength(3); 
-        expect(res[0]['type']).toEqual('federal district'); 
-        expect(res[0]['count']).toEqual('1'); 
-        expect(res[1]['type']).toEqual('state'); 
-        expect(res[1]['count']).toEqual('3141'); 
-        expect(res[2]['type']).toEqual('territory'); 
-        expect(res[2]['count']).toEqual('78');              // we have counties for PR territory
+        expect(res).toHaveLength(4);
+        expect(res[0]['type']).toEqual('area');
+        expect(res[0]['count']).toEqual('1');
+        expect(res[1]['type']).toEqual('federal district');
+        expect(res[1]['count']).toEqual('1');
+        expect(res[2]['type']).toEqual('state');
+        expect(res[2]['count']).toEqual('3141');
+        expect(res[3]['type']).toEqual('territory');
+        expect(res[3]['count']).toEqual('78');              // we have counties for PR territory
         let total = 0;
         for (let i = 0; i < res.length; i += 1) {
             total += +res[i]['count'];
         }
-        expect(total).toEqual(3220);
+        expect(total).toEqual(3221);
     });
 
     it(`All US counties have zip codes`, async () => {

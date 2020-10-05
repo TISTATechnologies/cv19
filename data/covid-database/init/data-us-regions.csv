@@ -3219,6 +3219,7 @@ US,PR,72147,Vieques Municipio,,county,18.15267,-65.83161
 US,PR,72149,Villalba Municipio,,county,18.120519,-66.496607
 US,PR,72151,Yabucoa Municipio,,county,18.228959,-66.049364
 US,PR,72153,Yauco Municipio,,county,18.06104,-66.861164
+US,US,USDC1,Washington D.C. Metro Area,,county,38.91706,-77.00025
 US,AL,00001,Alabama,,state,32.318231,-86.902298
 US,AK,00002,Alaska,,state,63.588753,-154.493062
 US,AZ,00004,Arizona,,state,34.048928,-111.093731
@@ -3278,4 +3279,5 @@ US,VI,00078,Virgin Islands,,state,18.3357658,-64.8963318
 US,PW,00070,Palau,,state,7.5149798,134.5825195
 US,FM,00064,Micronesia,,state,7.4255538,150.5508118
 US,MH,00068,Marshall Islands,,state,7.131474,171.1844788
+US,US,000US,US Area,,area,,
 US,,00000,United States,,country,37.09024,-95.712891

@@ -42,6 +42,20 @@ CREATE TABLE region (
 );
 CREATE UNIQUE INDEX region_uniq ON region (country_id, COALESCE(state_id, ''), COALESCE(fips, ''));
 
+CREATE TABLE region_part (
+    id SERIAL PRIMARY KEY,
+    country_id TEXT NOT NULL,
+    state_id TEXT NOT NULL,
+    fips TEXT NOT NULL,
+    type TEXT NOT NULL,
+    part_id TEXT NOT NULL,
+    geo_lat DECIMAL,
+    geo_long DECIMAL,
+    FOREIGN KEY (country_id) REFERENCES country (id),
+    FOREIGN KEY (state_id, country_id) REFERENCES state (id, country_id)
+);
+CREATE UNIQUE INDEX region_part_uniq ON region_part (country_id, state_id, fips, type, part_id);
+
 CREATE TABLE region_population (
     id SERIAL PRIMARY KEY,
     country_id TEXT NOT NULL,
