@@ -1,6 +1,6 @@
 id,name,aliases,geo_lat,geo_long
 AD,Andorra,Andorra,42.546245,1.601554
-AE,United Arab Emirates,United Arab Emirates ,23.424076,53.847818
+AE,United Arab Emirates,United Arab Emirates,23.424076,53.847818
 AF,Afghanistan,Afghanistan,33.93911,67.709953
 AG,Antigua and Barbuda,Antigua and Barbuda,17.060816,-61.796428
 AI,Anguilla,Anguilla,18.220554,-63.068615
@@ -30,20 +30,20 @@ BN,Brunei,Brunei Darussalam,4.535277,114.727669
 BO,Bolivia,Bolivia (Plurinational State of),-16.290154,-63.588653
 BQ,"Bonaire, Sint Eustatius and Saba","Bonaire, Sint Eustatius and Saba",12.1783609,-68.238533
 BR,Brazil,Brazil,-14.235004,-51.92528
-BS,Bahamas,Bahamas ,25.03428,-77.39628
+BS,Bahamas,Bahamas,25.03428,-77.39628
 BT,Bhutan,Bhutan,27.514162,90.433601
 BV,Bouvet Island,Bouvet Island,-54.423199,3.413194
 BW,Botswana,Botswana,-22.328474,24.684866
 BY,Belarus,Belarus,53.709807,27.953389
 BZ,Belize,Belize,17.189877,-88.49765
 CA,Canada,Canada,56.130366,-106.346771
-CC,Cocos Islands,Cocos (Keeling) Islands ,-12.164165,96.870956
+CC,Cocos Islands,Cocos (Keeling) Islands,-12.164165,96.870956
 CD,Democratic Republic of the Congo,Congo (the Democratic Republic of the),-4.038333,21.758664
-CF,Central African Republic,Central African Republic ,6.611111,20.939444
-CG,Congo,Congo ,-0.228021,15.827659
+CF,Central African Republic,Central African Republic,6.611111,20.939444
+CG,Congo,Congo,-0.228021,15.827659
 CH,Switzerland,Switzerland,46.818188,8.227512
 CI,Ivory Coast,Côte d'Ivoire,7.539989,-5.54708
-CK,Cook Islands,Cook Islands ,-21.236736,-159.777671
+CK,Cook Islands,Cook Islands,-21.236736,-159.777671
 CL,Chile,Chile,-35.675147,-71.542969
 CM,Cameroon,Cameroon,7.369722,12.354722
 CN,China,China,35.86166,104.195397
@@ -59,7 +59,7 @@ DE,Germany,Germany,51.165691,10.451526
 DJ,Djibouti,Djibouti,11.825138,42.590275
 DK,Denmark,Denmark,56.26392,9.501785
 DM,Dominica,Dominica,15.414999,-61.370976
-DO,Dominican Republic,Dominican Republic ,18.735693,-70.162651
+DO,Dominican Republic,Dominican Republic,18.735693,-70.162651
 DZ,Algeria,Algeria,28.033886,1.659626
 EC,Ecuador,Ecuador,-1.831239,-78.183406
 EE,Estonia,Estonia,58.595272,25.013607
@@ -72,7 +72,7 @@ FI,Finland,Finland,61.92411,25.748151
 FJ,Fiji,Fiji,-16.578193,179.414413
 FK,Falkland Islands,Falkland Islands  [Malvinas],-51.796253,-59.523613
 FM,Micronesia,Micronesia (Federated States of),7.425554,150.550812
-FO,Faroe Islands,Faroe Islands ,61.892635,-6.911806
+FO,Faroe Islands,Faroe Islands,61.892635,-6.911806
 FR,France,France,46.227638,2.213749
 GA,Gabon,Gabon,-0.803689,11.609444
 GB,United Kingdom,United Kingdom,55.378051,-3.435973
@@ -83,7 +83,7 @@ GG,Guernsey,Guernsey,49.465691,-2.585278
 GH,Ghana,Ghana,7.946527,-1.023194
 GI,Gibraltar,Gibraltar,36.137741,-5.345374
 GL,Greenland,Greenland,71.706936,-42.604303
-GM,Gambia,Gambia ,13.443182,-15.310139
+GM,Gambia,Gambia,13.443182,-15.310139
 GN,Guinea,Guinea,9.945587,-9.696645
 GP,Guadeloupe,Guadeloupe,16.995971,-62.067641
 GQ,Equatorial Guinea,Equatorial Guinea,1.650801,10.267895
@@ -105,7 +105,7 @@ IE,Ireland,Ireland,53.41291,-8.24389
 IL,Israel,Israel,31.046051,34.851612
 IM,Isle of Man,Isle of Man,54.236107,-4.548056
 IN,India,India,20.593684,78.96288
-IO,British Indian Ocean Territory,British Indian Ocean Territory ,-6.343194,71.876519
+IO,British Indian Ocean Territory,British Indian Ocean Territory,-6.343194,71.876519
 IQ,Iraq,Iraq,33.223191,43.679291
 IR,Iran,Iran (Islamic Republic of),32.427908,53.688046
 IS,Iceland,Iceland,64.963051,-19.020835
@@ -118,14 +118,14 @@ KE,Kenya,Kenya,-0.023559,37.906193
 KG,Kyrgyzstan,Kyrgyzstan,41.20438,74.766098
 KH,Cambodia,Cambodia,12.565679,104.990963
 KI,Kiribati,Kiribati,-3.370417,-168.734039
-KM,Comoros,Comoros ,-11.875001,43.872219
+KM,Comoros,Comoros,-11.875001,43.872219
 KN,Saint Kitts and Nevis,Saint Kitts and Nevis,17.357822,-62.782998
 KP,North Korea,Korea (the Democratic People's Republic of),40.339852,127.510093
 KR,South Korea,Korea (the Republic of),35.907757,127.766922
 KW,Kuwait,Kuwait,29.31166,47.481766
-KY,Cayman Islands,Cayman Islands ,19.513469,-80.566956
+KY,Cayman Islands,Cayman Islands,19.513469,-80.566956
 KZ,Kazakhstan,Kazakhstan,48.019573,66.923684
-LA,Laos,Lao People's Democratic Republic ,19.85627,102.495496
+LA,Laos,Lao People's Democratic Republic,19.85627,102.495496
 LB,Lebanon,Lebanon,33.854721,35.862285
 LC,Saint Lucia,Saint Lucia,13.909444,-60.978893
 LI,Liechtenstein,Liechtenstein,47.166,9.555373
@@ -142,13 +142,13 @@ MD,Moldova,Moldova (the Republic of),47.411631,28.369885
 ME,Montenegro,Montenegro,42.708678,19.37439
 MF,Saint Martin,Saint Martin (French part),18.0708294,-63.0500793
 MG,Madagascar,Madagascar,-18.766947,46.869107
-MH,Marshall Islands,Marshall Islands ,7.131474,171.184478
+MH,Marshall Islands,Marshall Islands,7.131474,171.184478
 MK,Macedonia,Republic of North Macedonia,41.608635,21.745275
 ML,Mali,Mali,17.570692,-3.996166
 MM,Myanmar,Myanmar,21.913965,95.956223
 MN,Mongolia,Mongolia,46.862496,103.846656
 MO,Macau,Macao,22.198745,113.543873
-MP,Northern Mariana Islands,Northern Mariana Islands ,17.33083,145.38469
+MP,Northern Mariana Islands,Northern Mariana Islands,17.33083,145.38469
 MQ,Martinique,Martinique,14.641528,-61.024174
 MR,Mauritania,Mauritania,21.00789,-10.940835
 MS,Montserrat,Montserrat,16.742498,-62.187366
@@ -161,11 +161,11 @@ MY,Malaysia,Malaysia,4.210484,101.975766
 MZ,Mozambique,Mozambique,-18.665695,35.529562
 NA,Namibia,Namibia,-22.95764,18.49041
 NC,New Caledonia,New Caledonia,-20.904305,165.618042
-NE,Niger,Niger ,17.607789,8.081666
+NE,Niger,Niger,17.607789,8.081666
 NF,Norfolk Island,Norfolk Island,-29.040835,167.954712
 NG,Nigeria,Nigeria,9.081999,8.675277
 NI,Nicaragua,Nicaragua,12.865416,-85.207229
-NL,Netherlands,Netherlands ,52.132633,5.291266
+NL,Netherlands,Netherlands,52.132633,5.291266
 NO,Norway,Norway,60.472024,8.468946
 NP,Nepal,Nepal,28.394857,84.124008
 NR,Nauru,Nauru,-0.522778,166.931503
@@ -176,7 +176,7 @@ PA,Panama,Panama,8.537981,-80.782127
 PE,Peru,Peru,-9.189967,-75.015152
 PF,French Polynesia,French Polynesia,-17.679742,-149.406843
 PG,Papua New Guinea,Papua New Guinea,-6.314993,143.95555
-PH,Philippines,Philippines ,12.879721,121.774017
+PH,Philippines,Philippines,12.879721,121.774017
 PK,Pakistan,Pakistan,30.375321,69.345116
 PL,Poland,Poland,51.919438,19.145136
 PM,Saint Pierre and Miquelon,Saint Pierre and Miquelon,46.941936,-56.27111
@@ -190,12 +190,12 @@ QA,Qatar,Qatar,25.354826,51.183884
 RE,Reunion,Réunion,-21.115141,55.536384
 RO,Romania,Romania,45.943161,24.96676
 RS,Serbia,Serbia,44.016521,21.005859
-RU,Russia,Russian Federation ,61.52401,105.318756
+RU,Russia,Russian Federation,61.52401,105.318756
 RW,Rwanda,Rwanda,-1.940278,29.873888
 SA,Saudi Arabia,Saudi Arabia,23.885942,45.079162
 SB,Solomon Islands,Solomon Islands,-9.64571,160.156194
 SC,Seychelles,Seychelles,-4.679574,55.491977
-SD,Sudan,Sudan ,12.862807,30.217636
+SD,Sudan,Sudan,12.862807,30.217636
 SE,Sweden,Sweden,60.128161,18.643501
 SG,Singapore,Singapore,1.352083,103.819836
 SH,Saint Helena,"Saint Helena, Ascension and Tristan da Cunha",-24.143474,-10.030696
@@ -235,7 +235,7 @@ UM,United States Minor Outlying Islands,United States Minor Outlying Islands,19.
 US,United States,United States of America,37.09024,-95.712891
 UY,Uruguay,Uruguay,-32.522779,-55.765835
 UZ,Uzbekistan,Uzbekistan,41.377491,64.585262
-VA,Vatican City State,Holy See ,41.902916,12.453389
+VA,Vatican City State,Holy See,41.902916,12.453389
 VC,Saint Vincent and the Grenadines,Saint Vincent and the Grenadines,12.984305,-61.287228
 VE,Venezuela,Venezuela (Bolivarian Republic of),6.42375,-66.58973
 VG,British Virgin Islands,Virgin Islands (British),18.420695,-64.639968
