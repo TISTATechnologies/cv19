@@ -146,18 +146,20 @@ class CovidStaticApi {
 
   getData(country_id, state_id, fips, date) {
     let root = this.apiDataUrl.href;
-    if (!root.endsWith("/")) {
+    if (!root.endsWith('/')) {
       root += "/";
     }
-    let url = "./daily/" + date.replace(/-/g, "") + "/";
-    if (!state_id) {
-      url += country_id + ".json";
-    } else if (!fips || fips.startsWith("000")) {
-      url += country_id + "/" + state_id + ".json";
+    const countryIdParam = country_id.toLowerCase();
+    const stateIdParam = state_id ? state_id.toLowerCase() : null;
+    let url = './daily/' + date.replace(/-/g, '') + '/';
+    if (!stateIdParam) {
+      url += countryIdParam;
+    } else if (!fips || fips.startsWith('000')) {
+      url += countryIdParam + '/' + stateIdParam;
     } else {
-      url += country_id + "/" + state_id + "/" + fips + ".json";
+      url += countryIdParam + '/' + stateIdParam + '/' + fips;
     }
-    return getRequest(root, url.toLowerCase());
+    return getRequest(root, url  + '.json');
   }
 }
 

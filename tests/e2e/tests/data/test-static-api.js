@@ -29,17 +29,22 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
         log.debug(`REAL DATA: ${JSON.stringify(realData)}`);
         const state_id = realData.county ? realData.county.state_id : null;
         const fips = realData.county ? realData.county.fips : null
+        const stateMustHave = !(fips && fips.startsWith('US'));
         const data = await cvApi.getData('US', state_id, fips, day);
         log.debug(`API DATA: ${JSON.stringify(data)}`);
         expect(realData).toBeTruthy();
-        expect(realData.state || null).not.toBeNull();
+        if (stateMustHave) {
+            expect(realData.state || null).not.toBeNull();
+        }
         
         expect(data).toBeTruthy();
         expect(data).toHaveLength(1);
         const dataRow = data[0];
         expect(dataRow.date).toEqual(day === 'latest' ? yesterday : day);
         expect(dataRow.country_id).toEqual('US');
-        expect(dataRow.state_id || 'US').toEqual(realData.state.id);
+        if (stateMustHave) {
+            expect(dataRow.state_id || 'US').toEqual(realData.state.id);
+        }
 
         if (!realData.county) {
             expect(dataRow.name).toEqual(realData.state.name);
@@ -65,7 +70,7 @@ const testStaticDataOnDayByFips = (day, fips_list) => {
     for (let i = 0, len = fips_list.length; i < len; i += 1) {
         const fips = fips_list[i];
         it(`Test data for ${fips} fips`, async () => {
-            const realDataItem = await cvData.getDataByFips(fips, undefined, fipsWithNoData);
+            const realDataItem = await cvData.getDataByFips(fips, day, fipsWithNoData);
             await expectDataApiEqualRealData(day, realDataItem ? [realDataItem] : []);
         });
     };
@@ -92,7 +97,7 @@ describe("Test Static API calls ", () => {
     });
     describe(`Test data (${yesterday})`, () => {
         testStaticDataOnDayByZips(yesterday);
+        testStaticDataOnDayByFips(yesterday, ['USDC1']);
     });
     // TODO: Add historical data test
-    // TODO: Add test for common data
 });

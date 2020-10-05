@@ -183,7 +183,8 @@ class DatabaseContext:
         if self.cursor:
             log.debug('Already connected')
             return self
-        log.debug(f'Open database connection: {config.db_user}:*@{config.db_host}:{config.db_port} (schema={config.db_schema})')
+        log.debug(f'Open database connection: {config.db_user}:*@{config.db_host}:{config.db_port} '
+                  f'(schema={config.db_schema})')
         self.conn = psycopg2.connect(
             user=config.db_user, password=config.db_pass,
             host=config.db_host, port=config.db_port,
@@ -213,6 +214,7 @@ class References:
         self.database_context = database_context
         self.countries = {}
         self.states = {}
+        self.areas = {}
 
     def load_all(self):
         for row in self.database_context.select('* FROM country;'):
@@ -230,6 +232,27 @@ class References:
                 'aliases': [v.strip().lower() for v in (row[4] or '').split(',')],
                 'fips': row[5]
             }
+
+        sql = ('rp.country_id, rp.state_id, rp.fips, rp.type, rp.part_id, '
+               'r.name, r.geo_lat, r.geo_long '
+               'FROM region_part rp INNER JOIN region r '
+               '    ON rp.country_id = r.country_id AND rp.state_id = r.state_id '
+               '        AND rp.fips = r.fips AND rp.type = r.type;')
+        for row in self.database_context.select(sql):
+            (country_id, state_id, fips, area_type, area_id, name, geo_lat, geo_long) = row
+            key = f'{country_id}-{state_id}-{fips}'
+            if key not in self.areas:
+                self.areas[key] = []
+            self.areas[key].append({
+                'country_id': country_id,
+                'state_id': state_id,
+                'fips': fips,
+                'area_type': area_type,
+                'area_id': area_id,
+                'name': name,
+                'geo_lat': geo_lat,
+                'geo_long': geo_long
+            })
 
     def find_country_id(self, country_name):
         if not country_name:

@@ -100,6 +100,13 @@ describe("Check common tables in database", () => {
         const res = await exec(sql);
         expect(res).toHaveLength(0); 
     });
+
+    it(`Database should have US custom areas`, async () => {
+        const sql = 'select DISTINCT fips from region_part;';
+        const res = await exec(sql);
+        expect(res).toHaveLength(1);
+        expect(res[0].fips).toEqual('USDC1');
+    });
 });
 
 describe("Check Covid-19 data in database", () => {
@@ -126,9 +133,32 @@ describe("Check Covid-19 data in database", () => {
         const res = await exec(sql, [day]);
         expect(res).toHaveLength(0);
     });
+
+    it(`All US custom areas should have data ${day} day`, async () => {
+        const fipsList = await exec('select DISTINCT fips from region_part;');
+        expect(fipsList).toBeTruthy();
+        expect(fipsList.length).toBeGreaterThan(0);
+
+        const fipsListParam = fipsList.map((i) => `'${i['fips']}'`).join(',');
+        const sql = `SELECT * FROM covid_data_stat WHERE date = $1 AND fips IN (${fipsListParam});`
+        const res = await exec(sql, [day]);
+        expect(res).toBeTruthy();
+        expect(res.length).toEqual(fipsList.length);
+        for (let i = 0; i < fipsList.length; i += 1) {
+            const item = res[i];
+            expect(item.country_id).toEqual('US');
+            expect(item.state_id).toEqual('US');
+            expect(item.fips).toBeTruthy();
+            expect(item.fips).toMatch(/^US/);
+            expect(item.fips).toHaveLength(5);
+            expect(item.date).toBeTruthy();
+            expect(item.date.toISOString().substring(0, 10)).toEqual(day);
+            expect(item.location_type).toEqual('county');
+        }
+    });
 });
 
-describe("THe Covid-19 data view will return one record forlocation", () => {
+describe("THe Covid-19 data view will return one record for location", () => {
     const day = config.testDate;
     it(`One record for each of the counties on the ${day} day`, async () => {
         const sql = 'SELECT country_id, state_id, source_id FROM covid_data_stat '

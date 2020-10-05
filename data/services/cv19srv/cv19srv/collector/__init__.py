@@ -2,6 +2,7 @@ import datetime
 from ..utils import logger
 from ..utils.helper import DateTimeHelper
 from . import covidtracking
+from . import custom_areas
 from . import executive_news
 from . import jhu
 
@@ -30,6 +31,9 @@ ENGINES = {
         'instance': executive_news,
         'url': 'https://web.csg.org/covid19/executive-orders',
         'description': 'The Council of State Governments'
+    },
+    'custom-areas': {
+        'instance': custom_areas
     }
 }
 

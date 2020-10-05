@@ -51,6 +51,8 @@ title "Pull data from the JHU dataset" && \
 python3 cv19srv collect jhu $@ && \
 title "Pull data from the CovidTracking dataset" && \
 python3 cv19srv collect covidtracking $@ && \
+title "Calculate data for the custom areas" && \
+python3 cv19srv collect custom-areas $@ && \
 cd - >/dev/null && \
 title "Refresh data in the database" && \
 yes yes | ./data/covid-database/migrate-db.sh refresh-data && \
