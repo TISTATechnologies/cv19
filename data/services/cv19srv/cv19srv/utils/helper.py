@@ -183,11 +183,11 @@ class DatabaseContext:
         if self.cursor:
             log.debug('Already connected')
             return self
-        log.debug('Open database connection.')
+        log.debug(f'Open database connection: {config.db_user}:*@{config.db_host}:{config.db_port} (schema={config.db_schema})')
         self.conn = psycopg2.connect(
             user=config.db_user, password=config.db_pass,
             host=config.db_host, port=config.db_port,
-            database=config.db_name, options=f'-c search_path={config.db_schema}')
+            database=config.db_name, options=(f'-c search_path={config.db_schema}' if config.db_schema else None))
         self.cursor = self.conn.cursor()
         return self
 
