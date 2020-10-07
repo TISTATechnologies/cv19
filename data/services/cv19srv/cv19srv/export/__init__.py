@@ -23,10 +23,12 @@ def create_index_file(output_dir):
     """ Create index.html file at the root of the /covid/vX/ directory
     with short description about an exported data
     """
+    version = os.environ.get('DATA_VERSION', '1')
     src = Path(__file__).parent / 'index.html'
     dest = output_dir / 'index.html'
-    log.info(f'Create {dest} file')
-    dest.write_text(src.read_text())
+    log.info(f'Create index {dest} file (data-version={version})')
+    text = src.read_text().replace('{VERSION}', version)
+    dest.write_text(text)
 
 
 def run(engine_name, args):

@@ -15,7 +15,7 @@ title() { echo "================================================================
 
 cd "$(dirname "${0}")/.."
 . ./scripts/load.env || exit 1
-version=${VERSION:-"1"}
+version=${VERSION:-"${DATA_VERSION:-"1"}"}
 bucket=${1:-"${COVID_DATA_S3_BUCKET:-"data-dev.tistatech.com"}"}
 CACHE_AGE=7200
 

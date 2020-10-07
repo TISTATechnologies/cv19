@@ -80,7 +80,10 @@ class SourceExporter(Exporter):
             source_item = {}
             for field in ['name', 'url', 'description']:
                 source_item[field] = item.get(field)
-            self.add_item_to_export_safe(None, source_item)
+            # Do not export sources without a name
+            if source_item.get('name'):
+                log.debug(f'Export source: {source_item.get("name")} ({source_item.get("url")})')
+                self.add_item_to_export_safe(None, source_item)
 
 
 def run(day, output_dir):

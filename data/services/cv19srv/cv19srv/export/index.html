@@ -9,43 +9,41 @@
     <h1>Get latest Covid-19 data</h1>
     <h3>Covid-19 data on a country level</h3>
     <ul>
-      <li><a href="/covid/v1/daily/latest/all-countries.json">/covid/v1/daily/latest/all-countries.json</a></li>
-      <li>/covid/v1/daily/latest/&lt;country-id&gt;.json 
-          (example: <a href="/covid/v1/daily/latest/it.json">/covid/v1/daily/latest/it.json</a>)</li>
+      <li><a href="/covid/v{VERSION}/daily/latest/all-countries.json">/covid/v{VERSION}/daily/latest/all-countries.json</a></li>
+      <li>/covid/v{VERSION}/daily/latest/&lt;country-id&gt;.json 
+          (example: <a href="/covid/v{VERSION}/daily/latest/it.json">/covid/v{VERSION}/daily/latest/it.json</a>)</li>
     </ul>
     <h3>Covid-19 data on a state level</h3>
     <ul>
-      <li><a href="/covid/v1/daily/latest/us/all-states.json">/covid/v1/daily/latest/us/all-states.json</a></li>
-      <li>/covid/v1/daily/latest/us/&lt;state-id&gt;.json 
-          (example: <a href="/covid/v1/daily/latest/us/md.json">/covid/v1/daily/latest/us/md.json</a>)</li>
+      <li><a href="/covid/v{VERSION}/daily/latest/us/all-states.json">/covid/v{VERSION}/daily/latest/us/all-states.json</a></li>
+      <li>/covid/v{VERSION}/daily/latest/us/&lt;state-id&gt;.json 
+          (example: <a href="/covid/v{VERSION}/daily/latest/us/md.json">/covid/v{VERSION}/daily/latest/us/md.json</a>)</li>
     </ul>
     <h3>Covid-19 data on a county level</h3>
     <ul>
-      <li><a href="/covid/v1/daily/latest/us/all-counties.json">/covid/v1/daily/latest/us/all-counties.json</a></li>
-      <li>/covid/v1/daily/latest/us/&lt;state-id&gt;/all-counties.json 
-          (example: <a href="/covid/v1/daily/latest/us/md/all-counties.json">/covid/v1/daily/latest/us/md/all-counties.json</a>)</li>
-      <li>/covid/v1/daily/latest/us/&lt;state-id&gt;/&lt;fips&gt;.json 
-          (example: <a href="/covid/v1/daily/latest/us/md/24031.json">/covid/v1/daily/latest/us/md/24031.json</a>)</li>
+      <li><a href="/covid/v{VERSION}/daily/latest/us/all-counties.json">/covid/v{VERSION}/daily/latest/us/all-counties.json</a></li>
+      <li>/covid/v{VERSION}/daily/latest/us/&lt;state-id&gt;/all-counties.json 
+          (example: <a href="/covid/v{VERSION}/daily/latest/us/md/all-counties.json">/covid/v{VERSION}/daily/latest/us/md/all-counties.json</a>)</li>
+      <li>/covid/v{VERSION}/daily/latest/us/&lt;state-id&gt;/&lt;fips&gt;.json 
+          (example: <a href="/covid/v{VERSION}/daily/latest/us/md/24031.json">/covid/v{VERSION}/daily/latest/us/md/24031.json</a>)</li>
     </ul>
 
     <h1>Get historical Covid-19 data</h1>
     <h2>A full hitorical data</h2>
     <h3>Covid-19 historical data on a country level</h3>
     <ul>
-      <li>/covid/v1/history/active/&lt;country-id&gt;.json 
-          (example: <a href="/covid/v1/history/active/it.json">/covid/v1/history/active/it.json</a>)</li>
+      <li>/covid/v{VERSION}/history/active/&lt;country-id&gt;.json 
+          (example: <a href="/covid/v{VERSION}/history/active/it.json">/covid/v{VERSION}/history/active/it.json</a>)</li>
     </ul>
     <h3>Covid-19 historical data on a state level</h3>
     <ul>
-      <li>/covid/v1/history/active/us/&lt;state-id&gt;.json 
-          (example: <a href="/covid/v1/history/active/us/md.json">/covid/v1/history/active/us/md.json</a>)</li>
+      <li>/covid/v{VERSION}/history/active/us/&lt;state-id&gt;.json 
+          (example: <a href="/covid/v{VERSION}/history/active/us/md.json">/covid/v{VERSION}/history/active/us/md.json</a>)</li>
     </ul>
     <h3>Covid-19 historical data on a county level</h3>
     <ul>
-      <li>/covid/v1/history/active/us/&lt;state-id&gt;/all-counties.json 
-          (example: <a href="/covid/v1/history/active/us/md/all-counties.json">/covid/v1/history/active/us/md/all-counties.json</a>)</li>
-      <li>/covid/v1/history/active/us/&lt;state-id&gt;/&lt;fips&gt;.json 
-          (example: <a href="/covid/v1/history/active/us/md/24031.json">/covid/v1/history/active/us/md/24031.json</a>)</li>
+      <li>/covid/v{VERSION}/history/active/us/&lt;state-id&gt;/&lt;fips&gt;.json 
+          (example: <a href="/covid/v{VERSION}/history/active/us/md/24031.json">/covid/v{VERSION}/history/active/us/md/24031.json</a>)</li>
     </ul>
 
     <h2>Historical data on a specific day</h2>
@@ -54,20 +52,20 @@
       <li>Change <b>latest</b> to the specific date <b>YYYYMMDD</b></li>
     </ul>
     </p>
-    <p>Examples: <a href="/covid/v1/daily/20200510/us/va.json">/covid/v1/daily/20200510/us/va.json</a>, 
-        <a href="/covid/v1/daily/20200510/us/md/24031.json">/covid/v1/daily/20200510/us/md/24031.json</a></p>
+    <p>Examples: <a href="/covid/v{VERSION}/20200510/us/va.json">/covid/v{VERSION}/20200510/us/va.json</a>, 
+        <a href="/covid/v{VERSION}/20200510/us/md/24031.json">/covid/v{VERSION}/20200510/us/md/24031.json</a></p>
 
     <h1>Additional data</h1>
     <h2>Get all data sources</h2>
     <ul>
-      <li><a href="/covid/v1/source/latest.json">/covid/v1/source/latest.json</a></li>
+      <li><a href="/covid/v{VERSION}/source/latest.json">/covid/v{VERSION}/source/latest.json</a></li>
     </ul>
 
     <h2>Get executive orders</h2>
     <ul>
-      <li><a href="/covid/v1/executive-orders/latest/us/all-states.json">/covid/v1/executive-orders/latest/us/all-states.json</a></li>
-      <li>/covid/v1/executive-orders/latest/us/&lt;state-id&gt;.json 
-          (example: <a href="/covid/v1/executive-orders/latest/us/dc.json">/covid/v1/executive-orders/latest/us/dc.json</a>)</li>
+      <li><a href="/covid/v{VERSION}/executive-orders/latest/us/all-states.json">/covid/v{VERSION}/executive-orders/latest/us/all-states.json</a></li>
+      <li>/covid/v{VERSION}/executive-orders/latest/us/&lt;state-id&gt;.json 
+          (example: <a href="/covid/v{VERSION}/executive-orders/latest/us/dc.json">/covid/v{VERSION}/executive-orders/latest/us/dc.json</a>)</li>
     </ul>
 
   </section>
