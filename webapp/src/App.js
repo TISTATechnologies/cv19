@@ -153,9 +153,17 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   metroButton: {
+    color: '#222',
+    fontWeight: 900,
     backgroundColor: theme.palette.warning.light,
+    backgroundImage: theme.gradients.metro,
     [theme.breakpoints.up('lg')]: {
       marginLeft: theme.spacing(2),
+    },
+    '&:hover': {
+      backgroundImage: 'none',
+      backgroundColor: theme.palette.warning.dark,
+      color: theme.palette.common.white,
     },
   },
 }));
@@ -719,11 +727,14 @@ function App() {
           <Grid item xs={12} lg={6}>
             {hasMetro ? (
               <Button
-                className={classes.metroButton}
+                classes={{
+                  containedSecondary: classes.metroButton,
+                }}
                 variant="contained"
                 color="secondary"
                 onClick={() => createAndNavigate(hasMetro)}
               >
+                {'View '}
                 {hasMetro.name}
               </Button>
             ) : null}

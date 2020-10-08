@@ -40,5 +40,8 @@ const coreTheme = createMuiTheme({
   },
 });
 const theme = responsiveFontSizes(coreTheme);
+theme.gradients = {
+  metro: `linear-gradient(120deg, ${theme.palette.warning.light} 0%, ${theme.palette.warning.main} 20%, ${theme.palette.warning.main} 80%,  ${theme.palette.warning.dark} 100%)`,
+};
 
 export default theme;

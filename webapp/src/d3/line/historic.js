@@ -49,6 +49,13 @@ function init(pWidth = 900, pHeight = 100) {
   mouseG.append('svg:rect');
 }
 
+const fitInWindow = (d) => {
+  const x = d3.event.pageX + 100;
+  const xAdjust = x < window.innerWidth ? 'translate(10, 10)' : 'translate(-60,10)';
+  console.log(window.innerWidth - x);
+  return xAdjust;
+};
+
 function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
   const params = findTrueProps(selected);
   // only return rows with at least some of the data we're looking for.
@@ -120,12 +127,14 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
     .data(params)
     .join((enter) => {
       const e = enter.append('g').attr('class', 'mouse-per-line').attr('transform', 'scale(0)');
+      // Color
       e.append('circle')
         .attr('r', 5)
         .attr('stroke', (d, i) => colorScale(i))
         .attr('fill', (d, i) => colorScale(i))
         .attr('fill-opacity', 0.5)
         .attr('stroke-width', 3);
+      // Textbox
       e.append('text')
         .attr('transform', 'translate(10,10)')
         .attr('fill', 'white')
@@ -135,6 +144,7 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
       return e;
     });
 
+  // Show value of line when moving
   mouseG
     .select('rect')
     .attr('width', w)
@@ -161,7 +171,8 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
         .style('visibility', 'visible')
         .attr('transform', ([x, y], i) => (y ? `translate(${X(x)},${scales[i](y)})` : 'scale(0)'))
         .select('text')
-        .text((d, i) => (i < 3 ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])));
+        .text((d, i) => (i < 3 ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])))
+        .attr('transform', fitInWindow);
     });
 }
 

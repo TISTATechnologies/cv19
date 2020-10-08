@@ -13,16 +13,20 @@ import useLocalStorage from '../util/useLocalStorage';
 
 const useStyles = makeStyles((theme) => ({
   noteCard: {
+    color: '#222222',
     backgroundColor: theme.palette.warning.dark,
+    // backgroundImage: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)',
+    backgroundImage: theme.gradients.metro,
+  },
+  link: {
+    color: '#222222',
+    '&:hover': { color: '#fff', backgroundColor: theme.palette.warning.dark },
   },
 }));
 
 const CdcNotice = () => {
   const classes = useStyles();
-  const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage(
-    'showCDC',
-    true,
-  );
+  const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage('learnMetro', true);
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
 
   useEffect(() => {
@@ -34,17 +38,16 @@ const CdcNotice = () => {
       <Grid item xs={12} sm={8}>
         <ListItem className={classes.noteCard}>
           <ListItemText variant="h6" component="p" align="center">
-            NOTE: New CDC guidance could cause an increase in the number of
-            deaths attributed to COVID-19.
-            {' '}
+            {'Select metropolitan area statistics are now availiable! '}
             <Link
-              href="https://www.cdc.gov/nchs/data/nvss/coronavirus/Alert-2-New-ICD-code-introduced-for-COVID-19-deaths.pdf"
-              target="_blank"
+              href="/#/fips-USDC1"
               rel="noopener noreferrer"
-              color="textSecondary"
               underline="always"
+              classes={{
+                root: classes.link,
+              }}
             >
-              See this report for more details.
+              DC Metro Area
             </Link>
           </ListItemText>
           <ListItemIcon>
