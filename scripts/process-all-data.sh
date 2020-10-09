@@ -36,7 +36,7 @@ while [ "${cur_day}" != "${TODAY}" ]; do
             echo "Warning: you need to enable command below"
             #yes | ./scripts/start-pull-data-services.sh "${cur_day}" || exit 1
 
-            #cd "${wd}/data/services/cv19srv
+            #cd "${wd}/data/services/cv19srv"
             #python3 cv19srv collect custom-areas ${cur_day} || exit 1
             ;;
         export)
@@ -50,5 +50,5 @@ done
 if [ "${cmd}" == "collect" ]; then
     yes yes | ${wd}/data/covid-database/migrate-db.sh refresh-data
 fi
-echo "Done '{cmd}' command"
+echo "Done '${cmd}' command"
 

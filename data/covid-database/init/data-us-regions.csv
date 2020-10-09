@@ -3219,7 +3219,12 @@ US,PR,72147,Vieques Municipio,,county,18.15267,-65.83161
 US,PR,72149,Villalba Municipio,,county,18.120519,-66.496607
 US,PR,72151,Yabucoa Municipio,,county,18.228959,-66.049364
 US,PR,72153,Yauco Municipio,,county,18.06104,-66.861164
-US,US,USDC1,Washington D.C. Metro Area,,county,38.91706,-77.00025
+US,US,USCA1,San Francisco Bay Area,,county,37.805344,-122.408162
+US,US,USDC1,Washington D.C. Metropolitan Area,,county,38.91706,-77.00025
+US,US,USIL1,Chicago Metropolitan Area,,county,42.304727,-89.902075
+US,US,USNY1,New York Metropolitan Area,,county,40.702898,-74.010241
+US,US,USPA1,Philadelphia Metropolitan Area,,county,40.014893,-75.078167
+US,US,USTX1,Greater Austin,,county,31.189667,-97.022728
 US,AL,00001,Alabama,,state,32.318231,-86.902298
 US,AK,00002,Alaska,,state,63.588753,-154.493062
 US,AZ,00004,Arizona,,state,34.048928,-111.093731

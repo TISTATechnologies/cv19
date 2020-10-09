@@ -33,7 +33,7 @@ describe("Check common tables in database", () => {
         const res = await exec(sql);
         expect(res).toHaveLength(4);
         expect(res[0]['type']).toEqual('area');
-        expect(res[0]['count']).toEqual('1');
+        expect(res[0]['count']).toEqual('6');
         expect(res[1]['type']).toEqual('federal district');
         expect(res[1]['count']).toEqual('1');
         expect(res[2]['type']).toEqual('state');
@@ -44,7 +44,7 @@ describe("Check common tables in database", () => {
         for (let i = 0; i < res.length; i += 1) {
             total += +res[i]['count'];
         }
-        expect(total).toEqual(3221);
+        expect(total).toEqual(3226);
     });
 
     it(`All US counties have zip codes`, async () => {
@@ -104,8 +104,13 @@ describe("Check common tables in database", () => {
     it(`Database should have US custom areas`, async () => {
         const sql = 'select DISTINCT fips from region_part;';
         const res = await exec(sql);
-        expect(res).toHaveLength(1);
-        expect(res[0].fips).toEqual('USDC1');
+        expect(res).toHaveLength(6);
+        expect(res[0].fips).toEqual('USIL1');
+        expect(res[1].fips).toEqual('USDC1');
+        expect(res[2].fips).toEqual('USNY1');
+        expect(res[3].fips).toEqual('USTX1');
+        expect(res[4].fips).toEqual('USPA1');
+        expect(res[5].fips).toEqual('USCA1');
     });
 });
 

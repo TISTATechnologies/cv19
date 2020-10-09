@@ -69,7 +69,7 @@ echo "country_id,state_id,fips,type,part_id,geo_lat,geo_long" > ./data-us-region
 curl -s "${URL}/us/areas.json?ts=${TS}" \
 | jq -cr '.[] as $entity | $entity.counties[] | [$entity.fips,.fips,$entity.latitude,$entity.longitude]' \
 | sed 's/\[//g' | sed 's/\]//g' | sed 's/"//g' \
-| awk -F ',' '{print "US,US,"$1",county,"$2","$3","$4}' \
+| awk -F ',' '{print "US,US,"$1",county,"$2"}' \
 >> ./data-us-region-parts.csv \
 && echo "- Complete"
 

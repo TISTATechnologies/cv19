@@ -101,7 +101,7 @@ const loadCountiesData = async (day) => {
         + '  COALESCE(cds.active, 0) AS active, COALESCE(cds.recovered, 0) AS recovered '
         + 'FROM region AS r '
         + 'INNER JOIN region_population AS p ON p.country_id = r.country_id AND p.state_id = r.state_id AND p.fips = r.fips '
-        + 'LEFT JOIN covid_data_stat AS cds ON cds.country_id = r.country_id AND cds.state_id = r.state_id AND cds.fips = r.fips '
+        + 'INNER JOIN covid_data_stat AS cds ON cds.country_id = r.country_id AND cds.state_id = r.state_id AND cds.fips = r.fips '
         + '  AND cds.date = $1 '
         + 'WHERE r.country_id = \'US\' AND LOWER(r.type) = \'county\' ORDER BY cds.datetime DESC, r.fips;',
         [day]);
