@@ -192,7 +192,8 @@ function App() {
   const [historic, setHistoric] = useState({ active: [] });
   const geoLocation = useGeolocation();
   const [hasMetro, setHasMetro] = useState(false);
-  const [metroZones, setMetroZones] = useState(null);
+  const [metroCounties, setMetroCounties] = useState([]);
+  const [metroZones, setMetroZones] = useState([]);
   const [savedLocations, setSavedLocations] = useLocalStorage('MyLocations', [
     {
       name: 'Montogomery County, MD',
@@ -361,23 +362,24 @@ function App() {
             ...acc,
             ...next.counties.map(({ fips: cfips }) => ({
               county: cfips,
-              name: next.name,
+              name: next.short_name,
               fips: next.fips,
             })),
           ],
           [],
         );
         console.log('building zone list', zones);
-        setMetroZones(zones);
+        setMetroZones(data);
+        setMetroCounties(zones);
         f(zones);
       }
     };
-    if (metroZones && metroZones.length) {
-      f(metroZones);
+    if (metroCounties && metroCounties.length) {
+      f(metroCounties);
     } else {
       g();
     }
-  }, [countyStats, metroZones]);
+  }, [countyStats, metroCounties]);
 
   useEffect(() => {
     const f = async () => {
@@ -539,7 +541,7 @@ function App() {
         },
       ]);
     } else {
-      setErrorMessage('County is already tracked.');
+      setErrorMessage('This location is already tracked.');
     }
   };
 
@@ -588,8 +590,10 @@ function App() {
     [sources, stateStats, myState],
   );
   const MemoStatsCounty = useMemo(
-    () => <LocalStatsTable sources={sources} data={countyStats} level="county" />,
-    [sources, countyStats],
+    () => (
+      <LocalStatsTable sources={sources} data={countyStats} level="county" isMetro={!hasMetro} />
+    ),
+    [sources, countyStats, hasMetro],
   );
 
   const classes = useStyles();
@@ -688,7 +692,7 @@ function App() {
           <Grid item container xs={12} justify="center">
             <Visible condition={localNoticeOpen}>
               <Suspense fallback={fallback}>
-                <CdcNotice />
+                <CdcNotice zones={metroZones} />
               </Suspense>
             </Visible>
           </Grid>
@@ -736,6 +740,7 @@ function App() {
               >
                 {'View '}
                 {hasMetro.name}
+                {' ▼'}
               </Button>
             ) : null}
           </Grid>
@@ -775,7 +780,7 @@ function App() {
             <Grid item xs={12}>
               <ErrorBoundary>
                 <Suspense fallback={fallback}>
-                  <UsaMap data={level !== 'usa' ? countyStats : emptyObject} />
+                  <UsaMap data={level !== 'usa' ? countyStats : emptyObject} level={level} />
                 </Suspense>
               </ErrorBoundary>
             </Grid>

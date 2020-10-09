@@ -7,7 +7,7 @@ const coreTheme = createMuiTheme({
     primary: { main: '#002E8C' },
     secondary: { main: cyan[500] },
   },
-  spacing: 8,
+  spacing: 4,
   overrides: {
     MuiTable: {
       root: { backgroundColor: '#222222', fontSize: '1rem' },
@@ -22,6 +22,7 @@ const coreTheme = createMuiTheme({
     MuiCard: {
       root: {
         height: '100%',
+        transition: 'all 0.5s',
       },
     },
     MuiCardHeader: {

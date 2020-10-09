@@ -23,7 +23,7 @@ export async function decodeUrl(url) {
   if (fipsList) {
     const matches = fipsList.filter((f) => f.zip === zip);
     if (matches) {
-      const match = matches.find((f) => f.name.toLowerCase().includes(firstword));
+      const match = matches.find((f) => f.name.toLowerCase().split(' ')[0] === firstword);
       if (match) return [zip, match.fips];
       return [zip, matches[0].fips];
     }

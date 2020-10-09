@@ -4,6 +4,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
+
 import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CdcNotice = () => {
+const CdcNotice = ({ zones = [] }) => {
   const classes = useStyles();
   const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage('learnMetro', true);
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
@@ -37,18 +39,28 @@ const CdcNotice = () => {
     <Visible condition={noticeOpen}>
       <Grid item xs={12} sm={8}>
         <ListItem className={classes.noteCard}>
+          <ListItemIcon>
+            <NewReleasesIcon style={{ color: '#222' }} fontSize="large" />
+          </ListItemIcon>
           <ListItemText variant="h6" component="p" align="center">
             {'Select metropolitan area statistics are now availiable! '}
-            <Link
-              href="/#/fips-USDC1"
-              rel="noopener noreferrer"
-              underline="always"
-              classes={{
-                root: classes.link,
-              }}
-            >
-              DC Metro Area
-            </Link>
+            {zones.map((zone, index) => (
+              <>
+                {index === zones.length - 1 ? '& ' : ''}
+                <Link
+                  key={zone.name}
+                  href={`/#/fips-${zone.fips}`}
+                  rel="noopener noreferrer"
+                  underline="always"
+                  classes={{
+                    root: classes.link,
+                  }}
+                >
+                  {zone.short_name}
+                </Link>
+                {index === zones.length - 1 ? '.' : ', '}
+              </>
+            ))}
           </ListItemText>
           <ListItemIcon>
             <IconButton onClick={() => setNoticeOpen(false)}>

@@ -56,6 +56,13 @@ const useStyles = makeStyles((theme) => ({
       fontSize: '0.8em',
     },
   },
+  metro: {
+    borderImage: theme.gradients.metro,
+    border: '2px solid transparent',
+    borderRadius: 4,
+    borderImageSlice: 1,
+    backgroundColor: theme.palette.warning.dark,
+  },
 }));
 
 const bigNumberFormat = new Intl.NumberFormat('en', {});
@@ -95,7 +102,7 @@ const StatBlock = ({
     return (
       <Card className={`${classes[colorClass]}`} id={`${level}-${colorClass}`}>
         <Typography
-          variant="h5"
+          variant="h6"
           align="center"
           id={`${level}-${colorClass}-value`}
           className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
@@ -113,7 +120,7 @@ const StatBlock = ({
     >
       <CardContent>
         <Hidden only="xs">
-          <Typography variant="h3" align="center" id={`${level}-${colorClass}-value`}>
+          <Typography variant="h4" align="center" id={`${level}-${colorClass}-value`}>
             {formattedVal}
           </Typography>
           <Typography
@@ -158,7 +165,12 @@ const StatBlock = ({
 };
 
 const LocalStatsTable = ({
-  data = {}, getFlag = false, sources, level, mini = false,
+  data = {},
+  getFlag = false,
+  sources,
+  level,
+  mini = false,
+  isMetro = false,
 }) => {
   const classes = useStyles();
   const {
@@ -202,7 +214,7 @@ const LocalStatsTable = ({
   if (mini) {
     // mini stats view
     return (
-      <Card style={svgFlag} variant="outlined">
+      <Card style={svgFlag} variant="outlined" classes={{ root: isMetro ? classes.metro : '' }}>
         <CardHeader
           titleTypographyProps={{
             className: classes.title,
@@ -291,7 +303,7 @@ const LocalStatsTable = ({
   }
 
   return (
-    <Card style={svgFlag} variant="outlined">
+    <Card style={svgFlag} variant="outlined" classes={{ root: isMetro ? classes.metro : '' }}>
       <CardHeader
         titleTypographyProps={{
           className: classes.title,

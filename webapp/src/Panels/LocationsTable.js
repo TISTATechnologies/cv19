@@ -106,12 +106,15 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#333',
     borderRadius: '0 0 4px 4px',
   },
+  metro: {
+    color: theme.palette.warning.main,
+  },
 }));
 
 const columnHeaders = [
   {
-    label: 'County',
-    shortLabel: 'County',
+    label: 'Location',
+    shortLabel: 'Location',
     numeric: false,
     id: 'name',
     visible: true,
@@ -230,7 +233,7 @@ export default function SimpleTable({
   return (
     <Card variant="outlined">
       <CardHeader
-        title="My Counties"
+        title="My Locations"
         titleTypographyProps={{
           className: classes.title,
         }}
@@ -289,6 +292,7 @@ export default function SimpleTable({
                       underline="always"
                       variant="body1"
                       classes={{ root: classes.linkButton }}
+                      className={row.fips.includes('US') ? classes.metro : ''}
                       href={
                         row.zip
                           ? `#/${row.zip}-${row.name
