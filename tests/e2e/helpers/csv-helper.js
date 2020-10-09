@@ -122,6 +122,10 @@ class CovidData {
                         log.debug(`The fips ${fips} is in the No Data List - Skip.`);
                     } else {
                         const resItem = this.getDataByFips(fips, day);
+                        if (! /^[0-9]/.test(fips) && !resItem.state) {
+                            // 'area' fips doesn't have state info, substitute US data into the state
+                            resItem.state = this.data.US.state;
+                        }
                         if (resItem) {
                             values.push(resItem);
                         }

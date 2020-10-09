@@ -25,7 +25,8 @@ try {
 
       const cv19Page = new CovidPage(I, config);
       cv19Page.expectTitle();
-      cv19Page.expectCDCWorning();
+      // TODO: Warning about Metropolitan Areas
+      // cv19Page.expectCDCWarning();
       cv19Page.expectNoCountyPopup();
       cv19Page.putZip(zip);
 
@@ -40,9 +41,10 @@ try {
         // cv19Page.expectCountyPopupWithNoElement();
       } else {
         const countyNames = realDataItems
-          .map((i) => (i.county || {}).name)
-          .sort();
-        log.debug(`Counties: ${JSON.stringify(countyNames)}`);
+          .map((i) => { return {fips: (i.county || {}).fips || '', name: (i.county || {}).name || ''}; })
+          .sort((a, b) => cv19Page.compareFips(a.fips, b.fips));
+
+        log.debug(`Counties (Sorted): ${JSON.stringify(countyNames)}`);
         let realData = null;
         if (zip && zip !== "US") {
           const index = cvData.getRandomInt(realDataItemsLen);
@@ -54,7 +56,7 @@ try {
           log.debug(`Select county ${selectedCounty}`);
           for (let i = 0; i < realDataItemsLen; i += 1) {
             const item = realDataItems[i];
-            if (item.county && item.county.name === selectedCounty) {
+            if (item.county && item.county.name === selectedCounty.name) {
               realData = item;
               break;
             }
@@ -75,10 +77,11 @@ try {
           );
         }
         log.debug(`Check state data on the page`);
-        cv19Page.expectStateData(
-          realData,
-          (zip || "").toUpperCase() === "US" ? "usa" : "state"
-        );
+        let pageStateLevelName = 'state';
+        if ((zip || "").toUpperCase() === "US" || realData.state && (realData.state.id === 'US')) {
+            pageStateLevelName = "usa";
+        }
+        cv19Page.expectStateData(realData, pageStateLevelName);
         if (realData && realData.county && fipsWithNoData.includes(realData.county.fips)) {
             log.debug(`Check county data on the page -> This fips [${realData.county.fips}] in the No Data list. Skip.`)
         } else {

@@ -12,6 +12,14 @@ class CovidPage {
     this.config = config;
   }
 
+  compareFips(fips1, fips2) {
+    // Put 'fake' fips with letter first and the real fips with number after
+    const toOrderVal = (x) => /^[0-9]/.test(x) ? `9_${x}` : `1_${x}`;
+    const a = toOrderVal(fips1 || '');
+    const b = toOrderVal(fips2 || '');
+    return (a > b) - (a < b);
+  }
+
   putZip(zip) {
     if (zip && zip !== "US") {
       this.I.fillField("#zip-search-input", zip);
@@ -25,7 +33,7 @@ class CovidPage {
   expectTitle(title = undefined) {
     this.I.seeInTitle(title || "TISTA COVID-19 Tracker");
   }
-  expectCDCWorning() {
+  expectCDCWarning() {
     this.I.see(
       "NOTE: New CDC guidance could cause an increase in the number of deaths attributed to COVID-19."
     );
@@ -86,7 +94,11 @@ class CovidPage {
     if (!data || !data.county) {
       return;
     }
-    this.I.see(`USA / ${data.state.name} / ${data.county.name}`);
+    if (!data.state || data.state.id === 'US') {
+        this.I.see(`USA / ${data.county.name}`);
+    } else {
+        this.I.see(`USA / ${data.state.name} / ${data.county.name}`);
+    }
     this.I.see(`COVID-19 Data for ${data.county.name}`);
     this.I.see(`Population: ${data.county.population}`, `#county-population`);
     this.expectProperDataBox(
