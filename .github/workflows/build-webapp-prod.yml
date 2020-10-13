@@ -43,11 +43,11 @@ jobs:
             echo "Error: Incorrect Environment value: build_env = ${BUILD_ENV}"
             exit 1
           fi; fi
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=NODE_ENV::${NODE_ENV}"
-          echo "::set-env name=S3_BUCKET::${S3_BUCKET}"
-          echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
-          echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+          echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
+          echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"
@@ -135,11 +135,11 @@ jobs:
             echo "Error: Incorrect Environment value: build_env = ${BUILD_ENV}"
             exit 1
           fi; fi
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=NODE_ENV::${NODE_ENV}"
-          echo "::set-env name=S3_BUCKET::${S3_BUCKET}"
-          echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
-          echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+          echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
+          echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"

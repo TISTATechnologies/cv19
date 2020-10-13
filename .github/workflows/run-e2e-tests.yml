@@ -77,11 +77,11 @@ jobs:
           fi
           ZIPS_COUNT="${ZIPS_COUNT:-"${{ secrets.TEST_ZIPS_COUNT}}"}"
           ZIPS="${ZIPS:-"${{ secrets.TEST_ZIPS}}"}"
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=NODE_ENV::${NODE_ENV}"
-          echo "::set-env name=APP_SERVER_URL::${APP_SERVER_URL}"
-          echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
-          echo "::set-env name=ZIPS::${ZIPS}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+          echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
+          echo "ZIPS_COUNT=${ZIPS_COUNT}" >> $GITHUB_ENV
+          echo "ZIPS=${ZIPS}" >> $GITHUB_ENV
 
       - name: Show test parameters
         run: |

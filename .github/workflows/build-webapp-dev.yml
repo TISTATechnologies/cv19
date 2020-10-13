@@ -57,15 +57,15 @@ jobs:
             echo "Error: Incorrect Environment value: build_env = ${NODE_ENV}"
             exit 1
           fi; fi
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=BUILD_NUMBER::${BUILD_NUMBER}"
-          echo "::set-env name=NODE_ENV::${NODE_ENV}"
-          echo "::set-env name=S3_BUCKET::${S3_BUCKET}"
-          echo "::set-env name=GOOGLE_ANALYTICS_KEY::${GOOGLE_ANALYTICS_KEY}"
-          echo "::set-env name=REACT_APP_VIEW_ASSOCIATES::${REACT_APP_VIEW_ASSOCIATES}"
-          echo "::set-env name=APP_SERVER_URL::${APP_SERVER_URL}"
-          echo "::set-env name=ZIPS_COUNT::${ZIPS_COUNT}"
-          echo "::set-env name=ZIPS::${ZIPS}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> $GITHUB_ENV
+          echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+          echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
+          echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
+          echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
+          echo "ZIPS_COUNT=${ZIPS_COUNT}" >> $GITHUB_ENV
+          echo "ZIPS=${ZIPS}" >> $GITHUB_ENV
 
       - name: Show test parameters
         run: |

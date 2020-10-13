@@ -44,8 +44,8 @@ jobs:
       - name: Parse parameters and sys.env
         run: |
           PROCESSING_DATE=${PROCESSING_DATE:-"latest"}
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=DATE::${PROCESSING_DATE}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "DATE=${PROCESSING_DATE}" >> $GITHUB_ENV
       - name: Install dependencies
         working-directory: data/services/cv19srv
         run: pip3 install -U pip setuptools ; pip3 install -r ./requirements.txt
@@ -107,8 +107,8 @@ jobs:
       - name: Parse parameters and sys.env
         run: |
           PROCESSING_DATE=${PROCESSING_DATE:-"latest"}
-          echo "::add-path::${PWD}/../.github/scripts"
-          echo "::set-env name=DATE::${PROCESSING_DATE}"
+          echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
+          echo "DATE=${PROCESSING_DATE}" >> $GITHUB_ENV
       - name: Install requirements for the tests
         run: npm install
       - name: Generate data for tests
