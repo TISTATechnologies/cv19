@@ -343,7 +343,7 @@ function joinTables(lookupTable, mainTable, lookupKey, mainKey, select) {
 function initMap({
   width = 950, height = 300, countyMap, stateMap, aidData, metroMap,
 }) {
-  console.log('%cINIT MAP ', 'color: limegreen');
+  // console.log('%cINIT MAP ', 'color: limegreen');
 
   countyGeo = countyMap.features.map((x) => ({
     ...x,
@@ -554,12 +554,13 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
     .attr('fill', (d) => (d.metro ? 'none' : colorFunction(d)))
     .attr('opacity', '0.9')
     .attr('stroke', '#444')
+    .attr('stroke-width', (d) => (d.metro ? 0 : ''))
     .attr('stroke-opacity', 0.2);
 
-  const zoom = d3.zoom().scaleExtent([0.8, 40]).on('zoom', zoomed);
+  const zoom = d3.zoom().scaleExtent([0.5, 40]).on('zoom', zoomed);
 
   function drawLocation(drawnLoc) {
-    console.dir(drawnLoc);
+    // console.dir(drawnLoc);
     counties
       .select(`.fips${drawnLoc.fips}`)
       .attr('opacity', '1')
@@ -579,18 +580,29 @@ function drawMap(width = 950, height = 300, location = {}, countyHeat, myMap, ai
       .call(zoom.transform, d3.zoomIdentity.translate(moveX, moveY).scale(1));
   }
   function toLocation(newLocation) {
-    // // console.log(`%cTransition? ${location.location_name}`, "color: lime");
-    const [x, y] = projection([newLocation.geo_long, newLocation.geo_lat]);
-    const scale = 10;
-    // const scale = projection.scale()
-    const offsetX = x * scale;
-    const offsetY = y * scale;
-    const moveX = Math.min(0, width / 2 - offsetX);
-    const moveY = Math.min(0, height / 2 - offsetY);
-    svg
-      .transition()
-      .duration(750)
-      .call(zoom.transform, d3.zoomIdentity.translate(moveX, moveY).scale(scale));
+    // console.log(`%cTransition? ${newLocation.location_name}`, 'color: lime');
+    // const [x, y] = projection([newLocation.geo_long, newLocation.geo_lat]);
+    const node = counties.select(`.fips${newLocation.fips}`).node();
+    if (node) {
+      const bounds = node.getBBox();
+      const { x: x1, y: y1 } = bounds;
+      const x2 = x1 + bounds.width;
+      const y2 = y1 + bounds.height;
+      const scale = Math.min(16, 0.8 / Math.max((x2 - x1) / width, (y2 - y1) / height));
+      // console.log(`%c${scale}`, 'color: magenta');
+      const moveX = width / 2;
+      const moveY = height / 2;
+      svg
+        .transition()
+        .duration(750)
+        .call(
+          zoom.transform,
+          d3.zoomIdentity
+            .translate(moveX, moveY)
+            .scale(scale)
+            .translate(-(x2 + x1) / 2, -(y2 + y1) / 2),
+        );
+    }
   }
 
   svg.call(zoom);

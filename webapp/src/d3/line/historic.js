@@ -49,19 +49,20 @@ function init(pWidth = 900, pHeight = 100) {
   mouseG.append('svg:rect');
 }
 
-const fitInWindow = (d) => {
+const fitInWindow = () => {
   const x = d3.event.pageX + 100;
   const xAdjust = x < window.innerWidth ? 'translate(10, 10)' : 'translate(-60,10)';
-  console.log(window.innerWidth - x);
+  // console.log(window.innerWidth - x);
   return xAdjust;
 };
 
-function draw(w, h, historic = { active: [] }, selected = { trend2: true }) {
+function draw(w, h, historic = { active: [] }, selected = { trend2: true }, timeSpan) {
   const params = findTrueProps(selected);
   // only return rows with at least some of the data we're looking for.
   const data = historic.active
     ? historic.active
-      .filter((d) => d.date >= '2020-05-01') // temp cap date range
+      .slice(0, timeSpan)
+    // .filter((d) => d.date >= '2020-05-01') // temp cap date range
       .filter((d) => params.reduce(
         (acc, [param, isOn]) => acc || (isOn && (d[param] || d[param] === 0)),
         false,

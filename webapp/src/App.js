@@ -212,7 +212,6 @@ function App() {
     },
   ]);
   const [myLocations, setMyLocations] = useState(savedLocations);
-  const [localNoticeOpen] = useLocalStorage('showCDC', true);
 
   const goToLevel = useCallback(
     (lvl) => {
@@ -234,6 +233,15 @@ function App() {
     },
     [history],
   );
+
+  // Page title
+  useEffect(() => {
+    if (level !== 'usa') {
+      document.title = `${countyStats.name} - TISTA COVID-19 Tracker`;
+    } else {
+      document.title = 'United States - TISTA COVID-19 Tracker';
+    }
+  }, [countyStats, level]);
 
   // USA
   useEffect(() => {
@@ -285,7 +293,7 @@ function App() {
   // COUNTY
   useEffect(() => {
     const f = async () => {
-      console.log(`%cFetching COUNTY ${fips}`, 'color: cyan');
+      // console.log(`%cFetching COUNTY ${fips}`, 'color: cyan');
       const { data, error } = await fetchDataFromFips(fips);
       if (error) {
         setErrorMessage(error);
@@ -295,7 +303,7 @@ function App() {
       } else if (data && data.length) {
         const [place] = data;
         setCountyStats({ ...place, name: removeDouble(place.name) });
-        console.log(`🔴 ${location}`);
+        // console.log(`🔴 ${location}`);
         if (fips.toUpperCase().includes('US')) {
           goToLevel('metro');
         } else {
@@ -345,11 +353,11 @@ function App() {
   }, [location, goToLevel, history, fips, lastFipsSearch, stateStats]);
 
   useEffect(() => {
-    console.log(`%c${countyStats.name}`, 'color: salmon');
+    // console.log(`%c${countyStats.name}`, 'color: salmon');
     // console.dir(countyStats);
     const f = (zones) => {
       const metrozone = zones.find((z) => z.county === countyStats.fips);
-      console.log(`set to ${metrozone}`);
+      // console.log(`set to ${metrozone}`);
       setHasMetro(metrozone);
     };
     const g = async () => {
@@ -368,7 +376,7 @@ function App() {
           ],
           [],
         );
-        console.log('building zone list', zones);
+        // console.log('building zone list', zones);
         setMetroZones(data);
         setMetroCounties(zones);
         f(zones);
@@ -690,11 +698,9 @@ function App() {
       <Container maxWidth={false}>
         <Grid container spacing={2} justify="space-between">
           <Grid item container xs={12} justify="center">
-            <Visible condition={localNoticeOpen}>
-              <Suspense fallback={fallback}>
-                <CdcNotice zones={metroZones} />
-              </Suspense>
-            </Visible>
+            <Suspense fallback={fallback}>
+              <CdcNotice zones={metroZones} />
+            </Suspense>
           </Grid>
 
           <Grid item xs={12} lg={6}>
@@ -740,7 +746,7 @@ function App() {
               >
                 {'View '}
                 {hasMetro.name}
-                {' ▼'}
+                {' ▶'}
               </Button>
             ) : null}
           </Grid>

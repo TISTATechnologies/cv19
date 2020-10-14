@@ -2,8 +2,10 @@ import React from 'react';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
 import { fade, makeStyles } from '@material-ui/core/styles';
 
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
 import TextField from '@material-ui/core/TextField';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import { findFirst } from '../util/arrays';
 
 const getOptionLabel = (o) => o.zip;
@@ -22,11 +24,15 @@ const useStyles = makeStyles((theme) => ({
   metro: {
     // backgroundColor: theme.palette.secondary.main,
     margin: '0 -1em',
-    padding: '1em',
+    padding: '0.5em 0 ',
     color: fade(theme.palette.warning.light, 0.95),
   },
   metroSecondary: {
     color: fade(theme.palette.warning.main, 0.9),
+  },
+  normal: {
+    margin: '0 -1em',
+    padding: '0.5em 0 ',
   },
 }));
 
@@ -45,18 +51,26 @@ const ZipInput = ({
   }
   const classes = useStyles();
   const renderOption = (o) => (
-    <ListItemText
-      primary={o.zip}
-      secondary={`${o.name}, ${o.state_id}`}
-      classes={{
-        root: o.fips.includes('US') ? classes.metro : '',
-        secondary: o.fips.includes('US') ? classes.metroSecondary : '',
-      }}
-    />
+    <>
+      <ListItemIcon
+        classes={{
+          root: o.fips.includes('US') ? classes.metroSecondary : '',
+        }}
+      >
+        {o.fips.includes('US') ? <NewReleasesIcon /> : null}
+      </ListItemIcon>
+      <ListItemText
+        primary={o.zip}
+        secondary={`${o.name}, ${o.state_id}`}
+        classes={{
+          root: o.fips.includes('US') ? classes.metro : classes.normal,
+          secondary: o.fips.includes('US') ? classes.metroSecondary : '',
+        }}
+      />
+    </>
   );
   return (
     <Autocomplete
-      debug
       onChange={onChange}
       onInputChange={onInputChange}
       inputValue={inputValue}

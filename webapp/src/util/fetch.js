@@ -75,7 +75,7 @@ export async function fetchDataFromFips(lFips) {
   const fips = lFips.toUpperCase();
   const stateCode = fips.slice(0, 2);
   const state = stateFips.find((x) => x[2] === stateCode);
-  console.log(`%c${state}`, 'color: orange');
+  // console.log(`%c${state}`, 'color: orange');
   if (!state) return { data: [] };
   const stateAbbr = state[1].toLowerCase();
   const response = await fetchWithHeader(`${covid}daily/latest/us/${stateAbbr}/${fips}.json`);
