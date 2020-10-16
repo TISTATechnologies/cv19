@@ -10,6 +10,10 @@ on:
         description: 'Data url'
         required: true
         default: 'https://data.tistatech.com'
+      data_version:
+        description: 'Data version'
+        required: true
+        default: '2'
       vusers_total:
         description: 'Number of concurrent users'
         required: true
@@ -62,6 +66,7 @@ jobs:
           THRESHOLD_AVG: ${{github.event.inputs.threshold_avg}}
           THRESHOLD_95: ${{github.event.inputs.threshold_95}}
           THRESHOLD_FAILS: ${{github.event.inputs.threshold_fails}}
+          DATA_VERSION: ${{github.event.inputs.data_version}}
         run: |
           echo "Start test with parameters=${{toJson(github.event.inputs)}}"
           ${HOME}/.local/bin/locust -f ./cv19-webapp.py --headless -u ${VUSERS_TOTAL} -r ${VUSERS_PER_SEC} --run-time ${DURATION_SEC}s --host "${API_URL}"

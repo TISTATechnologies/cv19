@@ -2,6 +2,7 @@
 SCRIPT=./cv19-webapp.py
 export API_URL=https://data.tistatech.com
 export APP_URL=https://covid19-dev.tistatech.com
+export DATA_VERSION=2
 export VUSERS_TOTAL=${VUSERS_TOTAL:-"1000"}
 export VUSERS_PER_SEC=${VUSERS_PER_SEC:-"5"}
 export DURATION_SEC=${DURATION_SEC:-"60"}

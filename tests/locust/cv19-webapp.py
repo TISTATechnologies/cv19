@@ -6,14 +6,16 @@ from locust.runners import MasterRunner
 
 class Config:
     def __init__(self):
-        fips = os.environ.get('FIPS', '24031,11001,36093,10005,05145')
+        fips = os.environ.get('FIPS', '24031,11001,36093,10005,05145,USDC1,USIL1')
         self.app_url = os.environ.get('APP_URL')
         self.api_url = os.environ.get('API_URL')
+        self.data_version = os.environ.get('DATA_VERSION', '1')
         self.debug = os.environ.get('DEBUG') == 'true '
         self.threshold_avg = int(os.environ.get('THRESHOLD_AVG', '1000'))
         self.threshold_95 = int(os.environ.get('THRESHOLD_95', '3000'))
         self.threshold_fails = int(os.environ.get('THRESHOLD_FAILS', '1'))
         self.test_fips = [x for x in [x.strip() for x in fips.split(',')] if x]
+        self.covid_data_url = f'{self.api_url}/covid/v{self.data_version}'
 
     def __str__(self):
         return f'{self.__dict__}'
@@ -75,26 +77,26 @@ class WebsiteUser(HttpUser):
 
     @task
     def app_home_page(self):
-        with self.client.get(config.app_url) as response:
+        with self.client.get(config.app_url, catch_response=True) as response:
             self._validate_response(response, 200, 'meta buildtime=')
             self._validate_response(response, 200, 'COVID-19 Tracker')
         
     @task
     def api_get_daily_us(self):
-        with self.client.get(f'{config.api_url}/covid/v1/daily/latest/us.json') as response:
+        with self.client.get(f'{config.covid_data_url}/daily/latest/us.json', catch_response=True) as response:
             self._validate_response(response, 200, '"United States"')
             self._validate_response(response, 200, '"country"')
 
     @task
     def api_get_daily_states(self):
-        with self.client.get(f'{config.api_url}/covid/v1/daily/latest/all-states.json') as response:
+        with self.client.get(f'{config.covid_data_url}/daily/latest/all-states.json', catch_response=True) as response:
             self._validate_response(response, 200, '"Maryland"')
             self._validate_response(response, 200, '"Alaska"')
             self._validate_response(response, 200, '"Washington"')
     
     @task
     def api_get_daily_states(self):
-        with self.client.get(f'{config.api_url}/covid/v1/daily/latest/us/all-counties.json') as response:
+        with self.client.get(f'{config.covid_data_url}/daily/latest/us/all-counties.json', catch_response=True) as response:
             self._validate_response(response, 200, '"Arlington County, VA"')
             self._validate_response(response, 200, '"District of Columbia, DC"')
             self._validate_response(response, 200, '"Montgomery County, MD"')
@@ -102,7 +104,7 @@ class WebsiteUser(HttpUser):
     @task
     def api_get_daily_by_fips(self):
         fips = random.choice(config.test_fips)
-        with self.client.get(f'{config.api_url}/covid/v1/daily/latest/us/{fips[0:2]}/{fips}.json') as response:
+        with self.client.get(f'{config.covid_data_url}/daily/latest/us/{fips[0:2]}/{fips}.json', catch_response=True) as response:
             self._validate_response(response, 200, f'"{fips}"')
             self._validate_response(response, 200, '"District of Columbia, DC"')
             self._validate_response(response, 200, '"US"')
