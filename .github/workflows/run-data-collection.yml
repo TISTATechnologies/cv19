@@ -55,6 +55,7 @@ jobs:
         run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${PROCESSING_DATE}
       - name: Upload data to the AWS S3 Bucket
         env:
+          DATA_VERSION: ${{ secrets.DATA_VERSION }}
           COVID_DATA_S3_BUCKET: ${{ secrets.COVID_DATA_S3_BUCKET }}
         run: yes | ./scripts/upload-covid-data-to-s3-bucket.sh
 
