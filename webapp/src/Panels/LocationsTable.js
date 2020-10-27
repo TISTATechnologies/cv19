@@ -67,6 +67,22 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
+function createHref(row) {
+  // return row.zip
+  if (row.zip) {
+    return `#/${row.zip}-${row.name
+      .split(/ |,/)
+      .filter((x) => x)
+      .join('-')
+      .toLowerCase()}`;
+  }
+  if (row.fips && row.fips !== '00000') return `#/fips-${row.fips}`;
+  return '/#';
+}
+function showDelete(row) {
+  return row.fips !== '00000';
+}
+
 const useStyles = makeStyles((theme) => ({
   root: {
     fontSize: '1rem',
@@ -238,7 +254,7 @@ export default function SimpleTable({
           className: classes.title,
         }}
         action={
-          thisLocation.fips ? (
+          thisLocation.fips && thisLocation.fips !== '00000' ? (
             <IconButton color="secondary" size="small" onClick={() => addFunction(thisLocation)}>
               <Tooltip
                 title={`Add ${thisLocation.name}`}
@@ -293,15 +309,7 @@ export default function SimpleTable({
                       variant="body1"
                       classes={{ root: classes.linkButton }}
                       className={row.fips.includes('US') ? classes.metro : ''}
-                      href={
-                        row.zip
-                          ? `#/${row.zip}-${row.name
-                            .split(/ |,/)
-                            .filter((x) => x)
-                            .join('-')
-                            .toLowerCase()}`
-                          : `#/fips-${row.fips}`
-                      }
+                      href={createHref(row)}
                     >
                       {`${row.name}`}
                     </Link>
@@ -344,18 +352,20 @@ export default function SimpleTable({
                     {bigNumberFormat(row.activeRatio)}
                   </TableCell>
                   <TableCell>
-                    <IconButton
-                      classes={{
-                        root: classes.deleteButton,
-                      }}
-                      size="small"
-                      edge="end"
-                      onClick={() => {
-                        removeFunction(row.fips);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    {showDelete(row) ? (
+                      <IconButton
+                        classes={{
+                          root: classes.deleteButton,
+                        }}
+                        size="small"
+                        edge="end"
+                        onClick={() => {
+                          removeFunction(row.fips);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}
@@ -365,7 +375,7 @@ export default function SimpleTable({
         <Hidden mdUp>
           <div className={classes.guide}>
             {columnHeaders.map((a) => (a.shortLabel !== a.label ? (
-              <div style={{ flex: '1' }}>{`${a.shortLabel}: ${a.label} `}</div>
+              <div key={a.shortLabel} style={{ flex: '1' }}>{`${a.shortLabel}: ${a.label} `}</div>
             ) : null))}
           </div>
         </Hidden>

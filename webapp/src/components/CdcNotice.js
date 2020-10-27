@@ -45,10 +45,9 @@ const CdcNotice = ({ zones = [] }) => {
           <ListItemText variant="h6" component="p" align="center">
             {'Select metropolitan area statistics are now availiable! '}
             {zones.map((zone, index) => (
-              <>
+              <span key={zone.name}>
                 {index === zones.length - 1 ? '& ' : ''}
                 <Link
-                  key={zone.name}
                   href={`/#/fips-${zone.fips}`}
                   rel="noopener noreferrer"
                   underline="always"
@@ -59,7 +58,7 @@ const CdcNotice = ({ zones = [] }) => {
                   {zone.short_name}
                 </Link>
                 {index === zones.length - 1 ? '.' : ', '}
-              </>
+              </span>
             ))}
           </ListItemText>
           <ListItemIcon>

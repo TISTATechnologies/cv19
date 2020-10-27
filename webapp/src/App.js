@@ -180,7 +180,7 @@ function App() {
   const [usaStats, setUsaStats] = useState(localUsa);
   const [localState, setLocalState] = useLocalStorage('stateStats', [emptyObject]);
   const [stateStats, setStateStats] = useState(localState);
-  const [countyStats, setCountyStats] = useState([emptyObject]);
+  const [countyStats, setCountyStats] = useState(emptyObject);
   const [location, setLocation] = useState('');
   const [fips, setFips] = useState('');
   const [lastFipsSearch, setLastFipsSearch] = useState('');
@@ -210,6 +210,10 @@ function App() {
       fips: '11001',
       zip: '20202',
     },
+    {
+      name: 'United States',
+      fips: '00000',
+    },
   ]);
   const [myLocations, setMyLocations] = useState(savedLocations);
 
@@ -218,6 +222,7 @@ function App() {
       setLevel(lvl);
       if (lvl === 'usa') {
         setMyState('');
+        setCountyStats(emptyObject);
         history.push('');
       }
     },
@@ -302,9 +307,10 @@ function App() {
         setErrorMessage(error);
       } else if (data && data.length) {
         const [place] = data;
-        setCountyStats({ ...place, name: removeDouble(place.name) });
+        const isMetro = fips.toUpperCase().includes('US');
+        setCountyStats({ ...place, name: removeDouble(place.name), isMetro });
         // console.log(`🔴 ${location}`);
-        if (fips.toUpperCase().includes('US')) {
+        if (isMetro) {
           goToLevel('metro');
         } else {
           goToLevel('county');
@@ -478,11 +484,24 @@ function App() {
     f();
   }, [countyStats, level]);
 
-  // My Counties
+  function readyLocation(d, zip = undefined) {
+    return {
+      ...d,
+      zip,
+      name: removeDouble(d.name),
+      active_trend2: diffPercent(d.active, d.active_trend2),
+      active_trend7: diffPercent(d.active, d.active_trend7),
+      active_trend30: diffPercent(d.active, d.active_trend30),
+      active_trend60: diffPercent(d.active, d.active_trend60),
+      active_trend90: diffPercent(d.active, d.active_trend90),
+    };
+  }
+
+  // My Locations
   useEffect(() => {
-    const f = async () => {
-      const list = [];
+    const f = async (list = []) => {
       // console.log('%cFetching my locations', 'color: yellow');
+      // Fetch USA data for country
       await savedLocations.reduce(async (memo, { fips: savedFips, zip }) => {
         // console.log(`%c${savedFips}`, 'color: green; border: yellow 1px solid');
         await memo;
@@ -490,21 +509,16 @@ function App() {
         if (!data) return;
         const [d] = data;
         // console.log(`%c🟡 ${savedFips} ${d.name}`, 'color: goldenrod');
-        list.push({
-          ...d,
-          zip,
-          name: removeDouble(d.name),
-          active_trend2: diffPercent(d.active, d.active_trend2),
-          active_trend7: diffPercent(d.active, d.active_trend7),
-          active_trend30: diffPercent(d.active, d.active_trend30),
-          active_trend60: diffPercent(d.active, d.active_trend60),
-          active_trend90: diffPercent(d.active, d.active_trend90),
-        });
+        list.push(readyLocation(d, zip));
       }, undefined);
       setMyLocations(list);
     };
     if (savedLocations.length) {
-      f();
+      if (!savedLocations.some((x) => x.fips === '00000')) {
+        f([{ name: 'United States', fips: '00000' }]);
+      } else {
+        f();
+      }
     }
   }, [savedLocations, setMyLocations]);
 
@@ -534,7 +548,7 @@ function App() {
     if (!localFips) return;
     const index = myLocations.findIndex((x) => x.fips === localFips);
     if (index < 0) {
-      if (myLocations.length >= 10) {
+      if (myLocations.length >= 11) {
         // console.log('LIST FULL');
         setErrorMessage('Tracked county list is full. Please remove an entry to add a new county.');
         return;
@@ -599,9 +613,14 @@ function App() {
   );
   const MemoStatsCounty = useMemo(
     () => (
-      <LocalStatsTable sources={sources} data={countyStats} level="county" isMetro={!hasMetro} />
+      <LocalStatsTable
+        sources={sources}
+        data={countyStats}
+        level="county"
+        isMetro={countyStats.isMetro}
+      />
     ),
-    [sources, countyStats, hasMetro],
+    [sources, countyStats],
   );
 
   const classes = useStyles();

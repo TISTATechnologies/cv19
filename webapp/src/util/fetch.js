@@ -89,7 +89,11 @@ export async function fetchTrendFromFips(lFips) {
   const stateCode = fips.slice(0, 2);
   const state = stateFips.find((x) => x[2] === stateCode);
   const stateAbbr = state[1].toLowerCase();
-  const response = await fetchWithHeader(`${covid}trend/latest/us/${stateAbbr}/${fips}.json`);
+  const isUsa = stateCode === '00';
+  const url = isUsa
+    ? `${covid}trend/latest/us.json`
+    : `${covid}trend/latest/us/${stateAbbr}/${fips}.json`;
+  const response = await fetchWithHeader(url);
   if (!response.ok) return { error: `Could not collect trend data for ${stateAbbr}: ${fips}.` };
   const data = await response.json();
   return { data };
