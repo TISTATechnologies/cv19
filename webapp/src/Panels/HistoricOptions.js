@@ -5,6 +5,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import Tooltip from '@material-ui/core/Tooltip';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -36,7 +37,33 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   checked: {},
+  tooltip: {
+    backgroundColor: 'rgba(16,16,16,0.9)',
+    boarderRadius: '10px',
+    boxShadow: '3px 3px rgba(33, 33, 33, 0.3)',
+    fontSize: '12px',
+    maxWidth: '50vw',
+  },
+  arrow: {
+    color: 'rgba(16,16,16,0.9)',
+  },
 }));
+
+const ArrowTooltip = ({ children, ...props }) => {
+  const classes = useStyles();
+  return (
+    <Tooltip
+      arrow
+      classes={{
+        tooltip: classes.tooltip,
+        arrow: classes.arrow,
+      }}
+      {...props}
+    >
+      {children}
+    </Tooltip>
+  );
+};
 
 const CheckboxesGroup = ({ selection, setSelection }) => {
   const classes = useStyles();
@@ -53,50 +80,61 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
     <div className={classes.root}>
       <FormControl component="fieldset" className={classes.formControl}>
         <FormGroup row>
-          <FormControlLabel
-            control={(
-              <Checkbox
-                checked={trend2}
-                onChange={handleChange}
-                name="trend2"
-                classes={{ root: classes.checkRoot0, checked: classes.checked }}
-              />
-            )}
-            label="2D"
-          />
-          <FormControlLabel
-            control={(
-              <Checkbox
-                checked={trend7}
-                onChange={handleChange}
-                name="trend7"
-                classes={{ root: classes.checkRoot1, checked: classes.checked }}
-              />
-            )}
-            label="7D"
-          />
-          <FormControlLabel
-            control={(
-              <Checkbox
-                checked={trend30}
-                onChange={handleChange}
-                name="trend30"
-                classes={{ root: classes.checkRoot2, checked: classes.checked }}
-              />
-            )}
-            label="1M"
-          />
-          <FormControlLabel
-            control={(
-              <Checkbox
-                checked={value}
-                onChange={handleChange}
-                name="value"
-                classes={{ root: classes.checkRoot3, checked: classes.checked }}
-              />
-            )}
-            label="Case Count"
-          />
+          <ArrowTooltip title="How quickly the active case count increases or decreases, measured over two days.">
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={trend2}
+                  onChange={handleChange}
+                  name="trend2"
+                  classes={{ root: classes.checkRoot0, checked: classes.checked }}
+                />
+              )}
+              label="2D"
+            />
+          </ArrowTooltip>
+
+          <ArrowTooltip title="How quickly the active case count increases or decreases, measured over seven days.">
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={trend7}
+                  onChange={handleChange}
+                  name="trend7"
+                  classes={{ root: classes.checkRoot1, checked: classes.checked }}
+                />
+              )}
+              label="7D"
+            />
+          </ArrowTooltip>
+
+          <ArrowTooltip title="How quickly the active case count increases or decreases, measured over one month.">
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={trend30}
+                  onChange={handleChange}
+                  name="trend30"
+                  classes={{ root: classes.checkRoot2, checked: classes.checked }}
+                />
+              )}
+              label="1M"
+            />
+          </ArrowTooltip>
+
+          <ArrowTooltip title="Count of active cases.">
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={value}
+                  onChange={handleChange}
+                  name="value"
+                  classes={{ root: classes.checkRoot3, checked: classes.checked }}
+                />
+              )}
+              label="Case Count"
+            />
+          </ArrowTooltip>
         </FormGroup>
       </FormControl>
     </div>

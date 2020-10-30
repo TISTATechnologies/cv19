@@ -35,6 +35,7 @@ jobs:
         run: |
           NODE_ENV=production
           GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
+          REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
           if [ "${BUILD_ENV}" == "a" ] || [ "${BUILD_ENV}" == "A" ]; then
             S3_BUCKET="${{ secrets.PROD_A_S3_BUCKET }}"
           else if [ "${BUILD_ENV}" == "b" ] || [ "${BUILD_ENV}" == "B" ]; then
@@ -47,6 +48,7 @@ jobs:
           echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
           echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
           echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"
@@ -127,6 +129,7 @@ jobs:
         run: |
           NODE_ENV=production
           GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
+          REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
           if [ "${BUILD_ENV}" == "a" ] || [ "${BUILD_ENV}" == "A" ]; then
             S3_BUCKET="${{ secrets.PROD_INTERNAL_A_S3_BUCKET }}"
           else if [ "${BUILD_ENV}" == "b" ] || [ "${BUILD_ENV}" == "B" ]; then
@@ -139,6 +142,7 @@ jobs:
           echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
           echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
           echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"

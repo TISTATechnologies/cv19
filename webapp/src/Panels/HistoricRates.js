@@ -17,8 +17,8 @@ const HistoricRates = ({ county, historic, level }) => {
   const [timeSpan, setTimeSpan] = useState(90);
   const [initialized, setInitialized] = useState(false);
   const [selection, setSelection] = useState({
-    trend2: true,
-    trend7: false,
+    trend2: false,
+    trend7: true,
     trend30: false,
     value: false,
   });
@@ -61,7 +61,7 @@ const HistoricRates = ({ county, historic, level }) => {
   return (
     <Card variant="outlined">
       <CardHeader
-        title={`Active Case Velocity for ${level !== 'usa' ? county.name : 'USA'}`}
+        title={`Active Case Trends for ${level !== 'usa' ? county.name : 'USA'}`}
         titleTypographyProps={{
           className: classes.title,
         }}

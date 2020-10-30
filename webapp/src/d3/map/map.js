@@ -400,14 +400,14 @@ function initMap({
   g.append('g').attr('class', 'counties');
   const states = g.append('g').attr('class', 'states');
   const circles = g.append('g').attr('class', 'circles');
-  d3.select('section')
+  d3.select('body')
     .append('div')
     .attr('class', 'tooltip')
     .attr('y', 30)
     .style('visibility', 'hidden')
     .style('opacity', '0');
 
-  d3.select('section')
+  d3.select('body')
     .append('div')
     .attr('class', 'tooltip tooltip-aid')
     .attr('y', 30)

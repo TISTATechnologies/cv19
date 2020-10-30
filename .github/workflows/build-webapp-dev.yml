@@ -46,11 +46,13 @@ jobs:
           if [ "${NODE_ENV}" == "development" ]; then
             S3_BUCKET="${{ secrets.DEV_S3_BUCKET }}"
             GOOGLE_ANALYTICS_KEY="${{ secrets.DEV_GOOGLE_ANALYTICS_KEY }}"
+            REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.DEV_GOOGLE_ANALYTICS_KEY }}"
             REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES:-"1"}
             APP_SERVER_URL=${{ secrets.DEV_APP_SERVER_URL}}
           else if [ "${NODE_ENV}" == "demo" ]; then
             S3_BUCKET="${{ secrets.DEMO_S3_BUCKET }}"
             GOOGLE_ANALYTICS_KEY="${{ secrets.DEMO_GOOGLE_ANALYTICS_KEY }}"
+            REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.DEMO_GOOGLE_ANALYTICS_KEY }}"
             REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES:-"0"}
             APP_SERVER_URL=${{ secrets.DEMO_APP_SERVER_URL}}
           else
@@ -62,6 +64,7 @@ jobs:
           echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
           echo "S3_BUCKET=${S3_BUCKET}" >> $GITHUB_ENV
           echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
+          echo "REACT_APP_GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
           echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
           echo "ZIPS_COUNT=${ZIPS_COUNT}" >> $GITHUB_ENV

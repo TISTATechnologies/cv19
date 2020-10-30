@@ -15,7 +15,7 @@ update_config_file() {
     cp "${newfile}" "${cfgfile}" || exit 1
     COMMON_DATA_URL=${REACT_APP_COMMON_DATA_URL:-"${COMMON_DATA_URL:-"$(jq -r '.commonDataUrl // ""' "${cfgfile}")"}"}
     COVID_DATA_URL=${REACT_APP_COVID_DATA_URL:-"${COVID_DATA_URL:-"$(jq -r '.covidDataUrl // ""' "${cfgfile}")"}"}
-    GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEYL:-"${GOOGLE_ANALYTICS_KEY:-"$(jq -r '.googleAnalyticsKey // ""' "${cfgfile}")"}"}
+    GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY:-"${GOOGLE_ANALYTICS_KEY:-"$(jq -r '.googleAnalyticsKey // ""' "${cfgfile}")"}"}
     VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES:-"${VIEW_ASSOCIATES:-"$(jq -r '.viewAssociates // 0' "${cfgfile}")"}"}
     INTERNAL_DATA_URL=${REACT_APP_INTERNAL_DATA_URL:-"${INTERNAL_DATA_URL:-"$(jq -r '.internalDataUrl // ""' "${cfgfile}")"}"}
     cat "${cfgfile}" \
