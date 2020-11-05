@@ -55,7 +55,10 @@ class CovidTrackingCollector(Collector):
                 geo_long = None
                 source_location = None
                 collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-                last_update = Converter.parse_datetime(row['dateChecked'])
+                last_update_str = row.get('lastUpdateEt') or row.get('dateChecked')
+                if 'T24:' in last_update_str:
+                    last_update_str = last_update_str.replace('T24:', 'T00:')
+                last_update = Converter.parse_datetime(last_update_str)
                 unique_key = self.get_unique_key([country_id, state_id, fips, collected_time])
                 self.save_covid_data_item(db, idx, country_id, state_id, fips,
                                           confirmed, deaths, recovered, active,

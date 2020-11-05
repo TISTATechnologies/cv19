@@ -83,12 +83,23 @@ jobs:
           echo "ZIPS_COUNT=${ZIPS_COUNT}" >> $GITHUB_ENV
           echo "ZIPS=${ZIPS}" >> $GITHUB_ENV
 
-      - name: Show test parameters
+      - name: Show parameters
         run: |
+          echo "Node: $(node --version)"
+          python --version
           echo "NODE_ENV=${NODE_ENV}"
           echo "APP_SERVER_URL=${APP_SERVER_URL}"
           echo "ZIPS_COUNT=${ZIPS_COUNT}"
           echo "ZIPS=${ZIPS}"
+
+      - name: Install all node dependencies
+        run: npm install
+      - name: Load current data from the database
+        run: |
+          set -o pipefail
+          DEBUG=true npm run generate
+          ls -ahl helpers/cv19-*.json || (echo "Error generate data files for tests" && exit 1)
+          echo "Generate test data finished"
 
       - name: Start selenoid
         uses: Xotabu4/selenoid-github-action@v1
@@ -101,10 +112,6 @@ jobs:
           curl -s "http://${SELENIUM_SERVER}" | grep "You are using Selenoid" || (echo "Connection to http://${SELENIUM_SERVER} error." && exit 1)
           echo "Success"
 
-      - name: Install all node dependencies
-        run: npm install
-      - name: Load current data from the database
-        run: npm run generate
       - name: Run e2e tests for static api
         run: npm run test:api
       - name: Run data test

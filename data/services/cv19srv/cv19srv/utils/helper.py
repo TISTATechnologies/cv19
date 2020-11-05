@@ -127,6 +127,7 @@ class Converter:
     @staticmethod
     def parse_datetime(value):
         for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S%z',
+                    '%m/%d/%Y %H:%M',
                     '%m/%d/%y %H:%M', '%m/%d/%Y %H:%M:%S']:
             try:
                 return datetime.datetime.strptime(value, fmt)

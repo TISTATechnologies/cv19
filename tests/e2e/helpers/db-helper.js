@@ -55,7 +55,7 @@ const executeInDataBase = async (query, params = undefined) => {
     log.info(`Database: ${config.getConnectionString()}`);
     const client = new Client();
     try {
-        client.connect();
+        await client.connect();
         if (process.env.PGSCHEMA) {
             log.debug(`Use ${process.env.PGSCHEMA} schema in database`);
             client.query(`SET search_path TO '${process.env.PGSCHEMA}';`);
@@ -64,8 +64,8 @@ const executeInDataBase = async (query, params = undefined) => {
         const items = (await client.query(query, params || [])).rows;
         return items;
     } catch (err) {
-        log.error(`Error read data from the database.`)
-        log.error(err.stack || err);
+        log.error(`Error read data from the database.`);
+        throw err;
     } finally {
         try {
             if (client) {
