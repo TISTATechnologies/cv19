@@ -7,7 +7,7 @@ log = logger.get_logger('history')
 
 
 class HistoryData(Exporter):
-    PERIODS_DAYS = [2, 7, 30, 60, 90]
+    PERIODS_DAYS = [2, 7, 14, 30, 60, 90]
 
     def __init__(self, output_dir):
         super().__init__(output_dir / 'history')

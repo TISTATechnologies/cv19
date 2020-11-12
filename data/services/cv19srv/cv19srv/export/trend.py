@@ -56,6 +56,7 @@ class TrendData(Exporter):
         trend_days = {
             '2': DateTimeHelper.add_days(latest_day, -2),
             '7': DateTimeHelper.add_days(latest_day, -7),
+            '14': DateTimeHelper.add_days(latest_day, -14),
             '30': DateTimeHelper.add_days(latest_day, -30),
             '60': DateTimeHelper.add_days(latest_day, -60),
             '90': DateTimeHelper.add_days(latest_day, -90)
