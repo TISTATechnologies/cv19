@@ -171,6 +171,13 @@ const columnHeaders = [
     visible: false,
   },
   {
+    label: '14D',
+    shortLabel: '14D',
+    numeric: true,
+    id: 'active_trend14',
+    visible: false,
+  },
+  {
     label: '1M',
     shortLabel: '1M',
     numeric: true,
@@ -241,9 +248,10 @@ export default function SimpleTable({
   rows.forEach((r) => {
     if (shouldShow(r.active_trend2)) columnHeaders[4].visible = true;
     if (shouldShow(r.active_trend7)) columnHeaders[5].visible = true;
-    if (shouldShow(r.active_trend30)) columnHeaders[6].visible = true;
-    if (shouldShow(r.active_trend60)) columnHeaders[7].visible = true;
-    if (shouldShow(r.active_trend90)) columnHeaders[8].visible = true;
+    if (shouldShow(r.active_trend14)) columnHeaders[6].visible = true;
+    if (shouldShow(r.active_trend30)) columnHeaders[7].visible = true;
+    if (shouldShow(r.active_trend60)) columnHeaders[8].visible = true;
+    if (shouldShow(r.active_trend90)) columnHeaders[9].visible = true;
   });
 
   return (
@@ -334,16 +342,21 @@ export default function SimpleTable({
                     </TableCell>
                   ) : null}
                   {columnHeaders[6].visible ? (
+                    <TableCell align="right" className={classes[growOrShrink(row.active_trend14)]}>
+                      {`${percentageFormat(row.active_trend14)}`}
+                    </TableCell>
+                  ) : null}
+                  {columnHeaders[7].visible ? (
                     <TableCell align="right" className={classes[growOrShrink(row.active_trend30)]}>
                       {`${percentageFormat(row.active_trend30)}`}
                     </TableCell>
                   ) : null}
-                  {columnHeaders[7].visible ? (
+                  {columnHeaders[8].visible ? (
                     <TableCell align="right" className={classes[growOrShrink(row.active_trend60)]}>
                       {`${percentageFormat(row.active_trend60)}`}
                     </TableCell>
                   ) : null}
-                  {columnHeaders[8].visible ? (
+                  {columnHeaders[9].visible ? (
                     <TableCell align="right" className={classes[growOrShrink(row.active_trend90)]}>
                       {`${percentageFormat(row.active_trend90)}`}
                     </TableCell>

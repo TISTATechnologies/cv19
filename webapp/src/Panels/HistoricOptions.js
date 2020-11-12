@@ -36,6 +36,12 @@ const useStyles = makeStyles((theme) => ({
       color: schemeSet2[3],
     },
   },
+  checkRoot4: {
+    color: schemeSet2[4],
+    '&$checked': {
+      color: schemeSet2[4],
+    },
+  },
   checked: {},
   tooltip: {
     backgroundColor: 'rgba(16,16,16,0.9)',
@@ -73,7 +79,7 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
   };
 
   const {
-    trend2, trend7, trend30, value,
+    trend2, trend7, trend14, trend30, value,
   } = selection;
 
   return (
@@ -105,6 +111,20 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
                 />
               )}
               label="7D"
+            />
+          </ArrowTooltip>
+
+          <ArrowTooltip title="How quickly the active case count increases or decreases, measured over fourteen days.">
+            <FormControlLabel
+              control={(
+                <Checkbox
+                  checked={trend14}
+                  onChange={handleChange}
+                  name="trend14"
+                  classes={{ root: classes.checkRoot4, checked: classes.checked }}
+                />
+              )}
+              label="14D"
             />
           </ArrowTooltip>
 

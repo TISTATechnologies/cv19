@@ -19,6 +19,7 @@ const HistoricRates = ({ county, historic, level }) => {
   const [selection, setSelection] = useState({
     trend2: false,
     trend7: true,
+    trend14: true,
     trend30: false,
     value: false,
   });

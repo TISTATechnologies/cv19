@@ -6,11 +6,13 @@ let height;
 
 let mouseG;
 
+// order determines the color of the lines
 const findTrueProps = (obj) => [
   ['trend2', obj.trend2],
   ['trend7', obj.trend7],
   ['trend30', obj.trend30],
   ['value', obj.value],
+  ['trend14', obj.trend14],
 ];
 
 const colorScale = d3.scaleOrdinal(d3.schemeSet2);
@@ -75,7 +77,7 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }, time
     .range([0, w]);
   const scales = params.map(([param]) => d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d) => +d[param])])
+    .domain([d3.min(data, (d) => Math.min(0, +d[param])), d3.max(data, (d) => +d[param])])
   // .domain(d3.extent(data, (d) => +d[param]))
     .range([h, 0]));
 
@@ -172,7 +174,7 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }, time
         .style('visibility', 'visible')
         .attr('transform', ([x, y], i) => (y ? `translate(${X(x)},${scales[i](y)})` : 'scale(0)'))
         .select('text')
-        .text((d, i) => (i < 3 ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])))
+        .text((d, i) => (i !== 3 ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])))
         .attr('transform', fitInWindow);
     });
 }

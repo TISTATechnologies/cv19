@@ -491,6 +491,7 @@ function App() {
       name: removeDouble(d.name),
       active_trend2: diffPercent(d.active, d.active_trend2),
       active_trend7: diffPercent(d.active, d.active_trend7),
+      active_trend14: diffPercent(d.active, d.active_trend14),
       active_trend30: diffPercent(d.active, d.active_trend30),
       active_trend60: diffPercent(d.active, d.active_trend60),
       active_trend90: diffPercent(d.active, d.active_trend90),
