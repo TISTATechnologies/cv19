@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import datetime
+import json
 import os
 import sys
 import time
@@ -36,6 +37,10 @@ class DateTimeHelper:
         return datetime.date.today()
 
     @staticmethod
+    def get_end_day(day):
+        return datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
+
+    @staticmethod
     def parse_date(datetime_str=None):
         if not datetime_str or datetime_str in ['latest', 'yesterday']:
             return DateTimeHelper.get_yesterday_date()
@@ -43,15 +48,11 @@ class DateTimeHelper:
 
     @staticmethod
     def datetime_string(dt, fmt='%Y-%m-%dT%H:%M:%S%z'):
-        if dt:
-            return dt.strftime(fmt)
-        return None
+        return dt.strftime(fmt) if dt else None
 
     @staticmethod
     def date_string(dt, fmt='%Y-%m-%d'):
-        if dt:
-            return dt.strftime(fmt)
-        return None
+        return dt.strftime(fmt) if dt else None
 
 
 class DownladHelper:
@@ -154,6 +155,18 @@ class Converter:
             return DateTimeHelper.datetime_string(value)
         return str(value)
 
+    @staticmethod
+    def to_fips(value):
+        if value is None or value == '':
+            return None
+        return str(value).rjust(5, '0')
+
+    @staticmethod
+    def to_real_fips(value):
+        if value is None or value == '':
+            return None
+        return Converter.to_fips(int(float(value)))
+
 
 class DatabaseContext:
     def __init__(self):
@@ -211,6 +224,8 @@ class DatabaseContext:
 
 
 class References:
+    """ Additional class to store references from database: countries, states, custom areas and etc.
+    """
     def __init__(self, database_context):
         self.database_context = database_context
         self.countries = {}
@@ -221,7 +236,9 @@ class References:
         for row in self.database_context.select('* FROM country;'):
             self.countries[row[0]] = {
                 'name': row[1],
-                'aliases': [v.strip().lower() for v in (row[2] or '').split(',')]
+                'aliases': [v.strip().lower() for v in (row[2] or '').split(',')],
+                'geo_lat': row[3],
+                'geo_long': row[4]
             }
 
         for row in self.database_context.select('* FROM state;'):
@@ -231,16 +248,13 @@ class References:
             self.states[country_id][row[0]] = {
                 'name': row[2],
                 'aliases': [v.strip().lower() for v in (row[4] or '').split(',')],
-                'fips': row[5]
+                'fips': row[5],
+                'type': row[3],
+                'use_in_summary': row[3] in ('state', 'federal district')
             }
 
-        sql = ('rp.country_id, rp.state_id, rp.fips, rp.type, rp.part_id, '
-               'r.name, r.geo_lat, r.geo_long '
-               'FROM region_part rp INNER JOIN region r '
-               '    ON rp.country_id = r.country_id AND rp.state_id = r.state_id '
-               '        AND rp.fips = r.fips AND rp.type = r.type;')
-        for row in self.database_context.select(sql):
-            (country_id, state_id, fips, area_type, area_id, name, geo_lat, geo_long) = row
+        for row in self.database_context.select('* FROM region_part_details;'):
+            (country_id, state_id, fips, area_type, area_id, name, geo_lat, geo_long, _, _) = row
             key = f'{country_id}-{state_id}-{fips}'
             if key not in self.areas:
                 self.areas[key] = []
@@ -287,6 +301,20 @@ class References:
             if key.upper() == filter_name.upper() or name == filter_name or filter_name in aliases:
                 return key
         return None
+
+
+class JsonHelper:
+    @staticmethod
+    def _converter(obj):
+        if isinstance(obj, Decimal):
+            return f'{obj:.4f}'
+        if isinstance(obj, datetime.datetime):
+            return DateTimeHelper.datetime_string(obj)
+        return obj
+
+    @staticmethod
+    def serialize(obj):
+        return json.dumps(obj, default=JsonHelper._converter)
 
 
 class Log:

@@ -19,8 +19,7 @@ class ExecutiveOrderCollector(Collector):
     Site: https://web.csg.org/covid19/executive-orders
     """
     def __init__(self):
-        super().__init__()
-        self.name = 'executive_orders'
+        super().__init__('executive_orders')
 
     def pull_data_by_day(self, day):
         config_url = 'https://web.csg.org/covid19/executive-orders/'

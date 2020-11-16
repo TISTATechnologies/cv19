@@ -72,6 +72,25 @@ SELECT
   cdv.location_type
 FROM covid_data_stat AS cdv;
 
+
+CREATE VIEW region_part_details AS
+SELECT
+  rp.country_id,
+  rp.state_id,
+  rp.fips,
+  rp.type,
+  rp.part_id,
+  r.name,
+  r.geo_lat,
+  r.geo_long,
+  r2.name AS part_name,
+  r2.state_id AS part_state_id
+FROM region_part rp
+INNER JOIN region r 
+  ON rp.country_id = r.country_id AND rp.state_id = r.state_id
+    AND rp.fips = r.fips AND rp.type = r.type 
+LEFT JOIN region r2 ON r2.fips = rp.part_id AND r2.country_id = rp.country_id;
+
 /*
 The view is using to select only latest (by time) Covid-19 data for each locations
 */

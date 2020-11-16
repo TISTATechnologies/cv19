@@ -8,7 +8,7 @@ import datetime
 
 from ..utils import logger
 from ..utils.helper import DatabaseContext
-from .base import Collector
+from .base import Collector, CovidDataItem
 
 log = logger.get_logger(__file__)
 
@@ -18,11 +18,11 @@ class CustomAreasCollector(Collector):
     Site: https://covidtracking.com/api
     """
     def __init__(self):
-        super().__init__(0)
-        self.name = 'custom-area'
+        super().__init__('custom-area')
 
     def pull_data_by_day(self, day):
         log.info(f'Start calculate information - day={day}')
+        collected_date = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
         with DatabaseContext() as db:
             self.start_pulling(db, day)
             idx = 0
@@ -54,14 +54,19 @@ class CustomAreasCollector(Collector):
 
                 for item in items:
                     (country_id, confirmed, deaths, recovered, active, last_update, _, source_id) = item
-                    self.source_id = source_id
-                    state_id = country_id
-                    collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-                    unique_key = self.get_unique_key([country_id, state_id, area_fips, collected_time])
-                    self.save_covid_data_item(db, idx, country_id, state_id, area_fips,
-                                              confirmed, deaths, recovered, active,
-                                              geo_lat, geo_long, area_name, last_update,
-                                              unique_key, collected_time)
+                    state_id = country_id       # for the custom area the state_id is equal with the country_id
+                    new_item = CovidDataItem(source_id, country_id, state_id,
+                                             area_fips,                                 # fips
+                                             collected_date,                            # datetime
+                                             confirmed,                                 # confirmed
+                                             deaths,                                    # deaths
+                                             recovered,                                 # recovered
+                                             active,                                    # active
+                                             area_name,                                 # source_location
+                                             last_update,                               # source_updated
+                                             geo_lat, geo_long
+                                            )
+                    self.save_covid_data_item(db, idx, new_item)
                     idx += 1
                 log.info(f'Calculate data for {area_id} area on {day} day - done.')
             self.end_pulling(db, day, idx)

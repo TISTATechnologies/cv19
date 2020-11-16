@@ -4,11 +4,9 @@
 # Requirements: requests, psycopg2
 # #############################################################################
 # pylint: disable=R0801
-import datetime
-
 from ..utils import logger
-from ..utils.helper import Converter, DatabaseContext
-from .base import Collector
+from ..utils.helper import Converter, DatabaseContext, DateTimeHelper
+from .base import Collector, CovidDataItem, RawDataItem
 
 log = logger.get_logger(__file__)
 
@@ -18,8 +16,7 @@ class CovidTrackingCollector(Collector):
     Site: https://covidtracking.com/api
     """
     def __init__(self):
-        super().__init__(2)
-        self.name = 'covidtracking'
+        super().__init__('covidtracking', 2)
 
     def pull_data_by_day(self, day):
         filter_day = day.strftime("%Y%m%d")
@@ -35,35 +32,34 @@ class CovidTrackingCollector(Collector):
             log.debug(f'Found {len(state_items)} items')
 
             for row in state_items:
-                log.debug(f'Parse row [{idx:5}]: {row}')
-                if str(row.get('date')) != filter_day:
+                item = RawDataItem(row, idx)
+                log.debug(f'Parse row [{item.idx:5}]: {item.values}')
+                if str(item.get('date')) != filter_day:
                     continue                # skip old data
                 idx += 1
-                country_id = 'US'
-                if 'states' in row and 'fips' not in row:
+                if 'states' in item and 'fips' not in item:
                     state_id = None
                     fips_number = 0
                 else:
-                    state_id = row['state']
-                    fips_number = int(row["fips"])
-                fips = f'{fips_number:05}'
-                confirmed = int(float(row.get('positive') or 0))
-                deaths = int(float(row.get('death') or 0))
-                recovered = int(float(row.get('recovered') or 0))
-                active = int(float(row.get('hospitalized') or 0))
-                geo_lat = None
-                geo_long = None
-                source_location = None
-                collected_time = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
-                last_update_str = row.get('lastUpdateEt') or row.get('dateChecked')
+                    state_id = item.get('state')
+                    fips_number = item.get_int('fips')
+
+                last_update_str = item.get('lastUpdateEt') or item.get('dateChecked')
                 if 'T24:' in last_update_str:
                     last_update_str = last_update_str.replace('T24:', 'T00:')
-                last_update = Converter.parse_datetime(last_update_str)
-                unique_key = self.get_unique_key([country_id, state_id, fips, collected_time])
-                self.save_covid_data_item(db, idx, country_id, state_id, fips,
-                                          confirmed, deaths, recovered, active,
-                                          geo_lat, geo_long, source_location, last_update,
-                                          unique_key, collected_time)
+
+                res = CovidDataItem(self.source_id, 'US', state_id,
+                                    f'{fips_number:05}',                            # fips
+                                    DateTimeHelper.get_end_day(day),                # datetime
+                                    item.get_int('positive', 0),                    # confirmed
+                                    item.get('death', 0),                           # deaths
+                                    item.get('recovered', 0),                       # recovered
+                                    item.get('hospitalized', 0),                    # active
+                                    None,                                           # source_location
+                                    Converter.parse_datetime(last_update_str),      # source_updated
+                                    None, None
+                                   )
+                self.save_covid_data_item(db, idx, res)
             self.end_pulling(db, day, idx)
         return True
 
