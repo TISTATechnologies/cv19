@@ -28,6 +28,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       PROCESSING_DATE: ${{ github.event.inputs.date }}
+      DATA_VERSION: ${{ secrets.DATA_VERSION }}
     steps:
       - uses: actions/checkout@v2
       - name: Pre-Build Notification
@@ -55,7 +56,6 @@ jobs:
         run: rm -rf ./build; yes | ./scripts/start-export-data-services.sh ${PROCESSING_DATE}
       - name: Upload data to the AWS S3 Bucket
         env:
-          DATA_VERSION: ${{ secrets.DATA_VERSION }}
           COVID_DATA_S3_BUCKET: ${{ secrets.COVID_DATA_S3_BUCKET }}
         run: yes | ./scripts/upload-covid-data-to-s3-bucket.sh
 

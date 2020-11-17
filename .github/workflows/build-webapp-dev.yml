@@ -12,6 +12,14 @@ on:
         description: 'View Associates'
         required: true
         default: '1'
+      covid_data_url:
+        description: 'Covid data url'
+        required: true
+        default: 'https://data.tistatech.com/covid/v2'
+      common_data_url:
+        description: 'Common data url'
+        required: true
+        default: 'https://data.tistatech.com/common/v2'
 
 jobs:
   build-deploy-webapp:
@@ -93,6 +101,9 @@ jobs:
           (echo "Install dependencies"; npm install 2>&1) | write-to-log.sh
 
       - name: Build
+        env:
+          COVID_DATA_URL: ${{ github.event.inputs.covid_data_url}}
+          COMMON_DATA_URL: ${{ github.event.inputs.common_data_url}}
         run: |
           set -o pipefail
           (echo "Build ${{github.repository}} (BUILD_NUMBER=${BUILD_NUMBER}) [env=${NODE_ENV}]"
