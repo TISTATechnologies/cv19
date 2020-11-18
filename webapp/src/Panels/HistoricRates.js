@@ -7,13 +7,18 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
 
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import SwapHorizontalCircleIcon from '@material-ui/icons/SwapHorizontalCircle';
+
 import HistoricOptions from './HistoricOptions';
 import HistoricSlider from './HistoricSlider';
 import { init, draw } from '../d3/line/historic';
 
 const useStyles = makeStyles(() => ({}));
 
-const HistoricRates = ({ county, historic, level }) => {
+const HistoricRates = ({ location, historic, level }) => {
+  const [showing, setShowing] = useState(0);
   const [timeSpan, setTimeSpan] = useState(90);
   const [initialized, setInitialized] = useState(false);
   const [selection, setSelection] = useState({
@@ -22,16 +27,45 @@ const HistoricRates = ({ county, historic, level }) => {
     trend14: true,
     trend30: false,
     value: false,
+    hospitalized_currently: true,
   });
   const sectionEl = useRef(null);
 
-  const action = (
+  const toggleShowing = () => {
+    const s = showing + 1;
+    setShowing(s % 2);
+  };
+
+  const [countyLevelLocation, stateLevelLocation] = location;
+
+  const currentLocationName = location[showing] && level === 'county' ? location[showing].name : countyLevelLocation.name;
+  let otherLocationName = currentLocationName;
+  if (showing === 0) {
+    otherLocationName = stateLevelLocation ? stateLevelLocation.name : '';
+  } else {
+    otherLocationName = countyLevelLocation.name;
+  }
+
+  const action = level === 'county' ? (
+    <IconButton color="secondary" size="small" onClick={toggleShowing}>
+      <Tooltip
+        title={`Show Trends for ${otherLocationName}`}
+          // classes={{ tooltip: classes.tooltip }}
+        interactive
+        placement="left"
+      >
+        <SwapHorizontalCircleIcon />
+      </Tooltip>
+    </IconButton>
+  ) : null;
+
+  const formControl = (
     <Grid container>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={8} md={7}>
         <HistoricOptions selection={selection} setSelection={setSelection} />
       </Grid>
 
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={4} md={5}>
         <HistoricSlider value={timeSpan} changeValue={setTimeSpan} />
       </Grid>
     </Grid>
@@ -39,13 +73,17 @@ const HistoricRates = ({ county, historic, level }) => {
 
   const ready = useMemo(() => {
     const getLinesReady = () => {
+      let show = showing;
+      if (level !== 'county') {
+        show = 0;
+      }
       const width = sectionEl.current.clientWidth || 900;
       const height = 100;
       // console.log(`%c Ready LINES (${width}x${height})`, 'color: lime');
-      draw(width, height, historic, selection, timeSpan);
+      draw(width, height, historic[show], selection, timeSpan);
     };
     return getLinesReady;
-  }, [historic, selection, timeSpan]);
+  }, [historic, selection, timeSpan, showing, level]);
 
   useLayoutEffect(() => {
     if (!initialized) {
@@ -62,11 +100,12 @@ const HistoricRates = ({ county, historic, level }) => {
   return (
     <Card variant="outlined">
       <CardHeader
-        title={`Active Case Trends for ${level !== 'usa' ? county.name : 'USA'}`}
+        title={`Trends for ${level !== 'usa' ? currentLocationName : 'USA'}`}
         titleTypographyProps={{
           className: classes.title,
         }}
-        subheader={action}
+        action={action}
+        subheader={formControl}
       />
       <CardContent>
         <div id="historic" ref={sectionEl} style={{ width: '100%' }} />

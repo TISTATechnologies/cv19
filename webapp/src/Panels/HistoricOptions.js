@@ -6,6 +6,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Tooltip from '@material-ui/core/Tooltip';
+import Visible from '../components/Visible';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -40,6 +41,12 @@ const useStyles = makeStyles((theme) => ({
     color: schemeSet2[4],
     '&$checked': {
       color: schemeSet2[4],
+    },
+  },
+  checkRoot5: {
+    color: schemeSet2[5],
+    '&$checked': {
+      color: schemeSet2[5],
     },
   },
   checked: {},
@@ -79,7 +86,7 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
   };
 
   const {
-    trend2, trend7, trend14, trend30, value,
+    trend2, trend7, trend14, trend30, value, hospitalized_currently,
   } = selection;
 
   return (
@@ -155,6 +162,21 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
               label="Case Count"
             />
           </ArrowTooltip>
+          <Visible condition>
+            <ArrowTooltip title="Count of current hospitalizations.">
+              <FormControlLabel
+                control={(
+                  <Checkbox
+                    checked={hospitalized_currently}
+                    onChange={handleChange}
+                    name="hospitalized_currently"
+                    classes={{ root: classes.checkRoot5, checked: classes.checked }}
+                  />
+                )}
+                label="Hospitalizations"
+              />
+            </ArrowTooltip>
+          </Visible>
         </FormGroup>
       </FormControl>
     </div>

@@ -143,18 +143,21 @@ export async function fetchEmployeeData() {
 }
 
 export async function fetchHistoric(fips) {
-  let response;
+  let countyResponse;
+  let stateResponse = false;
   if (!fips) {
-    response = await fetchWithHeader(`${covid}history/active/us.json`);
+    countyResponse = await fetchWithHeader(`${covid}history/active/us.json`);
   } else {
     const stateCode = fips.slice(0, 2).toUpperCase();
     const state = stateFips.find((x) => x[2] === stateCode);
     const stateAbbr = state[1].toLowerCase();
-    response = await fetchWithHeader(`${covid}history/active/us/${stateAbbr}/${fips}.json`);
+    countyResponse = await fetchWithHeader(`${covid}history/active/us/${stateAbbr}/${fips}.json`);
+    stateResponse = await fetchWithHeader(`${covid}history/active/us/${stateAbbr}.json`);
   }
-  if (!response.ok) return { error: `Could not collect historic data for ${fips}.` };
-  const data = await response.json();
-  return { data };
+  if (!countyResponse.ok) return { error: `Could not collect historic data for ${fips}.` };
+  const data = await countyResponse.json();
+  const sData = stateResponse ? await stateResponse.json() : undefined;
+  return { data, sData };
 }
 
 export async function fetchAidData() {

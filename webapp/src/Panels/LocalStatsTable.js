@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
   active: { color: theme.palette.warning.main, backgroundColor: '#222' },
   deaths: { color: theme.palette.error.main, backgroundColor: '#222' },
   recovered: { color: theme.palette.success.main, backgroundColor: '#222' },
+  hospitalized: { color: theme.palette.info.main, backgroundColor: '#222' },
   title: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.2em',
@@ -45,6 +46,9 @@ const useStyles = makeStyles((theme) => ({
   },
   recoveredBar: {
     backgroundColor: theme.palette.success.main,
+  },
+  hospitalizedBar: {
+    backgroundColor: theme.palette.info.main,
   },
   rates: { color: 'white' },
   flag: {
@@ -174,13 +178,14 @@ const LocalStatsTable = ({
 }) => {
   const classes = useStyles();
   const {
-    confirmed = 'N/A',
-    deaths = 'N/A',
+    confirmed = 0,
+    deaths = 0,
     name = '',
-    recovered = 'N/A',
-    active = 'N/A',
+    recovered = 0,
+    hospitalized_currently: hospitalized = 100,
+    active = 0,
     datetime: updated,
-    population = 'N/A',
+    population = 0,
     state_id: stateId,
   } = data;
   const lastUpdated = new Date(updated);
@@ -226,7 +231,7 @@ const LocalStatsTable = ({
 
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm>
               <StatBlock
                 mini={mini}
                 name="Confirmed Cases"
@@ -236,7 +241,7 @@ const LocalStatsTable = ({
                 level={level}
               />
             </Grid>
-            <Grid item xs={6} sm={3}>
+            <Grid item xs={6} sm>
               <StatBlock
                 mini={mini}
                 name="Deaths"
@@ -247,7 +252,7 @@ const LocalStatsTable = ({
               />
             </Grid>
             <Visible condition={active}>
-              <Grid item xs={6} sm={3}>
+              <Grid item xs={6} sm>
                 <StatBlock
                   mini={mini}
                   name="Active Cases"
@@ -259,13 +264,25 @@ const LocalStatsTable = ({
               </Grid>
             </Visible>
             <Visible condition={recovered}>
-              <Grid item xs={6} sm={3}>
+              <Grid item xs={6} sm>
                 <StatBlock
                   mini={mini}
                   name="Recoveries"
                   value={recovered}
                   colorClass="recovered"
                   subvalue={recovered / population}
+                  level={level}
+                />
+              </Grid>
+            </Visible>
+            <Visible condition={hospitalized}>
+              <Grid item xs={6} sm>
+                <StatBlock
+                  mini={mini}
+                  name="Hospitalizations"
+                  value={hospitalized}
+                  colorClass="hospitalized"
+                  subvalue={hospitalized / population}
                   level={level}
                 />
               </Grid>
@@ -318,7 +335,7 @@ const LocalStatsTable = ({
       />
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm>
+          <Grid item xs={12} sm md={4}>
             <StatBlock
               name="Confirmed Cases"
               value={confirmed}
@@ -327,7 +344,7 @@ const LocalStatsTable = ({
               level={level}
             />
           </Grid>
-          <Grid item xs={12} sm>
+          <Grid item xs={12} sm md>
             <StatBlock
               name="Deaths"
               value={deaths}
@@ -337,7 +354,7 @@ const LocalStatsTable = ({
             />
           </Grid>
           <Visible condition={active}>
-            <Grid item xs={12} sm>
+            <Grid item xs={12} sm md>
               <StatBlock
                 name="Active Cases"
                 value={active}
@@ -348,12 +365,23 @@ const LocalStatsTable = ({
             </Grid>
           </Visible>
           <Visible condition={recovered}>
-            <Grid item xs={12} sm>
+            <Grid item xs={12} sm md>
               <StatBlock
                 name="Recoveries"
                 value={recovered}
                 colorClass="recovered"
                 subvalue={recovered / population}
+                level={level}
+              />
+            </Grid>
+          </Visible>
+          <Visible condition={hospitalized}>
+            <Grid item xs={12} sm md>
+              <StatBlock
+                name="Current Hospt."
+                value={hospitalized}
+                colorClass="hospitalized"
+                subvalue={hospitalized / population}
                 level={level}
               />
             </Grid>

@@ -13,6 +13,7 @@ const findTrueProps = (obj) => [
   ['trend30', obj.trend30],
   ['value', obj.value],
   ['trend14', obj.trend14],
+  ['hospitalized_currently', obj.hospitalized_currently],
 ];
 
 const colorScale = d3.scaleOrdinal(d3.schemeSet2);

@@ -173,6 +173,7 @@ function App() {
   const { pathname = ' ' } = useLocation();
   const [myState, setMyState] = useState('');
   const [myStateName, setMyStateName] = useState('');
+  const [myStateStats, setMyStateStats] = useState(emptyObject);
   const [loadingZip, setLoadingZip] = useState(false);
   const [headlines, setHeadlines] = useState(emptyArray);
   const [level, setLevel] = useState('usa');
@@ -189,7 +190,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
-  const [historic, setHistoric] = useState({ active: [] });
+  const [historic, setHistoric] = useState(emptyArray);
   const geoLocation = useGeolocation();
   const [hasMetro, setHasMetro] = useState(false);
   const [metroCounties, setMetroCounties] = useState([]);
@@ -472,11 +473,11 @@ function App() {
     const f = async () => {
       // console.log('%cFetching historic', 'color: cyan');
       const target = level === 'usa' ? undefined : countyStats.fips;
-      const { data, error } = await fetchHistoric(target);
+      const { data, sData, error } = await fetchHistoric(target);
       if (data && data.message) {
         setErrorMessage(data.message);
       } else if (!error) {
-        setHistoric(data);
+        setHistoric([data, sData]);
       } else {
         setErrorMessage(error);
       }
@@ -522,6 +523,11 @@ function App() {
       }
     }
   }, [savedLocations, setMyLocations]);
+
+  // My State Stats
+  useEffect(() => {
+    setMyStateStats(stateStats.find((x) => x.state_id === myState));
+  }, [myState, stateStats]);
 
   const handleLocationChange = (e, value) => {
     if (value) {
@@ -602,15 +608,8 @@ function App() {
     [sources, usaStats, level],
   );
   const MemoStatsState = useMemo(
-    () => (
-      <LocalStatsTable
-        sources={sources}
-        data={stateStats.find((x) => x.state_id === myState)}
-        getFlag
-        level="state"
-      />
-    ),
-    [sources, stateStats, myState],
+    () => <LocalStatsTable sources={sources} data={myStateStats} getFlag level="state" />,
+    [sources, myStateStats],
   );
   const MemoStatsCounty = useMemo(
     () => (
@@ -814,7 +813,11 @@ function App() {
             <Grid item xs={12}>
               <ErrorBoundary>
                 <Suspense fallback={fallback}>
-                  <HistoricRates level={level} county={countyStats} historic={historic} />
+                  <HistoricRates
+                    level={level}
+                    location={[countyStats, myStateStats]}
+                    historic={historic}
+                  />
                 </Suspense>
               </ErrorBoundary>
             </Grid>

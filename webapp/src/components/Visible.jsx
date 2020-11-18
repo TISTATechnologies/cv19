@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const Visible = ({ condition, children }) => {
   if (condition) return <>{children}</>;

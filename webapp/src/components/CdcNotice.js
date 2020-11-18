@@ -43,7 +43,7 @@ const CdcNotice = ({ zones = [] }) => {
             <NewReleasesIcon style={{ color: '#222' }} fontSize="large" />
           </ListItemIcon>
           <ListItemText variant="h6" component="p" align="center">
-            {'Select metropolitan area statistics are now availiable! '}
+            {'Select metropolitan area statistics are now available! '}
             {zones.map((zone, index) => (
               <span key={zone.name}>
                 {index === zones.length - 1 ? '& ' : ''}
