@@ -5,7 +5,6 @@
 # #############################################################################
 # pylint: disable=R0801
 import datetime
-
 from ..utils import logger
 from ..utils.helper import DatabaseContext
 from .base import Collector, CovidDataItem
@@ -20,7 +19,7 @@ class CustomAreasCollector(Collector):
     def __init__(self):
         super().__init__('custom-area')
 
-    def pull_data_by_day(self, day):
+    def pull_data_by_day(self, day: datetime.datetime) -> None:
         log.info(f'Start calculate information - day={day}')
         collected_date = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
         with DatabaseContext() as db:
@@ -74,6 +73,6 @@ class CustomAreasCollector(Collector):
 
 
 # pylint: disable=unused-argument
-def run(day, args=None):
+def run(day: datetime.datetime, args=None) -> bool:
     CustomAreasCollector().run(day)
     return True

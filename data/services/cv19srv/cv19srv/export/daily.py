@@ -1,4 +1,6 @@
 # pylint: disable=R0801
+import datetime
+from pathlib import Path
 from cv19srv.collector import ENGINES
 from cv19srv.utils import logger
 from cv19srv.utils.helper import Converter, DateTimeHelper, DatabaseContext
@@ -8,14 +10,13 @@ log = logger.get_logger(__file__)
 
 
 class CovidDataExporter(Exporter):
-    def __init__(self, output_dir):
-        super().__init__(output_dir / 'daily')
-        self.name = 'covid data'
+    def __init__(self, output_dir: Path):
+        super().__init__('covid data', output_dir / 'daily')
 
-    def load_grouped_data(self, day):
+    def load_grouped_data(self, day: datetime.datetime) -> None:
         log.debug(f'Load all data from the database...')
         with DatabaseContext() as db:
-            if self.is_latest:
+            if self.is_day_latest(day):
                 sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
                        'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type '
                        'FROM covid_data_stat_latest;')
@@ -29,7 +30,7 @@ class CovidDataExporter(Exporter):
                 (country_id, state_id, fips, population,
                  confirmed, deaths, recovered, active,
                  geo_lat, geo_long,
-                 note, date, datetime, updated, location_name, location_type) = row
+                 note, date, collected_datetime, updated, location_name, location_type) = row
                 item = {'country_id': country_id}
                 if state_id:
                     item['state_id'] = state_id
@@ -43,7 +44,7 @@ class CovidDataExporter(Exporter):
                 item['geo_lat'] = Converter.to_string(geo_lat)
                 item['geo_long'] = Converter.to_string(geo_long)
                 item['date'] = DateTimeHelper.date_string(date)
-                item['datetime'] = DateTimeHelper.datetime_string(datetime)
+                item['datetime'] = DateTimeHelper.datetime_string(collected_datetime)
                 item['updated'] = DateTimeHelper.datetime_string(updated)
                 item['name'] = location_name
                 item['type'] = location_type
@@ -53,11 +54,10 @@ class CovidDataExporter(Exporter):
 
 
 class ExecutiveOrdersExporter(Exporter):
-    def __init__(self, output_dir):
-        super().__init__(output_dir / 'executive-orders')
-        self.name = 'executive orders'
+    def __init__(self, output_dir: Path):
+        super().__init__('executive orders', output_dir / 'executive-orders')
 
-    def load_grouped_data(self, day):
+    def load_grouped_data(self, day: datetime.datetime) -> None:
         log.debug(f'Load all data from the database...')
         with DatabaseContext() as db:
             for row in db.select('* FROM covid_info_link;'):
@@ -71,11 +71,10 @@ class ExecutiveOrdersExporter(Exporter):
 
 
 class SourceExporter(Exporter):
-    def __init__(self, output_dir):
-        super().__init__(output_dir / 'source')
-        self.name = 'source'
+    def __init__(self, output_dir: Path):
+        super().__init__('source', output_dir / 'source')
 
-    def load_grouped_data(self, day):
+    def load_grouped_data(self, day: datetime.datetime) -> None:
         for item in ENGINES.values():
             source_item = {}
             for field in ['name', 'url', 'description']:
@@ -86,7 +85,7 @@ class SourceExporter(Exporter):
                 self.add_item_to_export_safe(None, source_item)
 
 
-def run(day, output_dir):
+def run(day, output_dir: Path) -> bool:
     SourceExporter(output_dir).run(day)
     ExecutiveOrdersExporter(output_dir).run(day)
     CovidDataExporter(output_dir).run(day)

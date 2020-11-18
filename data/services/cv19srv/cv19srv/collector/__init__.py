@@ -38,7 +38,7 @@ ENGINES = {
 }
 
 
-def run(engine_name, args):
+def run(engine_name: str, args: list) -> bool:
     """ Main entrypoint for collector service
     """
     start_time = datetime.datetime.now()

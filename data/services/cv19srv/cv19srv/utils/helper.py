@@ -17,7 +17,7 @@ from . import logger
 from ..config import config
 
 
-__all__ = ['DownladHelper', 'CsvHelper', 'Converter', 'DatabaseContext', 'trace']
+__all__ = ['DownloadHelper', 'CsvHelper', 'JsonHelper', 'Converter', 'DatabaseContext', 'trace']
 log = logger.get_logger(__name__)
 
 
@@ -166,10 +166,25 @@ class CsvHelper:
             for item in items or []:
                 csv_writer.writerow(item)
 
+    @staticmethod
+    def save_list(output_file: Path, items: list):
+        csv_helper = CsvHelper()
+        data_for_csv = items or []
+        data_len = len(data_for_csv)
+        log.debug(f'Saving {data_len} items into the file {output_file}...')
+        header = data_for_csv[0].keys() if len(data_for_csv) > 0 else []
+        values = [item.values() for item in data_for_csv]
+        csv_helper.write_csv_file(output_file, header, values)
+        log.info(f'Save {data_len} items into the file {output_file}')
+
 
 class Converter:
     @staticmethod
     def parse_datetime(value):
+        if value is None:
+            return None
+        if 'T24:' in value:
+            value = value.replace('T24:', 'T00:')
         for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S%z',
                     '%m/%d/%Y %H:%M',
                     '%m/%d/%y %H:%M', '%m/%d/%Y %H:%M:%S']:
@@ -181,6 +196,8 @@ class Converter:
 
     @staticmethod
     def parse_date(value):
+        if value is None:
+            return None
         for fmt in ['%Y-%m-%d', '%Y%m%d', '%m/%d/%y', '%m/%d/%Y']:
             try:
                 return datetime.datetime.strptime(value, fmt).date()
@@ -358,6 +375,17 @@ class JsonHelper:
     @staticmethod
     def serialize(obj):
         return json.dumps(obj, default=JsonHelper._converter)
+
+    @staticmethod
+    def save_list(output_file: Path, items: list):
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        items_len = len(items or [])
+        log.debug(f'Saving {items_len} items into the file {output_file}...')
+        with output_file.open('w') as fo:
+            json.dump(items or [], fo,
+                      indent=None if config.minify else 2,
+                      separators=(',', ':') if config.minify else None)
+        log.info(f'Save {items_len} items into the file {output_file}')
 
 
 class Log:

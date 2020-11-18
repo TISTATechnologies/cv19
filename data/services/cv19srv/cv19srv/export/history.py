@@ -1,30 +1,33 @@
 # pylint: disable=R0801
+import datetime
+from pathlib import Path
 from cv19srv.utils import logger
 from cv19srv.utils.helper import DateTimeHelper, DatabaseContext
-from .base import Exporter
+from .base import DataType, Exporter, Location
 
 log = logger.get_logger('history')
 
 
 class HistoryData(Exporter):
-    PERIODS_DAYS = [2, 7, 14, 30, 60, 90]
 
-    def __init__(self, output_dir):
-        super().__init__(output_dir / 'history')
-        self.name = ' historical covid data'
+    def __init__(self, output_dir: Path):
+        super().__init__('historical covid data', output_dir / 'history')
+        self.trend_periods = self.get_trend_periods()
 
-    def validate_ordered_data(self, key, location, items):
-        # log.debug(f'Validating {key} data for {location}: {len(items)} items...')
+    def _validate_ordered_data(self, data_group: DataType, location: Location, items: list) -> None:
+        # log.debug(f'Validating {data_group} data for {location}: {len(items)} items...')
         # TODO: add a logic to validate historical data
-        # log.info(f'Validate {key} data for {location} complete.')
+        # log.info(f'Validate {data_group} data for {location} complete.')
         pass
 
-    def _calculate_past_data(self, key, location, items):
-        log.info(f'Calculating past "{key}" data for {location} ({HistoryData.PERIODS_DAYS} days)...')
-        for days in HistoryData.PERIODS_DAYS:
-            log.debug(f'[{location}] past "{key}" data {days} days period...')
+    def _calculate_past_data(self, data_group: DataType, location: Location, items: list) -> None:
+        """ Calculate delta and trend value for each of the datatype
+        """
+        log.info(f'Calculating past "{data_group}" data for {location} ({self.trend_periods} days)...')
+        for days in self.trend_periods:
+            log.debug(f'[{location}] past "{data_group}" data {days} days period...')
             for idx, item in enumerate(items or []):
-                log.debug(f'[{location}:{idx:04}] past "{key}" data for {item["date"]} = {item["value"]}')
+                log.debug(f'[{location}:{idx:04}] past "{data_group}" data for {item["date"]} = {item["value"]}')
                 prev_val = items[idx - days]['value'] if idx >= days else None
                 delta_val = self.calculate_delta(item['value'], prev_val)
                 if delta_val:
@@ -32,24 +35,26 @@ class HistoryData(Exporter):
                 trend_val = self.calculate_trend(item['value'], prev_val)
                 if trend_val:
                     item[f'trend{days}'] = trend_val
-            log.debug(f'[{location}] past "{key}" data {days} days period complete')
-        log.info(f'Calculate past "{key}" data for {location} complete')
+            log.debug(f'[{location}] past "{data_group}" data {days} days period complete')
+        log.info(f'Calculate past "{data_group}" data for {location} complete')
 
-    def _save_values(self, location, values):
-        for key in values or {}:
-            items = values[key] or []
-            self.validate_ordered_data(key, location, items)
-            self._calculate_past_data(key, location, items)
-            log.info(f'Save {len(items)} {key} cases for {location}')
+    def _save_grouped_values(self, location: Location, grouped_values: dict) -> None:
+        """ Save all items wich are grouped by datetype
+        """
+        for data_group in grouped_values or {}:
+            items = grouped_values[data_group] or []
+            self._validate_ordered_data(data_group, location, items)
+            self._calculate_past_data(data_group, location, items)
+            log.info(f'Save {len(items)} {data_group} cases for {location}')
             data = {'country_id': location.country_id}
             if location.state_id:
                 data['state_id'] = location.state_id
             if location.fips:
                 data['fips'] = location.fips
-            data[key] = sorted(items, key=lambda x: x['date'], reverse=True)
-            self.save_loc_data_to_file(key, location, data)
+            data[data_group.value] = sorted(items, key=lambda x: x['date'], reverse=True)
+            self.save_loc_data_to_file(data_group.value, location, data)
 
-    def load_grouped_data(self, day):
+    def load_grouped_data(self, day: datetime.datetime) -> None:
         """ Load data on the specific date and group it by location (country_id-state_id-fips)
         """
         log.debug(f'Load all data from the database...')
@@ -58,33 +63,33 @@ class HistoryData(Exporter):
             sql = ('country_id, state_id, fips, confirmed, deaths, recovered, active, date, datetime '
                    'FROM covid_data_stat ORDER BY fips, state_id, country_id, date;')
             log.info(f'Load all historical data')
-            values = None
+            grouped_values = None
             for (country_id, state_id, fips, confirmed, deaths, recovered, active, date, _) in db.select(sql):
                 cur_loc = self.get_location(country_id, state_id, fips)
                 if prev_loc is None:
                     prev_loc = cur_loc
                 if cur_loc != prev_loc:
-                    self._save_values(prev_loc, values)
-                    values = None
+                    self._save_grouped_values(prev_loc, grouped_values)
+                    grouped_values = None
                     prev_loc = cur_loc
                     log.info(f'Processing {cur_loc}: {confirmed}, {deaths}, {recovered}, {active}...')
 
-                if values is None:
+                if grouped_values is None:
                     # values = {'confirmed': [], 'deaths': [], 'active': [], 'recovered': []}
-                    values = {'active': []}
+                    grouped_values = {DataType.ACTIVE: []}
                 date_str = DateTimeHelper.date_string(date)
                 log.debug(f'Processing {cur_loc} on {date_str}...')
                 # For today we need an 'active' cases only,
                 # disable other cases types to decrease files size
-                # values['confirmed'].append({'date': date_str, 'value': confirmed})
-                # values['deaths'].append({'date': date_str, 'value': deaths})
-                # values['recovered'].append({'date': date_str, 'value': recovered})
-                values['active'].append({'date': date_str, 'value': active})
-            self._save_values(prev_loc, values)
-            values = None
+                # grouped_values['confirmed'].append({'date': date_str, 'value': confirmed})
+                # grouped_values['deaths'].append({'date': date_str, 'value': deaths})
+                # grouped_values['recovered'].append({'date': date_str, 'value': recovered})
+                grouped_values[DataType.ACTIVE].append({'date': date_str, 'value': active})
+            self._save_grouped_values(prev_loc, grouped_values)
+            grouped_values = None
             log.info(f'Load all historical data complete.')
 
 
-def run(day, output_dir):
+def run(day, output_dir) -> bool:
     HistoryData(output_dir).run(day)
     return True

@@ -43,11 +43,8 @@ class CovidTrackingCollector(Collector):
                 else:
                     state_id = item.get('state')
                     fips_number = item.get_int('fips')
-
                 last_update_str = item.get('lastUpdateEt') or item.get('dateChecked')
-                if 'T24:' in last_update_str:
-                    last_update_str = last_update_str.replace('T24:', 'T00:')
-
+                
                 res = CovidDataItem(self.source_id, 'US', state_id,
                                     f'{fips_number:05}',                            # fips
                                     DateTimeHelper.get_end_day(day),                # datetime

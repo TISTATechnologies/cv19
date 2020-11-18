@@ -43,17 +43,17 @@ read -p "Continue to load data (y/N)? " opt
 if [ "${opt}" != "y" ]; then echo "Skip"; exit 1; fi
 
 cd data/services/cv19srv
-title "Check database status" && \
-python3 cv19srv check-database && \
-title "Pull executive news links" && \
-python3 cv19srv collect executive-news && \
-title "Pull data from the JHU dataset" && \
-python3 cv19srv collect jhu $@ && \
+# title "Check database status" && \
+# python3 cv19srv check-database && \
+# title "Pull executive news links" && \
+# python3 cv19srv collect executive-news && \
+# title "Pull data from the JHU dataset" && \
+# python3 cv19srv collect jhu $@ && \
 title "Pull data from the CovidTracking dataset" && \
 python3 cv19srv collect covidtracking $@ && \
-title "Calculate data for the custom areas" && \
-python3 cv19srv collect custom-areas $@ && \
-cd - >/dev/null && \
-title "Refresh data in the database" && \
-yes yes | ./data/covid-database/migrate-db.sh refresh-data && \
+# title "Calculate data for the custom areas" && \
+# python3 cv19srv collect custom-areas $@ && \
+# cd - >/dev/null && \
+# title "Refresh data in the database" && \
+# yes yes | ./data/covid-database/migrate-db.sh refresh-data && \
 echo "Success"

@@ -19,7 +19,7 @@ ENGINES = {
 }
 
 
-def create_index_file(output_dir):
+def create_index_file(output_dir: Path) -> None:
     """ Create index.html file at the root of the /covid/vX/ directory
     with short description about an exported data
     """
@@ -31,7 +31,7 @@ def create_index_file(output_dir):
     dest.write_text(text)
 
 
-def run(engine_name, args):
+def run(engine_name: str, args: list) -> bool:
     """ Main entrypoint for exporter service
     """
     if engine_name not in ENGINES.keys():
