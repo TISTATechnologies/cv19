@@ -2,7 +2,7 @@ import json
 import hashlib
 from decimal import Decimal
 from cv19srv.utils import logger
-from cv19srv.utils.helper import Converter, DownladHelper, JsonHelper
+from cv19srv.utils.helper import Converter, DownloadHelper, JsonHelper
 
 log = logger.get_logger('base-collector')
 
@@ -84,6 +84,7 @@ class Collector:
         self.counter_items_duplicate = 0
         self.counter_items_failed = 0
         self.counter_items_notfound = 0
+        self.download_helper = DownloadHelper()
 
     def pull_data_by_day(self, day):
         raise NotImplementedError()
@@ -94,7 +95,7 @@ class Collector:
         log.info(f'[{self.name}] End collect data: {day}, {args}')
 
     def load_json_data(self, url):
-        content = DownladHelper.read_content(url)
+        content = self.download_helper.read_content(url)
         log.debug(f'Convert content to json')
         parsed_data = json.loads(content)
         if 'error' in parsed_data and bool(parsed_data.get('error', False)):

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import csv
 import datetime
+import hashlib
 import json
 import os
 import sys
 import time
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlparse
 
 import psycopg2
 import requests
@@ -55,23 +57,63 @@ class DateTimeHelper:
         return dt.strftime(fmt) if dt else None
 
 
-class DownladHelper:
-    @staticmethod
-    def download_file(url: str, output_file: Path, overwrite=False):
+class DownloadHelper:
+    def __init__(self):
+        if 'CACHE_DIR' in os.environ:
+            if os.environ.get('CACHE_DIR').lower() in ['none', 'no', 'disabled']:
+                self.cache_dir = None
+            else:
+                self.cache_dir = Path(os.environ.get('CACHE_DIR'))
+        else:
+            self.cache_dir = (Path.home() / '.cache' / 'cv19')
+        log.debug(f'Cache directory: {self.cache_dir}')
+
+    def url_to_cache_file(self, data_url: str, data_size: int = None) -> Path:
+        uri = urlparse(data_url)
+        parts = [uri.hostname]
+        parts.extend(uri.path.split('/'))
+        if uri.query:
+            query_hash =  hashlib.sha1(uri.query.encode('utf-8')).hexdigest()
+            # If we are worried about a collision use a whole query_hash instead of the short version
+            parts[-1] = parts[-1] + '-' + query_hash[:6] + query_hash[-6:]
+        if (data_size or 0) > 0:
+            name, ext = os.path.splitext(parts[-1])
+            parts[-1] = name + '.' + str(data_size) + ext
+        return os.path.sep.join(parts)
+
+    def download_file(self, url: str, output_file: Path, overwrite=False):
         log.info(f'Downloading {url}....')
         if output_file.exists() and not overwrite:
             log.info(f'File {output_file} exists. Skip download.')
         else:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
             log.debug(f'Output file is {output_file}.')
-            req = requests.get(url, allow_redirects=True)
-            open(output_file, 'wb').write(req.content)
+            data = self.read_content(url)
+            output_file.write_bytes(data)
             log.debug(f'Downloaded into the {output_file} file.')
 
-    @staticmethod
-    def read_content(url: str):
+    def read_content(self, url: str):
         log.info(f'Read text from {url}....')
-        req = requests.get(url, allow_redirects=True)
-        return req.content
+        req = requests.get(url, allow_redirects=True, stream=True)
+        res_size = int(req.headers.get('Content-length') or 0)
+        log.debug(f'Get the response size: {res_size}')
+        data = None
+        if self.cache_dir:
+            cache_file_path = self.cache_dir / 'data' / self.url_to_cache_file(url, res_size)
+            log.debug(f'Cache file: {cache_file_path}')
+            if cache_file_path.exists():
+                log.debug(f'Cache file exists - read cached data')
+                data = cache_file_path.read()
+            else:
+                log.debug(f'Cache file not exists - read response and save cache')
+                data = req.content
+                cache_file_path.parent.mkdir(parents=True, exist_ok=True)
+                cache_file_path.write_bytes(data)
+        else:
+            log.debug(f'Read response')
+            data = req.content
+        log.debug(f'Read text from {url} - complete')
+        return data
 
 
 class ExcelHelper:
@@ -90,6 +132,7 @@ class ExcelHelper:
 class CsvHelper:
     def __init__(self):
         self.tmp = config.temp_dir
+        self.download_helper = DownloadHelper()
         log.debug(f'Temp directory {self.tmp}')
 
     def _read_file_stream(self, csv_file_stream, delimiter=',', quotechar='"'):
@@ -111,7 +154,7 @@ class CsvHelper:
         tmp_name = url.rsplit('/', 1)[1] if url.find('/') else f'{int(time.time())}.csv'
         tmp_file = self.tmp / tmp_name
         log.debug(f'Temporary file {tmp_file}')
-        DownladHelper.download_file(url, tmp_file, overwrite)
+        self.download_helper.download_file(url, tmp_file, overwrite)
         yield from self.read_csv_file(tmp_file, delimiter, quotechar)
 
     def write_csv_file(self, file_name: Path, header, items, delimiter=',', quotechar='"'):
