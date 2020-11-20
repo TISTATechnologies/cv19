@@ -85,7 +85,7 @@ class JHUCollector(Collector):
                              item.get_int(9, 0),                            # Recovered
                              item.get_int(10, 0),                           # Active
                              item.get(11),                                  # Combined_Key
-                             item.get_datetime(4),                          # Last_Update
+                             item.get_datetime(4, collected_date),          # Last_Update
                              item.get_decimal(5, 0),                        # Lat
                              item.get_decimal(6, 0)                         # Long_
                              )
@@ -106,7 +106,7 @@ class JHUCollector(Collector):
                             item.get_int(7, 0),                            # Recovered
                             item.get_int(8, 0),                            # Active
                             f'{state_name},{country_id}',                  # source_location
-                            item.get_datetime(2),                          # Last_Update
+                            item.get_datetime(2, collected_date),          # Last_Update
                             item.get_decimal(3, 0),                        # Lat
                             item.get_decimal(4, 0)                         # Long_
                            )

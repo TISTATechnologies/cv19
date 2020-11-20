@@ -103,7 +103,7 @@ class DownloadHelper:
             log.debug(f'Cache file: {cache_file_path}')
             if cache_file_path.exists():
                 log.debug(f'Cache file exists - read cached data')
-                data = cache_file_path.read()
+                data = cache_file_path.read_bytes()
             else:
                 log.debug(f'Cache file not exists - read response and save cache')
                 data = req.content

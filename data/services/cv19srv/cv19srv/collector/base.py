@@ -1,3 +1,4 @@
+import datetime
 import json
 import hashlib
 from decimal import Decimal
@@ -67,7 +68,10 @@ class RawDataItem:
         return Decimal(self.get(key, default))
 
     def get_datetime(self, key, default=None):
-        return Converter.parse_datetime(self.get(key, default))
+        val = self.get(key, default)
+        if isinstance(val, datetime.datetime):
+            return val
+        return Converter.parse_datetime(val)
 
     def get_fips(self, key):
         val = self.get(key, None)

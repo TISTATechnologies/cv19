@@ -21,8 +21,8 @@ class CovidTrackingCollector(Collector):
     def pull_data_by_day(self, day):
         filter_day = day.strftime("%Y%m%d")
         log.info(f'Start pull information - day={day}')
-        states_url = f'http://covidtracking.com/api/v1/states/daily.json?date={filter_day}'
-        us_url = f'http://covidtracking.com/api/v1/us/daily.json?date={filter_day}'
+        states_url = f'http://covidtracking.com/api/v1/states/daily.json'
+        us_url = f'http://covidtracking.com/api/v1/us/daily.json'
         idx = 0
         with DatabaseContext() as db:
             self.start_pulling(db, day)
