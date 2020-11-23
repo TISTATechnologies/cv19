@@ -6,7 +6,7 @@
 # pylint: disable=R0801
 import datetime
 from ..utils import logger
-from ..utils.helper import DatabaseContext
+from ..utils.helper import DatabaseContext, DateTimeHelper
 from .base import Collector, CovidDataItem
 
 log = logger.get_logger(__file__)
@@ -24,7 +24,8 @@ class CustomAreasCollector(Collector):
         collected_date = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
         with DatabaseContext() as db:
             self.start_pulling(db, day)
-            idx = 0
+            new_items = []
+            fips_for_deletion = []
             for area_id in db.references.areas:
                 areas = db.references.areas[area_id]
                 if not areas:
@@ -50,25 +51,29 @@ class CustomAreasCollector(Collector):
                 params = [day, 'US', tuple(counties)]
                 items = db.select(sql, params) or []
                 log.debug(f'Found {len(items)} data items for the {area_fips} area')
-
+                fips_for_deletion.append(area_fips)
                 for item in items:
                     (country_id, confirmed, deaths, recovered, active, last_update, _, source_id) = item
                     state_id = country_id       # for the custom area the state_id is equal with the country_id
-                    new_item = CovidDataItem(source_id, country_id, state_id,
-                                             area_fips,                                 # fips
-                                             collected_date,                            # datetime
-                                             confirmed,                                 # confirmed
-                                             deaths,                                    # deaths
-                                             recovered,                                 # recovered
-                                             active,                                    # active
-                                             area_name,                                 # source_location
-                                             last_update,                               # source_updated
-                                             geo_lat, geo_long
-                                            )
-                    self.save_covid_data_item(db, idx, new_item)
-                    idx += 1
+                    new_items.append(CovidDataItem(source_id, country_id, state_id,
+                                                   area_fips,                                 # fips
+                                                   collected_date,                            # datetime
+                                                   confirmed,                                 # confirmed
+                                                   deaths,                                    # deaths
+                                                   recovered,                                 # recovered
+                                                   active,                                    # active
+                                                   area_name,                                 # source_location
+                                                   last_update,                               # source_updated
+                                                   geo_lat, geo_long
+                                                  ))
                 log.info(f'Calculate data for {area_id} area on {day} day - done.')
-            self.end_pulling(db, day, idx)
+
+            log.debug(f'Remove old on {day} day for {fips_for_deletion}')
+            db.execute('DELETE FROM covid_data WHERE country_id=%s AND datetime=%s AND fips IN %s;',
+                       ['US', DateTimeHelper.get_end_day(day), tuple(fips_for_deletion)])
+            self.save_covid_data_items(db, new_items)
+
+            self.end_pulling(db, day, len(new_items))
         return True
 
 

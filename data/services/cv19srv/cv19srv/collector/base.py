@@ -136,14 +136,44 @@ class Collector:
                   item.source_updated, item.get_unique_key(), item.datetime)
         self.insert_into_db(db, idx, sql, values, False)
 
+    def save_covid_data_items(self, db: DatabaseContext, items: list) -> None:
+        if not items:
+            log.debug('The items list is empty. Skip bulk insert.')
+            return
+        items_len = len(items)
+        log.debug('Bulk insert {items_len} items.')
+        values_placeholders = ','.join(['(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'] * items_len)
+        sql = ''.join([
+            'covid_data ',
+            '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
+            'geo_lat, geo_long, source_location, source_updated, unique_key, datetime) ',
+            f'VALUES {values_placeholders};'])
+        values = []
+        for item in items:
+            values.append(item.source_id)
+            values.append(item.country_id)
+            values.append(item.state_id)
+            values.append(item.fips)
+            values.append(item.confirmed)
+            values.append(item.deaths)
+            values.append(item.recovered)
+            values.append(item.active)
+            values.append(item.geo_lat)
+            values.append(item.geo_long)
+            values.append(item.source_location)
+            values.append(item.source_updated)
+            values.append(item.get_unique_key())
+            values.append(item.datetime)
+        self.insert_into_db(db, items_len, sql, values, False, items_len)
+
     def insert_into_db(self, db: DatabaseContext, idx: int, sql: str, values: list,
-                       suppress_exceptions: bool = False) -> None:
+                       suppress_exceptions: bool = False, value_count: int = 1) -> None:
         try:
             log.debug(f'Insert item into the database: {values}')
             db.insert(sql, values)
-            log.info(f'Item={idx:05}: Success insert item into the database: {values}')
+            log.debug(f'Item={idx:05}: Success insert item into the database: {values}')
             db.commit()
-            self.counter_items_added += 1
+            self.counter_items_added += value_count
         except Exception as ex:
             err_message = str(ex)
             db.rollback()

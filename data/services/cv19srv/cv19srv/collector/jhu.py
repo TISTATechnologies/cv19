@@ -12,7 +12,7 @@
 import datetime
 
 from ..utils import logger
-from ..utils.helper import CsvHelper, DatabaseContext
+from ..utils.helper import CsvHelper, DatabaseContext, DateTimeHelper
 from .base import Collector, CovidDataItem, RawDataItem
 
 log = logger.get_logger(__file__)
@@ -162,6 +162,9 @@ class JHUCollector(Collector):
             for item in self._read_jhu_dataline(url):
                 log.debug(f'Parse row [{item.idx:5}]: {item.values}')
                 new_item = row_parser(collected_date, item, db)
+                if not new_item.country_id:
+                    log.warning(f'! Can\'t parse country from the row: {new_item}')
+                    continue
                 if new_item.country_id not in country_data:
                     country_data[new_item.country_id] = []
                 country_data[new_item.country_id].append(new_item)
@@ -169,17 +172,28 @@ class JHUCollector(Collector):
             if need_to_calculate_total_country_numbers:
                 self._calculate_total_country_numbers(db, collected_date, country_data)
             log.info(f'Saving it to the DB')
-            idx = 0
+            new_items = {}
+            log.info(f'Remove old data on {day} day (source={self.source_id})')
+            db.execute('DELETE FROM covid_data WHERE source_id=%s AND datetime=%s;',
+                       [self.source_id, DateTimeHelper.get_end_day(day)])
             for country_id in country_data:
                 for item in country_data[country_id]:
-                    idx += 1
                     if item.state_id == JHUCollector.STATE_ID_UNKNOWN:
                         log.debug(f'Skip saving item: unknown state: {item}')
                     else:
-                        self.save_covid_data_item(db, idx, item)
-            log.info(f'Save data into the DB complete ({idx} items)')
-            self.end_pulling(db, day, idx)
-        log.info(f'End pull {data_type} information: found {idx} items, day={day}')
+                        item_key = item.get_unique_key()
+                        if item_key in new_items:
+                            log.warning(f'Duplicate: {item}')
+                            self.counter_items_duplicate += 1
+                        else:
+                            new_items[item_key] = item
+
+            new_items_values = new_items.values()
+            new_items_len = len(new_items_values)
+            self.save_covid_data_items(db, new_items_values)
+            log.info(f'Save data into the DB complete ({new_items_len} items)')
+            self.end_pulling(db, day, new_items_len)
+        log.info(f'End pull {data_type} information: found {new_items_len} items, day={day}')
         return True
 
     def pull_data_by_day(self, day):
