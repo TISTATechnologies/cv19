@@ -92,13 +92,13 @@ class DownloadHelper:
             output_file.write_bytes(data)
             log.debug(f'Downloaded into the {output_file} file.')
 
-    def read_content(self, url: str):
+    def read_content(self, url: str, cache_enabled: bool = True):
         log.info(f'Read text from {url}....')
         req = requests.get(url, allow_redirects=True, stream=True)
         res_size = int(req.headers.get('Content-length') or 0)
         log.debug(f'Get the response size: {res_size}')
         data = None
-        if self.cache_dir:
+        if cache_enabled and self.cache_dir:
             cache_file_path = self.cache_dir / 'data' / self.url_to_cache_file(url, res_size)
             log.debug(f'Cache file: {cache_file_path}')
             if cache_file_path.exists():

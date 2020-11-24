@@ -49,19 +49,28 @@ class CovidTrackingCollector(Collector):
                     fips_number = item.get_int('fips')
                 last_update_str = item.get('lastUpdateEt') or item.get('dateChecked')
                 
-                new_items.append(CovidDataItem(self.source_id, 'US', state_id,
-                                               f'{fips_number:05}',                            # fips
-                                               DateTimeHelper.get_end_day(day),                # datetime
-                                               item.get_int('positive', 0),                    # confirmed
-                                               item.get('death', 0),                           # deaths
-                                               item.get('recovered', 0),                       # recovered
-                                               item.get('hospitalized', 0),                    # active
-                                               None,                                           # source_location
-                                               Converter.parse_datetime(last_update_str),      # source_updated
-                                               None, None
-                                              ))
+                new_item = CovidDataItem(self.source_id, 'US', state_id,
+                                         f'{fips_number:05}',                            # fips
+                                         DateTimeHelper.get_end_day(day),                # datetime
+                                         item.get_int('positive', 0),                    # confirmed
+                                         item.get('death', 0),                           # deaths
+                                         item.get('recovered', None),                    # recovered
+                                         None,                                           # active
+                                         None,                                           # source_location
+                                         Converter.parse_datetime(last_update_str),      # source_updated
+                                         None, None,                                     # geo_lat, geo_long
+                                         item.get_int('hospitalizedCurrently', None),    # hospitalized_currently
+                                         item.get_int('hospitalizedCumulative', None),   # hospitalized_cumulative
+                                         item.get_int('inIcuCurrently', None),           # in_icu_currently
+                                         item.get_int('inIcuCumulative', None),          # in_icu_cumulative
+                                         item.get_int('onVentilatorCurrently', None),    # on_ventilator_currently
+                                         item.get_int('onVentilatorCumulative', None),   # on_ventilator_cumulative
+                                        )
+                new_item.active = new_item.active_calculated
+                new_items.append(new_item)
             self.save_covid_data_items(db, new_items)
             self.end_pulling(db, day, len(new_items))
+            db.commit()
         return True
 
 

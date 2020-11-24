@@ -11,7 +11,10 @@ log = logger.get_logger('base-collector')
 
 class CovidDataItem:
     def __init__(self, source_id, country_id, state_id, fips, collected_datetime,
-                 confirmed, deaths, recovered, active, source_location, source_updated, geo_lat, geo_long):
+                 confirmed, deaths, recovered, active, source_location, source_updated, geo_lat, geo_long,
+                 hospitalized_currently, hospitalized_cumulative,
+                 in_icu_currently, in_icu_cumulative,
+                 on_ventilator_currently, on_ventilator_cumulative):
         self.source_id = source_id
         self.country_id = country_id
         self.state_id = state_id
@@ -25,6 +28,18 @@ class CovidDataItem:
         self.source_updated = source_updated
         self.geo_lat = geo_lat
         self.geo_long = geo_long
+        self.hospitalized_currently = hospitalized_currently
+        self.hospitalized_cumulative = hospitalized_cumulative
+        self.in_icu_currently = in_icu_currently
+        self.in_icu_cumulative = in_icu_cumulative
+        self.on_ventilator_currently = on_ventilator_currently
+        self.on_ventilator_cumulative = on_ventilator_cumulative
+
+    @property
+    def active_calculated(self):
+        if self.confirmed is not None and self.deaths is not None and self.recovered is not None:
+            return self.confirmed - self.deaths - self.recovered
+        return None
 
     def get_unique_key(self) -> str:
         """ Calculate unique key for the covid data related to the datetime, location, and source
@@ -64,10 +79,12 @@ class RawDataItem:
         return self.values.get(key) or default
 
     def get_int(self, key: Union[int, str], default=None) -> int:
-        return int(float(self.get(key, default)))
+        val = self.get(key, default)
+        return int(float(val)) if val is not None else None
 
     def get_decimal(self, key: Union[int, str], default=None) -> Decimal:
-        return Decimal(self.get(key, default))
+        val = self.get(key, default)
+        return Decimal(val) if val is not None else None
 
     def get_datetime(self, key: Union[int, str], default=None) -> datetime.datetime:
         val = self.get(key, default)
@@ -128,25 +145,34 @@ class Collector:
         sql = ''.join([
             'covid_data ',
             '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
-            'geo_lat, geo_long, source_location, source_updated, unique_key, datetime) ',
-            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
+            'geo_lat, geo_long, source_location, source_updated, unique_key, datetime, ',
+            'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, ',
+            'on_ventilator_currently, on_ventilator_cumulative'
+            ') ',
+            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'])
         values = (item.source_id, item.country_id, item.state_id, item.fips,
                   item.confirmed, item.deaths, item.recovered, item.active,
                   item.geo_lat, item.geo_long, item.source_location,
-                  item.source_updated, item.get_unique_key(), item.datetime)
+                  item.source_updated, item.get_unique_key(), item.datetime,
+                  item.hospitalized_currently, item.hospitalized_cumulative,
+                  item.in_icu_currently, item.in_icu_cumulative,
+                  item.on_ventilator_currently, item.on_ventilator_cumulative)
         self.insert_into_db(db, idx, sql, values, False)
 
     def save_covid_data_items(self, db: DatabaseContext, items: list) -> None:
         if not items:
-            log.debug('The items list is empty. Skip bulk insert.')
+            log.warning('The items list is empty. Skip bulk insert.')
             return
         items_len = len(items)
-        log.debug('Bulk insert {items_len} items.')
-        values_placeholders = ','.join(['(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'] * items_len)
+        log.debug(f'Bulk insert {items_len} items.')
+        values_placeholders = ','.join(['(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'] * items_len)
         sql = ''.join([
             'covid_data ',
             '(source_id, country_id, state_id, fips, confirmed, deaths, recovered, active, ',
-            'geo_lat, geo_long, source_location, source_updated, unique_key, datetime) ',
+            'geo_lat, geo_long, source_location, source_updated, unique_key, datetime, ',
+            'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, ',
+            'on_ventilator_currently, on_ventilator_cumulative',
+            ') ',
             f'VALUES {values_placeholders};'])
         values = []
         for item in items:
@@ -164,6 +190,12 @@ class Collector:
             values.append(item.source_updated)
             values.append(item.get_unique_key())
             values.append(item.datetime)
+            values.append(item.hospitalized_currently)
+            values.append(item.hospitalized_cumulative)
+            values.append(item.in_icu_currently)
+            values.append(item.in_icu_cumulative)
+            values.append(item.on_ventilator_currently)
+            values.append(item.on_ventilator_cumulative)
         self.insert_into_db(db, items_len, sql, values, False, items_len)
 
     def insert_into_db(self, db: DatabaseContext, idx: int, sql: str, values: list,

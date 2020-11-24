@@ -38,11 +38,11 @@ BY,Belarus,Belarus,53.709807,27.953389
 BZ,Belize,Belize,17.189877,-88.49765
 CA,Canada,Canada,56.130366,-106.346771
 CC,Cocos Islands,Cocos (Keeling) Islands,-12.164165,96.870956
-CD,Democratic Republic of the Congo,Congo (the Democratic Republic of the),-4.038333,21.758664
+CD,Democratic Republic of the Congo,"Congo (Kinshasa), Congo (the Democratic Republic of the)",-4.038333,21.758664
 CF,Central African Republic,Central African Republic,6.611111,20.939444
-CG,Congo,Congo,-0.228021,15.827659
+CG,Congo,"Congo (Brazzaville), Congo",-0.228021,15.827659
 CH,Switzerland,Switzerland,46.818188,8.227512
-CI,Ivory Coast,Côte d'Ivoire,7.539989,-5.54708
+CI,Ivory Coast,"Cote d'Ivoire, Côte d'Ivoire",7.539989,-5.54708
 CK,Cook Islands,Cook Islands,-21.236736,-159.777671
 CL,Chile,Chile,-35.675147,-71.542969
 CM,Cameroon,Cameroon,7.369722,12.354722
@@ -93,7 +93,7 @@ GT,Guatemala,Guatemala,15.783471,-90.230759
 GU,Guam,Guam,13.444304,144.793731
 GW,Guinea-Bissau,Guinea-Bissau,11.803749,-15.180413
 GY,Guyana,Guyana,4.860416,-58.93018
-GZ,Gaza Strip,,31.354676,34.308825
+GZ,Gaza Strip,West Bank and Gaza,31.354676,34.308825
 HK,Hong Kong,Hong Kong,22.396428,114.109497
 HM,Heard Island and McDonald Islands,Heard Island and McDonald Islands,-53.08181,73.504158
 HN,Honduras,Honduras,15.199999,-86.241905
@@ -121,7 +121,7 @@ KI,Kiribati,Kiribati,-3.370417,-168.734039
 KM,Comoros,Comoros,-11.875001,43.872219
 KN,Saint Kitts and Nevis,Saint Kitts and Nevis,17.357822,-62.782998
 KP,North Korea,Korea (the Democratic People's Republic of),40.339852,127.510093
-KR,South Korea,Korea (the Republic of),35.907757,127.766922
+KR,South Korea,"Korea (the Republic of), Korea South",35.907757,127.766922
 KW,Kuwait,Kuwait,29.31166,47.481766
 KY,Cayman Islands,Cayman Islands,19.513469,-80.566956
 KZ,Kazakhstan,Kazakhstan,48.019573,66.923684
@@ -143,7 +143,7 @@ ME,Montenegro,Montenegro,42.708678,19.37439
 MF,Saint Martin,Saint Martin (French part),18.0708294,-63.0500793
 MG,Madagascar,Madagascar,-18.766947,46.869107
 MH,Marshall Islands,Marshall Islands,7.131474,171.184478
-MK,Macedonia,Republic of North Macedonia,41.608635,21.745275
+MK,Macedonia,"North Macedonia, Republic of North Macedonia",41.608635,21.745275
 ML,Mali,Mali,17.570692,-3.996166
 MM,Myanmar,Burma,21.913965,95.956223
 MN,Mongolia,Mongolia,46.862496,103.846656
@@ -182,7 +182,7 @@ PL,Poland,Poland,51.919438,19.145136
 PM,Saint Pierre and Miquelon,Saint Pierre and Miquelon,46.941936,-56.27111
 PN,Pitcairn Islands,Pitcairn,-24.703615,-127.439308
 PR,Puerto Rico,Puerto Rico,18.220833,-66.590149
-PS,Palestinian Territories,"Palestine, State of",31.952162,35.233154
+PS,Palestinian Territories,"Palestine, Palestine State of",31.952162,35.233154
 PT,Portugal,Portugal,39.399872,-8.224454
 PW,Palau,Palau,7.51498,134.58252
 PY,Paraguay,Paraguay,-23.442503,-58.443832

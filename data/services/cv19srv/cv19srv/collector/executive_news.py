@@ -3,12 +3,10 @@
 # Service to collect Executive Orders related with the Covid-19
 # Site: https://web.csg.org/covid19/executive-orders
 # #############################################################################
-import unidecode
-import requests
 from bs4 import BeautifulSoup
 
 from ..utils import logger
-from ..utils.helper import DatabaseContext
+from ..utils.helper import DatabaseContext, DownloadHelper
 from .base import Collector
 
 log = logger.get_logger(__file__)
@@ -20,14 +18,15 @@ class ExecutiveOrderCollector(Collector):
     """
     def __init__(self):
         super().__init__('executive_orders')
+        self.download_helper = DownloadHelper()
 
     def pull_data_by_day(self, day):
-        config_url = 'https://web.csg.org/covid19/executive-orders/'
+        url = 'https://web.csg.org/covid19/executive-orders/'
         log.info(f'Start collect executive order\'s links with arguments: {day}')
-        log.debug(f'Load page from: {config_url}')
-        content = requests.get(config_url)
+        log.debug(f'Load page from: {url}')
+        content = self.download_helper.read_content(url, False)
         log.debug(f'Parsing html page...')
-        soup = BeautifulSoup(content.text, 'html.parser')
+        soup = BeautifulSoup(content.decode('utf-8'), 'html.parser')
         soup.prettify()
         class_selector = 'elementor-element elementor-element-f5aa65c elementor-widget elementor-widget-text-editor'
         contentdiv = soup.find('div', {'class': class_selector})
@@ -49,8 +48,8 @@ class ExecutiveOrderCollector(Collector):
                 for atags in state.find_all('a'):
                     idx += 1
                     link = atags.get('href')
-                    order = atags.text
-                    state_order = unidecode.unidecode(order).strip('*').strip()
+                    order = str(atags.text)
+                    state_order = order.strip('*').strip()
                     add_on = ['Masks', 'Utility', 'Late Fees', 'Eviction', 'Travel', 'Restaurant', 'Easing',
                               'Reopening', 'Phase', 'State of Emergency declared', 'Face Covering',
                               'Stay at Home Order', 'Quarantine', 'Mortgage Payment']
@@ -63,6 +62,7 @@ class ExecutiveOrderCollector(Collector):
 
                 log.info(f'Complete with "{us_state}" state')
                 self.end_pulling(db, day, idx)
+            db.commit()
         log.info(f'End collect executive order\'s links')
         return True
 

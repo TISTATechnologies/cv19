@@ -29,7 +29,7 @@ title() {
 collect_executive_news() {
     title "Pull executive news links"
     if [ "${FAST_COLLECTION}" == "true" ]; then echo "Skip pull executive orders (FAST_COLLECTION=true)";
-    else python3 cv19srv collect executive-news 2>&1; fi
+    else python3 cv19srv collect executive-news $@ 2>&1; fi
 }
 
 refresh_database() {
@@ -64,16 +64,16 @@ echo "Log file: ${LOG_FILE}"
 rm -f "${LOG_FILE}"
 
 cd data/services/cv19srv
-title "Check database status" | tee -a "$LOG_FILE" && \
-python3 cv19srv check-database 2>&1 | tee -a "$LOG_FILE" && \
-collect_executive_news | tee -a "$LOG_FILE" && \
-title "Pull data from the JHU dataset" | tee -a "$LOG_FILE" && \
-python3 cv19srv collect jhu $@ 2>&1 | tee -a "$LOG_FILE" && \
-title "Pull data from the CovidTracking dataset" | tee -a "$LOG_FILE" && \
-python3 cv19srv collect covidtracking $@ 2>&1 | tee -a "$LOG_FILE" && \
-title "Calculate data for the custom areas" | tee -a "$LOG_FILE" && \
-python3 cv19srv collect custom-areas 2>&1 | tee -a "$LOG_FILE" $@ && \
+title "Check database status" | tee -a "${LOG_FILE}" && \
+python3 cv19srv check-database 2>&1 | tee -a "${LOG_FILE}" && \
+collect_executive_news $@ | tee -a "${LOG_FILE}" && \
+title "Pull data from the JHU dataset" | tee -a "${LOG_FILE}" && \
+python3 cv19srv collect jhu $@ 2>&1 | tee -a "${LOG_FILE}" && \
+title "Pull data from the CovidTracking dataset" | tee -a "${LOG_FILE}" && \
+python3 cv19srv collect covidtracking $@ 2>&1 | tee -a "${LOG_FILE}" && \
+title "Calculate data for the custom areas" | tee -a "${LOG_FILE}" && \
+python3 cv19srv collect custom-areas $@ 2>&1 | tee -a "${LOG_FILE}" && \
 cd - >/dev/null && \
-refresh_database | tee -a "$LOG_FILE" && \
-echo "Log file: ${LOG_FILE}" | tee -a "$LOG_FILE" && \
-echo "Success" | tee -a "$LOG_FILE"
+refresh_database | tee -a "${LOG_FILE}" && \
+echo "Log file: ${LOG_FILE}" | tee -a "${LOG_FILE}" && \
+echo "Success" | tee -a "${LOG_FILE}"

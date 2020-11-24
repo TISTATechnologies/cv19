@@ -43,7 +43,10 @@ class CustomAreasCollector(Collector):
                 log.debug(f'Found {len(counties)} counties on the {area_fips} area')
                 sql = ('country_id, '
                        'sum(confirmed), sum(deaths), sum(recovered), sum(active), '
-                       'max(datetime), datetime::TIMESTAMP::DATE, source_id '
+                       'max(datetime), datetime::TIMESTAMP::DATE, source_id, '
+                       'sum(hospitalized_currently), sum(hospitalized_cumulative), '
+                       'sum(in_icu_currently), sum(in_icu_cumulative), '
+                       'sum(on_ventilator_currently), sum(on_ventilator_cumulative) '
                        'FROM covid_data '
                        'WHERE datetime::TIMESTAMP::DATE = %s AND country_id = %s AND fips IN %s '
                        'GROUP BY country_id, datetime::TIMESTAMP::DATE, source_id '
@@ -53,7 +56,9 @@ class CustomAreasCollector(Collector):
                 log.debug(f'Found {len(items)} data items for the {area_fips} area')
                 fips_for_deletion.append(area_fips)
                 for item in items:
-                    (country_id, confirmed, deaths, recovered, active, last_update, _, source_id) = item
+                    (country_id, confirmed, deaths, recovered, active, last_update, _, source_id,
+                     hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative,
+                     on_ventilator_currently, on_ventilator_cumulative) = item
                     state_id = country_id       # for the custom area the state_id is equal with the country_id
                     new_items.append(CovidDataItem(source_id, country_id, state_id,
                                                    area_fips,                                 # fips
@@ -64,16 +69,23 @@ class CustomAreasCollector(Collector):
                                                    active,                                    # active
                                                    area_name,                                 # source_location
                                                    last_update,                               # source_updated
-                                                   geo_lat, geo_long
+                                                   geo_lat, geo_long,
+                                                   hospitalized_currently,
+                                                   hospitalized_cumulative,
+                                                   in_icu_currently, in_icu_cumulative,
+                                                   on_ventilator_currently,
+                                                   on_ventilator_cumulative
                                                   ))
                 log.info(f'Calculate data for {area_id} area on {day} day - done.')
 
-            log.debug(f'Remove old on {day} day for {fips_for_deletion}')
+            log.debug(f'Remove old custom areas on {day} day for {fips_for_deletion}')
             db.execute('DELETE FROM covid_data WHERE country_id=%s AND datetime=%s AND fips IN %s;',
                        ['US', DateTimeHelper.get_end_day(day), tuple(fips_for_deletion)])
+            db.commit()
             self.save_covid_data_items(db, new_items)
 
             self.end_pulling(db, day, len(new_items))
+            db.commit()
         return True
 
 

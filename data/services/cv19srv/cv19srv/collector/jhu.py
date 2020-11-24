@@ -82,12 +82,18 @@ class JHUCollector(Collector):
                              collected_date,                                # datetime
                              item.get_int(7, 0),                            # Confirmed
                              item.get_int(8, 0),                            # Deaths
-                             item.get_int(9, 0),                            # Recovered
-                             item.get_int(10, 0),                           # Active
+                             item.get_int(9, None),                         # Recovered
+                             item.get_int(10, None),                        # Active
                              item.get(11),                                  # Combined_Key
                              item.get_datetime(4, collected_date),          # Last_Update
                              item.get_decimal(5, 0),                        # Lat
-                             item.get_decimal(6, 0)                         # Long_
+                             item.get_decimal(6, 0),                        # Long_
+                             None,                                          # hospitalized_currently
+                             None,                                          # hospitalized_cumulative
+                             None,                                          # in_icu_currently
+                             None,                                          # in_icu_cumulative
+                             None,                                          # on_ventilator_currently
+                             None                                           # on_ventilator_cumulative
                              )
         return item
 
@@ -103,14 +109,27 @@ class JHUCollector(Collector):
                             collected_date,
                             item.get_int(5, 0),                            # Confirmed
                             item.get_int(6, 0),                            # Deaths
-                            item.get_int(7, 0),                            # Recovered
-                            item.get_int(8, 0),                            # Active
+                            item.get_int(7, None),                         # Recovered
+                            item.get_int(8, None),                         # Active
                             f'{state_name},{country_id}',                  # source_location
                             item.get_datetime(2, collected_date),          # Last_Update
                             item.get_decimal(3, 0),                        # Lat
-                            item.get_decimal(4, 0)                         # Long_
+                            item.get_decimal(4, 0),                        # Long_
+                            None,                                          # hospitalized_currently
+                            None,                                          # hospitalized_cumulative
+                            None,                                          # in_icu_currently
+                            None,                                          # in_icu_cumulative
+                            None,                                          # on_ventilator_currently
+                            None                                           # on_ventilator_cumulative
                            )
         return res
+
+    def _sum_or_none(self, a, b):
+        """ Calculate sum of the two numbers or return None if the second number is None
+        """
+        if b is not None:
+            return (a or 0) + b
+        return None
 
     def _calculate_total_country_numbers(self, db, collected_date, country_data):
         """ If the country has states or counties in JHU data source,
@@ -121,29 +140,48 @@ class JHUCollector(Collector):
         for country_id in [x for x in country_data if x]:
             # we need to check/calculate summary for the countries with more the 1 item
             if len(country_data[country_id]) < 2:
-                log.info(f'Skip calculation: we have only one item with this "{country_id}"" country')
+                log.info(f'Skip calculation for "{country_id}" country: we have only one item')
                 continue
             country_item = db.references.countries[country_id]
             total_item = CovidDataItem(self.source_id, country_id, None, None, collected_date, 0, 0, 0, 0,
                                        country_item['name'], datetime.datetime(2000, 1, 1),
-                                       country_item['geo_lat'], country_item['geo_long'])
+                                       country_item['geo_lat'], country_item['geo_long'],
+                                       None, None, None, None, None, None)
             log.debug(f'Total item: {total_item}')
             for item in country_data[country_id]:
+                log.debug(f'Processing item: {item}')
                 if not item.state_id and not item.fips:         # looks like we have item with summary numbers
-                    log.info(f'Skip calculation: we have this item in the list')
+                    log.info(f'Skip calculation for {country_id}: we already have an item in the DB')
                     total_item = None
                     break
-                if country_id in db.references.states and \
+                if item.state_id != JHUCollector.STATE_ID_UNKNOWN and \
+                    country_id in db.references.states and \
                     (item.state_id not in db.references.states[country_id] or \
                         not db.references.states[country_id][item.state_id].get('use_in_summary')):
-                    log.info(f'Exclude "{item.state_id}" state from calculation for "{country_id}" country: {item}')
+                    log.info(f'Exclude "{item.state_id}/{item.fips}" state from the calculation for "{country_id}" '
+                             f'country: location = {item.source_location}')
                     continue
-                log.info(f'Include "{item.state_id}" state from calculation for "{country_id}" country: {item}')
+                log.info(f'Include "{item.state_id}/{item.fips}" state from the calculation for "{country_id}" '
+                         f'country: location = {item.source_location}')
                 total_item.source_updated = max(total_item.source_updated, item.source_updated)
                 total_item.confirmed += item.confirmed
                 total_item.deaths += item.deaths
-                total_item.recovered += item.recovered
-                total_item.active += item.active
+                total_item.recovered = self._sum_or_none(total_item.recovered, item.recovered)
+                # total_item.active = self._sum_or_none(total_item.active, item.active)
+                total_item.active = total_item.active_calculated
+
+                total_item.hospitalized_currently = self._sum_or_none(total_item.hospitalized_currently,
+                                                                      item.hospitalized_currently)
+                total_item.hospitalized_cumulative = self._sum_or_none(total_item.hospitalized_cumulative,
+                                                                       item.hospitalized_cumulative)
+                total_item.in_icu_currently = self._sum_or_none(total_item.in_icu_currently,
+                                                                item.in_icu_currently)
+                total_item.in_icu_cumulative = self._sum_or_none(total_item.in_icu_cumulative,
+                                                                 item.in_icu_cumulative)
+                total_item.on_ventilator_currently = self._sum_or_none(total_item.on_ventilator_currently,
+                                                                       item.on_ventilator_currently)
+                total_item.on_ventilator_cumulative = self._sum_or_none(total_item.on_ventilator_cumulative,
+                                                                        item.on_ventilator_cumulative)
             if total_item:
                 log.debug(f'Calculate summary item for "{country_id}" country - success: {total_item}')
                 if total_item.country_id == 'US' and not total_item.state_id and not total_item.fips:
@@ -151,6 +189,14 @@ class JHUCollector(Collector):
                 country_data[country_id].append(total_item)
 
         log.info(f'Calculate total country numbers - complete')
+
+    def _clean_old_data(self, collected_date):
+        day = collected_date.date()
+        with DatabaseContext() as db:
+            log.info(f'Remove all old covid data on {day} day (source={self.source_id})')
+            db.execute('DELETE FROM covid_data WHERE source_id=%s AND datetime=%s;',
+                       [self.source_id, DateTimeHelper.get_end_day(day).strftime('%Y-%m-%d %H:%M:%S')])
+            db.commit()
 
     def _pull_data_and_save(self, data_type: str, url: str, collected_date, row_parser,
                             need_to_calculate_total_country_numbers=False):
@@ -171,11 +217,8 @@ class JHUCollector(Collector):
             log.info(f'End pull {data_type} information from the source')
             if need_to_calculate_total_country_numbers:
                 self._calculate_total_country_numbers(db, collected_date, country_data)
-            log.info(f'Saving it to the DB')
             new_items = {}
-            log.info(f'Remove old data on {day} day (source={self.source_id})')
-            db.execute('DELETE FROM covid_data WHERE source_id=%s AND datetime=%s;',
-                       [self.source_id, DateTimeHelper.get_end_day(day)])
+            log.info(f'Saving it to the DB')
             for country_id in country_data:
                 for item in country_data[country_id]:
                     if item.state_id == JHUCollector.STATE_ID_UNKNOWN:
@@ -193,17 +236,20 @@ class JHUCollector(Collector):
             self.save_covid_data_items(db, new_items_values)
             log.info(f'Save data into the DB complete ({new_items_len} items)')
             self.end_pulling(db, day, new_items_len)
+            db.commit()
         log.info(f'End pull {data_type} information: found {new_items_len} items, day={day}')
         return True
 
     def pull_data_by_day(self, day):
         collected_date = datetime.datetime(day.year, day.month, day.day, 23, 59, 59)
 
-        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
-        self._pull_data_and_save('state', url, collected_date, self._parse_state_row, True)
+        self._clean_old_data(collected_date)
 
         url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports/{day.strftime("%m-%d-%Y")}.csv'])
         self._pull_data_and_save('county', url, collected_date, self._parse_county_row, True)
+
+        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
+        self._pull_data_and_save('state', url, collected_date, self._parse_state_row, True)
 
 
 # pylint: disable=unused-argument

@@ -18,19 +18,28 @@ class CovidDataExporter(Exporter):
         with DatabaseContext() as db:
             if self.is_day_latest(day):
                 sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
-                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type '
+                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type, '
+                       'hospitalized_currently, hospitalized_cumulative, '
+                       'in_icu_currently, in_icu_cumulative, '
+                       'on_ventilator_currently, on_ventilator_cumulative '
                        'FROM covid_data_stat_latest;')
                 values = None
             else:
                 sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
-                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type '
+                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type, '
+                       'hospitalized_currently, hospitalized_cumulative, '
+                       'in_icu_currently, in_icu_cumulative, '
+                       'on_ventilator_currently, on_ventilator_cumulative '
                        'FROM covid_data_stat WHERE date = %s;')
                 values = [day]
             for row in db.select(sql, values):
                 (country_id, state_id, fips, population,
                  confirmed, deaths, recovered, active,
                  geo_lat, geo_long,
-                 note, date, collected_datetime, updated, location_name, location_type) = row
+                 note, date, collected_datetime, updated, location_name, location_type,
+                 hospitalized_currently, hospitalized_cumulative,
+                 in_icu_currently, in_icu_cumulative,
+                 on_ventilator_currently, on_ventilator_cumulative) = row
                 item = {'country_id': country_id}
                 if state_id:
                     item['state_id'] = state_id
@@ -41,6 +50,18 @@ class CovidDataExporter(Exporter):
                 item['deaths'] = deaths
                 item['recovered'] = recovered
                 item['active'] = active
+                if hospitalized_currently is not None:
+                    item['hospitalized_currently'] = hospitalized_currently
+                if hospitalized_cumulative is not None:
+                    item['hospitalized_cumulative'] = hospitalized_cumulative
+                if in_icu_currently is not None:
+                    item['in_icu_currently'] = in_icu_currently
+                if in_icu_cumulative is not None:
+                    item['in_icu_cumulative'] = in_icu_cumulative
+                if on_ventilator_currently is not None:
+                    item['on_ventilator_currently'] = on_ventilator_currently
+                if on_ventilator_cumulative is not None:
+                    item['on_ventilator_cumulative'] = on_ventilator_cumulative
                 item['geo_lat'] = Converter.to_string(geo_lat)
                 item['geo_long'] = Converter.to_string(geo_long)
                 item['date'] = DateTimeHelper.date_string(date)
