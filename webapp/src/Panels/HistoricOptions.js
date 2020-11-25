@@ -66,6 +66,7 @@ const ArrowTooltip = ({ children, ...props }) => {
   const classes = useStyles();
   return (
     <Tooltip
+      enterTouchDelay={100}
       arrow
       classes={{
         tooltip: classes.tooltip,
@@ -78,7 +79,7 @@ const ArrowTooltip = ({ children, ...props }) => {
   );
 };
 
-const CheckboxesGroup = ({ selection, setSelection }) => {
+const CheckboxesGroup = ({ selection, setSelection, showHosp }) => {
   const classes = useStyles();
 
   const handleChange = (event) => {
@@ -86,7 +87,7 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
   };
 
   const {
-    trend2, trend7, trend14, trend30, value, hospitalized_currently,
+    trend2, trend7, trend14, trend30, value, hospitalized,
   } = selection;
 
   return (
@@ -162,18 +163,18 @@ const CheckboxesGroup = ({ selection, setSelection }) => {
               label="Case Count"
             />
           </ArrowTooltip>
-          <Visible condition>
+          <Visible condition={showHosp}>
             <ArrowTooltip title="Count of current hospitalizations.">
               <FormControlLabel
                 control={(
                   <Checkbox
-                    checked={hospitalized_currently}
+                    checked={hospitalized}
                     onChange={handleChange}
-                    name="hospitalized_currently"
+                    name="hospitalized"
                     classes={{ root: classes.checkRoot5, checked: classes.checked }}
                   />
                 )}
-                label="Hospitalizations"
+                label="Hospt."
               />
             </ArrowTooltip>
           </Visible>

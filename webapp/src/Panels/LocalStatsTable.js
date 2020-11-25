@@ -7,7 +7,8 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Link from '@material-ui/core/Link';
 import Button from '@material-ui/core/Button';
-
+import Tooltip from '@material-ui/core/Tooltip';
+import InfoIcon from '@material-ui/icons/Info';
 import Popover from '@material-ui/core/Popover';
 import ListItem from '@material-ui/core/ListItem';
 
@@ -21,11 +22,26 @@ const defaultFlag = {
 };
 
 const useStyles = makeStyles((theme) => ({
+  tooltip: { fontSize: '1.1rem', backgroundColor: '#222' },
+  arrow: {
+    color: '#222',
+  },
+  iconButton: {
+    position: 'absolute',
+    right: '0',
+    color: '#222',
+    cursor: 'pointer',
+  },
   confirmed: { color: theme.palette.grey[500], backgroundColor: '#222' },
   active: { color: theme.palette.warning.main, backgroundColor: '#222' },
   deaths: { color: theme.palette.error.main, backgroundColor: '#222' },
   recovered: { color: theme.palette.success.main, backgroundColor: '#222' },
   hospitalized: { color: theme.palette.info.main, backgroundColor: '#222' },
+  confirmedBorder: { border: '1px solid', borderColor: theme.palette.grey[500] },
+  activeBorder: { border: '1px solid', borderColor: theme.palette.warning.main },
+  deathsBorder: { border: '1px solid', borderColor: theme.palette.error.main },
+  recoveredBorder: { border: '1px solid', borderColor: theme.palette.success.main },
+  hospitalizedBorder: { border: '1px solid', borderColor: theme.palette.info.main },
   title: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.2em',
@@ -34,6 +50,7 @@ const useStyles = makeStyles((theme) => ({
   bar: {
     margin: '0 -16px',
     color: '#222',
+    position: 'relative',
   },
   confirmedBar: {
     backgroundColor: theme.palette.grey[500],
@@ -85,6 +102,7 @@ const StatBlock = ({
   colorClass = '',
   level = 'x',
   mini = false,
+  description = '',
 }) => {
   const classes = useStyles();
   let formattedVal = value;
@@ -102,18 +120,35 @@ const StatBlock = ({
     formattedSubVal = Math.ceil(subvalue * 1e5);
   }
 
+  const Hover = ({ children, placement = 'left' }) => (
+    <Tooltip
+      enterTouchDelay={100}
+      arrow
+      title={description}
+      classes={{
+        tooltip: `${classes.tooltip} ${classes[`${colorClass}Border`]}`,
+        arrow: classes.arrow,
+      }}
+      placement={placement}
+    >
+      {children}
+    </Tooltip>
+  );
+
   if (mini) {
     return (
-      <Card className={`${classes[colorClass]}`} id={`${level}-${colorClass}`}>
-        <Typography
-          variant="h6"
-          align="center"
-          id={`${level}-${colorClass}-value`}
-          className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
-        >
-          {formattedVal}
-        </Typography>
-      </Card>
+      <Hover placement="bottom">
+        <Card className={`${classes[colorClass]}`} id={`${level}-${colorClass}`}>
+          <Typography
+            variant="h6"
+            align="center"
+            id={`${level}-${colorClass}-value`}
+            className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
+          >
+            {formattedVal}
+          </Typography>
+        </Card>
+      </Hover>
     );
   }
 
@@ -143,6 +178,9 @@ const StatBlock = ({
             className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
           >
             {name}
+            <Hover>
+              <InfoIcon className={classes.iconButton} />
+            </Hover>
           </Typography>
         </Hidden>
 
@@ -153,6 +191,9 @@ const StatBlock = ({
             className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
           >
             {name}
+            <Hover>
+              <InfoIcon className={classes.iconButton} />
+            </Hover>
           </Typography>
           <Typography variant="h5" align="center">
             {formattedVal}
@@ -182,7 +223,7 @@ const LocalStatsTable = ({
     deaths = 0,
     name = '',
     recovered = 0,
-    hospitalized_currently: hospitalized = 100,
+    hospitalized_currently: hospitalized = 0,
     active = 0,
     datetime: updated,
     population = 0,
@@ -239,6 +280,7 @@ const LocalStatsTable = ({
                 colorClass="confirmed"
                 subvalue={confirmed / population}
                 level={level}
+                description="Aggregated case count"
               />
             </Grid>
             <Grid item xs={6} sm>
@@ -249,20 +291,9 @@ const LocalStatsTable = ({
                 colorClass="deaths"
                 subvalue={deaths / population}
                 level={level}
+                description="Aggregated death toll"
               />
             </Grid>
-            <Visible condition={active}>
-              <Grid item xs={6} sm>
-                <StatBlock
-                  mini={mini}
-                  name="Active Cases"
-                  value={active}
-                  colorClass="active"
-                  subvalue={active / population}
-                  level={level}
-                />
-              </Grid>
-            </Visible>
             <Visible condition={recovered}>
               <Grid item xs={6} sm>
                 <StatBlock
@@ -272,6 +303,7 @@ const LocalStatsTable = ({
                   colorClass="recovered"
                   subvalue={recovered / population}
                   level={level}
+                  description="Aggregated recovered case count"
                 />
               </Grid>
             </Visible>
@@ -284,6 +316,24 @@ const LocalStatsTable = ({
                   colorClass="hospitalized"
                   subvalue={hospitalized / population}
                   level={level}
+                  description={
+                    level === 'usa'
+                      ? 'Current number of people hospitalized totaled from reporting states'
+                      : 'Current number of people hospitalized'
+                  }
+                />
+              </Grid>
+            </Visible>
+            <Visible condition={active}>
+              <Grid item xs={6} sm>
+                <StatBlock
+                  mini={mini}
+                  name="Active Cases"
+                  value={active}
+                  colorClass="active"
+                  subvalue={active / population}
+                  level={level}
+                  description="Aggregated confirmed cases that have not been resolved (active cases = total cases - total recovered - total deaths)"
                 />
               </Grid>
             </Visible>
@@ -335,24 +385,50 @@ const LocalStatsTable = ({
       />
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm md={4}>
+          <Grid item xs={12} sm xl={4}>
             <StatBlock
               name="Confirmed Cases"
               value={confirmed}
               colorClass="confirmed"
               subvalue={confirmed / population}
               level={level}
+              description="Aggregated case count"
             />
           </Grid>
-          <Grid item xs={12} sm md>
+          <Grid item xs={12} sm xl={4}>
             <StatBlock
               name="Deaths"
               value={deaths}
               colorClass="deaths"
               subvalue={deaths / population}
               level={level}
+              description="Aggregated death toll"
             />
           </Grid>
+          <Visible condition={recovered}>
+            <Grid item xs={12} sm xl={4}>
+              <StatBlock
+                name="Recoveries"
+                value={recovered}
+                colorClass="recovered"
+                subvalue={recovered / population}
+                level={level}
+                description="Aggregated recovered case count"
+              />
+            </Grid>
+          </Visible>
+          <Visible condition={hospitalized}>
+            <Grid item xs={12} sm md>
+              <StatBlock
+                name="Current Hospitalized"
+                value={hospitalized}
+                colorClass="hospitalized"
+                subvalue={hospitalized / population}
+                level={level}
+                description="Current number of people hospitalized"
+              />
+            </Grid>
+          </Visible>
           <Visible condition={active}>
             <Grid item xs={12} sm md>
               <StatBlock
@@ -361,28 +437,7 @@ const LocalStatsTable = ({
                 colorClass="active"
                 subvalue={active / population}
                 level={level}
-              />
-            </Grid>
-          </Visible>
-          <Visible condition={recovered}>
-            <Grid item xs={12} sm md>
-              <StatBlock
-                name="Recoveries"
-                value={recovered}
-                colorClass="recovered"
-                subvalue={recovered / population}
-                level={level}
-              />
-            </Grid>
-          </Visible>
-          <Visible condition={hospitalized}>
-            <Grid item xs={12} sm md>
-              <StatBlock
-                name="Current Hospt."
-                value={hospitalized}
-                colorClass="hospitalized"
-                subvalue={hospitalized / population}
-                level={level}
+                description="Aggregated confirmed cases that have not been resolved (active cases = total cases - total recovered - total deaths)"
               />
             </Grid>
           </Visible>

@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { joinTables } from '../../util/arrays';
 
 let margin;
 let width;
@@ -13,8 +14,9 @@ const findTrueProps = (obj) => [
   ['trend30', obj.trend30],
   ['value', obj.value],
   ['trend14', obj.trend14],
-  ['hospitalized_currently', obj.hospitalized_currently],
+  ['hospitalized', obj.hospitalized],
 ];
+const propsFormat = ['percent', 'percent', 'percent', 'number', 'percent', 'number'];
 
 const colorScale = d3.scaleOrdinal(d3.schemeSet2);
 
@@ -59,10 +61,16 @@ const fitInWindow = () => {
   return xAdjust;
 };
 
-function draw(w, h, historic = { active: [] }, selected = { trend2: true }, timeSpan) {
+function draw(
+  w,
+  h,
+  historic = { active: [], hospitalized: [] },
+  selected = { trend2: true },
+  timeSpan,
+) {
   const params = findTrueProps(selected);
   // only return rows with at least some of the data we're looking for.
-  const data = historic.active
+  const activeData = historic.active
     ? historic.active
       .slice(0, timeSpan)
     // .filter((d) => d.date >= '2020-05-01') // temp cap date range
@@ -72,6 +80,15 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }, time
       ))
       .map((d) => ({ ...d, date: d3.isoParse(d.date) }))
     : [];
+  const hospData = historic.hospitalized
+    ? historic.hospitalized
+      .slice(0, timeSpan)
+      .map((d) => ({ hospitalized: d.currently, date: d3.isoParse(d.date) }))
+    : [];
+  const data = joinTables(activeData, hospData, 'date', 'date', (g, f) => ({
+    ...g,
+    ...f,
+  }));
   const X = d3
     .scaleTime()
     .domain(d3.extent(data, (d) => d.date))
@@ -175,7 +192,7 @@ function draw(w, h, historic = { active: [] }, selected = { trend2: true }, time
         .style('visibility', 'visible')
         .attr('transform', ([x, y], i) => (y ? `translate(${X(x)},${scales[i](y)})` : 'scale(0)'))
         .select('text')
-        .text((d, i) => (i !== 3 ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])))
+        .text((d, i) => (propsFormat[i] === 'percent' ? d3.format('.1%')(d[1]) : d3.format('.3s')(d[1])))
         .attr('transform', fitInWindow);
     });
 }

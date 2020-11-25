@@ -15,9 +15,12 @@ import HistoricOptions from './HistoricOptions';
 import HistoricSlider from './HistoricSlider';
 import { init, draw } from '../d3/line/historic';
 
-const useStyles = makeStyles(() => ({}));
+const useStyles = makeStyles((theme) => ({
+  tooltip: { fontSize: '0.8em', backgroundColor: '#222' },
+}));
 
 const HistoricRates = ({ location, historic, level }) => {
+  const classes = useStyles();
   const [showing, setShowing] = useState(0);
   const [timeSpan, setTimeSpan] = useState(90);
   const [initialized, setInitialized] = useState(false);
@@ -27,7 +30,7 @@ const HistoricRates = ({ location, historic, level }) => {
     trend14: true,
     trend30: false,
     value: false,
-    hospitalized_currently: true,
+    hospitalized: true,
   });
   const sectionEl = useRef(null);
 
@@ -49,8 +52,10 @@ const HistoricRates = ({ location, historic, level }) => {
   const action = level === 'county' ? (
     <IconButton color="secondary" size="small" onClick={toggleShowing}>
       <Tooltip
+        enterTouchDelay={100}
+        arrow
         title={`Show Trends for ${otherLocationName}`}
-          // classes={{ tooltip: classes.tooltip }}
+        classes={{ tooltip: classes.tooltip }}
         interactive
         placement="left"
       >
@@ -61,11 +66,15 @@ const HistoricRates = ({ location, historic, level }) => {
 
   const formControl = (
     <Grid container>
-      <Grid item xs={12} sm={8} md={7}>
-        <HistoricOptions selection={selection} setSelection={setSelection} />
+      <Grid item xs={12} sm={6}>
+        <HistoricOptions
+          selection={selection}
+          setSelection={setSelection}
+          showHosp={level === 'county' && showing === 1}
+        />
       </Grid>
 
-      <Grid item xs={12} sm={4} md={5}>
+      <Grid item xs={12} sm={6}>
         <HistoricSlider value={timeSpan} changeValue={setTimeSpan} />
       </Grid>
     </Grid>
@@ -96,7 +105,6 @@ const HistoricRates = ({ location, historic, level }) => {
     return () => window.removeEventListener('resize', ready);
   }, [initialized, ready]);
 
-  const classes = useStyles();
   return (
     <Card variant="outlined">
       <CardHeader

@@ -265,6 +265,8 @@ export default function SimpleTable({
           thisLocation.fips && thisLocation.fips !== '00000' ? (
             <IconButton color="secondary" size="small" onClick={() => addFunction(thisLocation)}>
               <Tooltip
+                enterTouchDelay={100}
+                arrow
                 title={`Add ${thisLocation.name}`}
                 classes={{ tooltip: classes.tooltip }}
                 interactive

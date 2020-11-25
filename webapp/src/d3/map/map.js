@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { joinTables } from '../../util/arrays';
 
 const projection = d3.geoAlbersUsa();
 // Create GeoPath function that uses built-in D3 functionality to turn
@@ -319,25 +320,6 @@ function drawCircles({ group, scale = 1, data }) {
     .attr('stroke-width', 2 / scale)
     // .style('filter', 'url(#shadow)')
     .style('visibility', (d) => (d.meals + d.pendingMeals > 0 ? 'visible' : 'hidden'));
-}
-
-function joinTables(lookupTable, mainTable, lookupKey, mainKey, select) {
-  const l = lookupTable.length;
-  const m = mainTable.length;
-  const lookupIndex = [];
-  const output = [];
-  for (let i = 0; i < l; i += 1) {
-    // loop through l items
-    const row = lookupTable[i];
-    lookupIndex[row[lookupKey]] = row; // create an index for lookup table
-  }
-  for (let j = 0; j < m; j += 1) {
-    // loop through m items
-    const y = mainTable[j];
-    const x = lookupIndex[y[mainKey]]; // get corresponding row from lookupTable
-    output.push(select(y, x)); // select only the columns you need
-  }
-  return output;
 }
 
 function initMap({
