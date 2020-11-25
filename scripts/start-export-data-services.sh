@@ -39,8 +39,10 @@ esac
 . ./scripts/load.env || exit 1
 output_dir="${PWD}/build/covid"
 period=${1:-"latest"}
+engine=${ENGINE:-"all"}
 
 title "Start all services to export data (profile=${profile:-".env"})"
+echo "Engine: ${engine}"
 echo "Period: ${period}"
 echo "Output: ${output_dir}"
 read -p "Continue to export data (y/N)? " opt
@@ -50,6 +52,7 @@ cd data/services/cv19srv
 title "Check database status" && \
 python3 cv19srv check-database && \
 title "Export all covid data" && \
-python3 cv19srv export all "${period}" "${output_dir}" $@ && \
+python3 cv19srv export ${engine} "${period}" "${output_dir}" $@ && \
+(echo "Keep only lates trends"; rm -fr ${output_dir}/trend/2* || true) && \
 cd - >/dev/null && \
 echo "Success"

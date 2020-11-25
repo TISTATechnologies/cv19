@@ -41,18 +41,19 @@ class HistoryData(Exporter):
     def _save_grouped_values(self, location: Location, grouped_values: dict) -> None:
         """ Save all items wich are grouped by datetype
         """
+        data = {'country_id': location.country_id}
+        if location.state_id:
+            data['state_id'] = location.state_id
+        if location.fips:
+            data['fips'] = location.fips
         for data_group in grouped_values or {}:
             items = grouped_values[data_group] or []
             self._validate_ordered_data(data_group, location, items)
-            self._calculate_past_data(data_group, location, items)
+            if data_group in (DataType.CONFIRMED, DataType.DEATHS, DataType.ACTIVE, DataType.RECOVERED):
+                self._calculate_past_data(data_group, location, items)
             log.info(f'Save {len(items)} {data_group} cases for {location}')
-            data = {'country_id': location.country_id}
-            if location.state_id:
-                data['state_id'] = location.state_id
-            if location.fips:
-                data['fips'] = location.fips
             data[data_group.value] = sorted(items, key=lambda x: x['date'], reverse=True)
-            self.save_loc_data_to_file(data_group.value, location, data)
+        self.save_loc_data_to_file(None, location, data)
 
     def load_grouped_data(self, day: datetime.datetime) -> None:
         """ Load data on the specific date and group it by location (country_id-state_id-fips)
@@ -60,11 +61,13 @@ class HistoryData(Exporter):
         log.debug(f'Load all data from the database...')
         with DatabaseContext() as db:
             prev_loc = None
-            sql = ('country_id, state_id, fips, confirmed, deaths, recovered, active, date, datetime '
+            sql = ('country_id, state_id, fips, confirmed, deaths, recovered, active, date, datetime, '
+                   'hospitalized_currently, hospitalized_cumulative '
                    'FROM covid_data_stat ORDER BY fips, state_id, country_id, date;')
             log.info(f'Load all historical data')
             grouped_values = None
-            for (country_id, state_id, fips, confirmed, deaths, recovered, active, date, _) in db.select(sql):
+            for (country_id, state_id, fips, confirmed, deaths, recovered, active, date, _,
+                 hospitalized_currently, hospitalized_cumulative) in db.select(sql):
                 cur_loc = self.get_location(country_id, state_id, fips)
                 if prev_loc is None:
                     prev_loc = cur_loc
@@ -75,8 +78,7 @@ class HistoryData(Exporter):
                     log.info(f'Processing {cur_loc}: {confirmed}, {deaths}, {recovered}, {active}...')
 
                 if grouped_values is None:
-                    # values = {'confirmed': [], 'deaths': [], 'active': [], 'recovered': []}
-                    grouped_values = {DataType.ACTIVE: []}
+                    grouped_values = {DataType.ACTIVE: [], DataType.HOSPITALIZED: []}
                 date_str = DateTimeHelper.date_string(date)
                 log.debug(f'Processing {cur_loc} on {date_str}...')
                 # For today we need an 'active' cases only,
@@ -85,6 +87,8 @@ class HistoryData(Exporter):
                 # grouped_values['deaths'].append({'date': date_str, 'value': deaths})
                 # grouped_values['recovered'].append({'date': date_str, 'value': recovered})
                 grouped_values[DataType.ACTIVE].append({'date': date_str, 'value': active})
+                grouped_values[DataType.HOSPITALIZED].append(
+                    {'date': date_str, 'currently': hospitalized_currently, 'cumulative': hospitalized_cumulative})
             self._save_grouped_values(prev_loc, grouped_values)
             grouped_values = None
             log.info(f'Load all historical data complete.')

@@ -71,7 +71,7 @@ class TrendData(Exporter):
                 for trend_key in data_by_day:
                     data = data_by_day[trend_key].get(location_key, empty_item)
                     # calculate trends for each of the data types: confirmed, deaths, active, and etc.
-                    for data_type in DataType:
+                    for data_type in (DataType.CONFIRMED, DataType.DEATHS, DataType.ACTIVE, DataType.RECOVERED):
                         trend_value = self.calculate_delta(latest[data_type.value], data[data_type.value])
                         item[f'{data_type.value}_trend{trend_key}'] = trend_value
                 self.add_item_to_export_all_levels(item)

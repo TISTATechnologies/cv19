@@ -13,6 +13,7 @@ class DataType(Enum):
     DEATHS = 'deaths'
     ACTIVE = 'active'
     RECOVERED = 'recovered'
+    HOSPITALIZED = 'hospitalized'
 
 
 class Location:
