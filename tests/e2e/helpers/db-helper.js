@@ -33,6 +33,11 @@ const formatItem = (item) => {
             item.recovered_val2 = Math.ceil((item.recovered / item.population) * 1e5);
         }
         item.recovered = undefined;
+        if (item.hospitalized_currently !== undefined && item.hospitalized_currently !== null) {
+            item.hospitalized_currently_val1 = item.hospitalized_currently.toLocaleString();
+            item.hospitalized_currently_val2 = Math.ceil((item.hospitalized_currently / item.population) * 1e5);
+        }
+        item.hospitalized_currently = undefined;
         item.population = item.population.toLocaleString();
     } else {
         item.confirmed_val1 = null;
@@ -47,7 +52,12 @@ const formatItem = (item) => {
         item.recovered_val1 = null;
         item.recovered_val2 = null;
         item.recovered = undefined;
+        item.hospitalized_currently_val1 = null;
+        item.hospitalized_currently_val2 = null;
+        item.hospitalized_currently = undefined;
     }
+    item.hospitalized_val1 = item.hospitalized_currently_val1;
+    item.hospitalized_val2 = item.hospitalized_currently_val2;
     return item;
 }
 
@@ -80,7 +90,9 @@ const executeInDataBase = async (query, params = undefined) => {
 const loadUSData = async (day) => {
     log.info(`Load US data on the ${day} day`);
     return executeInDataBase(
-        'SELECT \'US\' as id, location_name as name, population, confirmed, deaths, active, recovered '
+        'SELECT \'US\' as id, location_name as name, population, confirmed, deaths, active, recovered, '
+        + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
+        + 'on_ventilator_cumulative, on_ventilator_currently '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'country\' AND date = $1;',
         [day]);
 }
@@ -88,7 +100,9 @@ const loadUSData = async (day) => {
 const loadStatesData = async (day) => {
     log.info(`Load States data on the ${day} day`);
     return executeInDataBase(
-        'SELECT state_id as id, location_name as name, population, confirmed, deaths, active, recovered '
+        'SELECT state_id as id, location_name as name, population, confirmed, deaths, active, recovered, '
+        + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
+        + 'on_ventilator_cumulative, on_ventilator_currently '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'state\' AND date = $1;',
         [day]);
 }

@@ -53,6 +53,7 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
             expectEqualNumbers(dataRow.deaths, realData.state.deaths_val1);
             expectEqualNumbers(dataRow.active, realData.state.active_val1);
             expectEqualNumbers(dataRow.recovered, realData.state.recovered_val1);
+            expectEqualNumbers(dataRow.hospitalized_currently, realData.state.hospitalized_currently_val1);
         } else {
             expect(dataRow.name).toEqual(realData.county.name);
             expect(dataRow.fips).toEqual(realData.county.fips);

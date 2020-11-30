@@ -53,7 +53,7 @@ try {
             `Select random item in #${index} (length=${realDataItemsLen})`
           );
           const selectedCounty = countyNames[index];
-          log.debug(`Select county ${selectedCounty}`);
+          log.debug(`Select county ${JSON.stringify(selectedCounty)}`);
           for (let i = 0; i < realDataItemsLen; i += 1) {
             const item = realDataItems[i];
             if (item.county && item.county.name === selectedCounty.name) {

@@ -1,12 +1,12 @@
-const url = require("url");
-const { getRequest } = require("./util");
-const { Config } = require("../helpers/config");
+const url = require('url');
+const { getRequest } = require('./util');
+const { Config } = require('../helpers/config');
 
 const log = new Config().log;
 
 class CovidPage {
   constructor(I, config) {
-    this.county_popup_selector = "#zip-search-input-popup";
+    this.county_popup_selector = '#zip-search-input-popup';
     this.I = I;
     this.defTimeout = 10; // in seconds
     this.config = config;
@@ -21,28 +21,28 @@ class CovidPage {
   }
 
   putZip(zip) {
-    if (zip && zip !== "US") {
-      this.I.fillField("#zip-search-input", zip);
+    if (zip && zip !== 'US') {
+      this.I.fillField('#zip-search-input', zip);
     } else {
-      this.I.fillField("#zip-search-input", "");
+      this.I.fillField('#zip-search-input', '');
     }
   }
   // async getZip() {
   //     return this.I.grabTextFrom('#zip-search-input');
   // }
   expectTitle(title = undefined) {
-    this.I.seeInTitle(title || "TISTA COVID-19 Tracker");
+    this.I.seeInTitle(title || 'TISTA COVID-19 Tracker');
   }
   expectCDCWarning() {
     this.I.see(
-      "NOTE: New CDC guidance could cause an increase in the number of deaths attributed to COVID-19."
+      'NOTE: New CDC guidance could cause an increase in the number of deaths attributed to COVID-19.'
     );
-    this.I.see("See this report for more details.");
+    this.I.see('See this report for more details.');
   }
 
   expectCountyPopupWithNoElement() {
     this.I.dontSeeElement(this.county_popup_selector);
-    this.I.see("No options");
+    this.I.see('No options');
   }
   // async expectCountyPopupShown(len=undefined) {
   //     await this.I.waitForVisible(this.county_popup_selector, this.defTimeout);
@@ -65,7 +65,7 @@ class CovidPage {
   expectProperDataBox(level, dataItem, boxName, boxKey, allowZero = false) {
     const value = dataItem[`${boxKey}_val1`];
     const rate = dataItem[`${boxKey}_val2`];
-    if (value !== null && (allowZero || value !== "0")) {
+    if (value !== null && value !== undefined && (allowZero || value !== '0')) {
       this.I.see(`${boxName}`);
       this.I.see(`${value}`, `#${level}-${boxKey}-value`);
       this.I.see(`${rate} per 100k`, `#${level}-${boxKey}-rate`);
@@ -82,13 +82,14 @@ class CovidPage {
     this.expectProperDataBox(
       level,
       data.state,
-      "Confirmed Cases",
-      "confirmed",
+      'Confirmed Cases',
+      'confirmed',
       true
     );
-    this.expectProperDataBox(level, data.state, "Deaths", "deaths", true);
-    this.expectProperDataBox(level, data.state, "Active Cases", "active");
-    this.expectProperDataBox(level, data.state, "Recoveries", "recovered");
+    this.expectProperDataBox(level, data.state, 'Deaths', 'deaths', true);
+    this.expectProperDataBox(level, data.state, 'Active Cases', 'active');
+    this.expectProperDataBox(level, data.state, 'Recoveries', 'recovered');
+    this.expectProperDataBox(level, data.state, 'Current Hospitalized', 'hospitalized');
   }
   expectCountyData(data) {
     if (!data || !data.county) {
@@ -102,27 +103,27 @@ class CovidPage {
     this.I.see(`COVID-19 Data for ${data.county.name}`);
     this.I.see(`Population: ${data.county.population}`, `#county-population`);
     this.expectProperDataBox(
-      "county",
+      'county',
       data.county,
-      "Confirmed Cases",
-      "confirmed",
+      'Confirmed Cases',
+      'confirmed',
       true
     );
-    this.expectProperDataBox("county", data.county, "Deaths", "deaths", true);
-    this.expectProperDataBox("county", data.county, "Active Cases", "active");
-    this.expectProperDataBox("county", data.county, "Recoveries", "recovered");
+    this.expectProperDataBox('county', data.county, 'Deaths', 'deaths', true);
+    this.expectProperDataBox('county', data.county, 'Active Cases', 'active');
+    this.expectProperDataBox('county', data.county, 'Recoveries', 'recovered');
   }
   expectExecutiveOrders(data) {
     if (data && data.length > 0) {
-      this.I.see("COVID-19 Critical Executive Orders for");
+      this.I.see('COVID-19 Critical Executive Orders for');
       for (let i = 0, len = data.length; i < len; i += 1) {
         const item = data[i];
         // Some of the executive orders notes are very long, remove double spaces and make it shorter
-        const title = (item.note || "").replace(/  +/g, " ").substring(0, 50);
+        const title = (item.note || '').replace(/  +/g, ' ').substring(0, 50);
         this.I.see(title);
       }
     } else {
-      this.I.dontSee("COVID-19 Critical Executive Orders for");
+      this.I.dontSee('COVID-19 Critical Executive Orders for');
     }
   }
 }
@@ -135,8 +136,8 @@ class CovidApi {
 
   getDataByFips(fips, date) {
     let pathWithQuery = null;
-    if ((fips || "US").toUpperCase() === "US") {
-      const country_id = "US";
+    if ((fips || 'US').toUpperCase() === 'US') {
+      const country_id = 'US';
       pathWithQuery =
         `/covid_data_stat?location_type=eq.country` +
         `&country_id=eq.${country_id}&date=eq.${date}&limit=1`;
@@ -159,7 +160,7 @@ class CovidStaticApi {
   getData(country_id, state_id, fips, date) {
     let root = this.apiDataUrl.href;
     if (!root.endsWith('/')) {
-      root += "/";
+      root += '/';
     }
     const countryIdParam = country_id.toLowerCase();
     const stateIdParam = state_id ? state_id.toLowerCase() : null;
