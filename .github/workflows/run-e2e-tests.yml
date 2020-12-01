@@ -24,11 +24,11 @@ on:
         required: false
       covid_data_url:
         description: 'Covid data url'
-        required: true
+        required: false
         default: 'https://data.tistatech.com/covid/v2'
       common_data_url:
         description: 'Common data url'
-        required: true
+        required: false
         default: 'https://data.tistatech.com/common/v2'
 
 jobs:
@@ -83,11 +83,15 @@ jobs:
               APP_SERVER_URL=${{ secrets.PROD_APP_SERVER_URL }}
             fi
           fi
-          ZIPS_COUNT="${ZIPS_COUNT:-"${{ secrets.TEST_ZIPS_COUNT}}"}"
-          ZIPS="${ZIPS:-"${{ secrets.TEST_ZIPS}}"}"
+          COVID_DATA_URL="${COVID_DATA_URL:-"${{ secrets.COVID_DATA_URL }}"}"
+          COMMON_DATA_URL="${COMMON_DATA_URL:-"${{ secrets.COMMON_DATA_URL }}"}"
+          ZIPS_COUNT="${ZIPS_COUNT:-"${{ secrets.TEST_ZIPS_COUNT }}"}"
+          ZIPS="${ZIPS:-"${{ secrets.TEST_ZIPS }}"}"
           echo "${PWD}/../.github/scripts" >> $GITHUB_PATH
           echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
           echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
+          echo "COVID_DATA_URL=${COVID_DATA_URL}" >> $GITHUB_ENV
+          echo "COMMON_DATA_URL=${COMMON_DATA_URL}" >> $GITHUB_ENV
           echo "ZIPS_COUNT=${ZIPS_COUNT}" >> $GITHUB_ENV
           echo "ZIPS=${ZIPS}" >> $GITHUB_ENV
 
@@ -97,6 +101,8 @@ jobs:
           python --version
           echo "NODE_ENV=${NODE_ENV}"
           echo "APP_SERVER_URL=${APP_SERVER_URL}"
+          echo "COVID_DATA_URL=${COVID_DATA_URL}"
+          echo "COMMON_DATA_URL=${COMMON_DATA_URL}"
           echo "ZIPS_COUNT=${ZIPS_COUNT}"
           echo "ZIPS=${ZIPS}"
 
