@@ -52,5 +52,5 @@ def run(engine_name: str, args: list) -> bool:
         export.run(day, output_dir)
         log.info(f'End export "{export}" data on {day}')
     create_index_file(output_dir)
-    log.info(f'End export data (ducation = {datetime.datetime.now() - start_time})')
+    log.info(f'End export data (duration = {datetime.datetime.now() - start_time})')
     return True

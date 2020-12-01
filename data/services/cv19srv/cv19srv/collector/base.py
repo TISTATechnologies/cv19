@@ -196,6 +196,7 @@ class Collector:
             values.append(item.in_icu_cumulative)
             values.append(item.on_ventilator_currently)
             values.append(item.on_ventilator_cumulative)
+            self.counter_items_added += 1
         self.insert_into_db(db, items_len, sql, values, False, items_len)
 
     def insert_into_db(self, db: DatabaseContext, idx: int, sql: str, values: list,

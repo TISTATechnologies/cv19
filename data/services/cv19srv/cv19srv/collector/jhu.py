@@ -77,6 +77,11 @@ class JHUCollector(Collector):
         state_id = db.references.find_state_id(country_id, state_name)      # state_id
         if state_name and not state_id:                 # if we have a state name but can't find this state in the DB
             state_id = JHUCollector.STATE_ID_UNKNOWN    # we need to mark it with to prevent save it in DB
+        elif country_id == 'US':
+            state_type = db.references.states[country_id][state_id].get('type')
+            # We need to use fips for US states and counties only
+            if state_type not in ('state', 'federal district'):
+                fips = None
 
         item = CovidDataItem(self.source_id, country_id, state_id, fips,
                              collected_date,                                # datetime
@@ -161,8 +166,8 @@ class JHUCollector(Collector):
                     log.info(f'Exclude "{item.state_id}/{item.fips}" state from the calculation for "{country_id}" '
                              f'country: location = {item.source_location}')
                     continue
-                log.info(f'Include "{item.state_id}/{item.fips}" state from the calculation for "{country_id}" '
-                         f'country: location = {item.source_location}')
+                log.debug(f'Include "{item.state_id}/{item.fips}" state to the calculation for "{country_id}" '
+                          f'country: location = {item.source_location}')
                 total_item.source_updated = max(total_item.source_updated, item.source_updated)
                 total_item.confirmed += item.confirmed
                 total_item.deaths += item.deaths
@@ -230,6 +235,7 @@ class JHUCollector(Collector):
                             self.counter_items_duplicate += 1
                         else:
                             new_items[item_key] = item
+                            log.debug(f'Add item: {item}')
 
             new_items_values = new_items.values()
             new_items_len = len(new_items_values)
@@ -248,8 +254,9 @@ class JHUCollector(Collector):
         url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports/{day.strftime("%m-%d-%Y")}.csv'])
         self._pull_data_and_save('county', url, collected_date, self._parse_county_row, True)
 
-        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
-        self._pull_data_and_save('state', url, collected_date, self._parse_state_row, True)
+        # We are collect US state level data from CovidTracking
+        # url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
+        # self._pull_data_and_save('state', url, collected_date, self._parse_state_row, False)
 
 
 # pylint: disable=unused-argument

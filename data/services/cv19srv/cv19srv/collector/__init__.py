@@ -58,5 +58,5 @@ def run(engine_name: str, args: list) -> bool:
         engine = ENGINES[engine_name]
         engine['instance'].run(day, args)
         log.info(f'End [{engine}] collector on {day}')
-    log.info(f'End collector data (ducation = {datetime.datetime.now() - start_time})')
+    log.info(f'End collector data (duration = {datetime.datetime.now() - start_time})')
     return True
