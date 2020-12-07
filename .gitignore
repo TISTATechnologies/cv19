@@ -13,3 +13,6 @@ __*
 /node_modules
 /webapp/public/static
 /webapp/public/data
+
+.sass-cache/
+_site/

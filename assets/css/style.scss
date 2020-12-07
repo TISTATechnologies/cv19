@@ -1,0 +1,45 @@
+---
+---
+
+@import "jekyll-theme-slate";
+
+#header_wrap .inner {
+    padding: 10px;
+}
+
+#project_tagline {
+  padding: 0;
+}
+
+#main_content {
+    padding-top: 20px;
+}
+
+#main_content img {
+    margin: 0;
+    padding: 0;
+    vertical-align: sub;
+}
+
+.inner {
+    max-width: 60%;
+}
+
+@media only screen and (max-width: 900px) {
+    #forkme_banner {
+        background: none;
+        background-color: #0090ff;
+        padding: 1px 5px;
+        font-size: 80%;
+    }
+}
+
+@media only screen and (max-width: 320px) {
+    #project_tagline {
+        font-size: 32px;
+    }
+    #project_tagline {
+        margin: 0;
+        font-size: 12px;
+    }
+}

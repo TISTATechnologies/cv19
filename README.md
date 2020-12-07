@@ -9,11 +9,11 @@ The [repository](https://github.com/TISTATechnologies/cv19) contains all source 
   * [Requirements](#requirements)
   * [Configuration](#configuration)
   * [Release/Deploy](#release)
+  * [CI/CD](#cicd)
   * [Collect data](#collect-data)
   * [Export data](#export-data)
 * [Testing](#testing)
   * [e2e testing](tests/e2e/README.md)
-  * [jmeter](tests/jmeter/README.md)
 * [Notes](#notes)
 * [Links](#links)
 * [License](#license)
@@ -160,8 +160,8 @@ git merge develop
 ```
 4. Create new tag with the new version
 ```bash
-git tag <new version>                   # example: git tag 1.5.0
-git push origin <new version>           # example: git push origin 1.5.0
+git tag <new version>           # example: git tag 1.5.0
+git push origin <new version>   # example: git push origin 1.5.0
 ```
 5. Push **master** branch to the remote
 ```bash
@@ -199,6 +199,14 @@ yes | npm run deploy
 ./data/covid-database/migrate-db.sh init
 ```
 
+### CI/CD
+
+Github Actions are using to Build/Deploy/Test and to Collect/Test data.
+
+* [Github Actions dashboard](https://github.com/TISTATechnologies/cv19/actions)
+* [Github Actions Workflows source code](https://github.com/TISTATechnologies/cv19/tree/master/.github/workflows)
+* [Github Actions status page](https://tistatechnologies.github.io/cv19/status)
+
 ### Collect data
 
 * Collect all latest data: ```./scripts/start-pull-data-services.sh```
@@ -218,7 +226,6 @@ Use a command ```./scripts/upload-covid-data-to-s3-bucket.sh``` to deploy all da
 ## Testing
 
 * [e2e testing](tests/e2e/README.md)
-* [jmeter](tests/jmeter/README.md)
 
 ## Notes
 
