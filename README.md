@@ -1,30 +1,38 @@
 # Tista COVID-19 Tracker
 
-The repository contains all source code for the [Tista COVID-19 Tracker](https://covid19.tistatech.com) Web Application.
-
+The [repository](https://github.com/TISTATechnologies/cv19) contains all source code for the [Tista COVID-19 Tracker](https://covid19.tistatech.com) Web Application.
 
 * [Data sources](#data-sources)
 * [Environment](#environment)
 * [Quick Start](#quick-start)
 * [Development](#development)
-    - [Requirements](#requirements)
-    - [Configuration](#configuration)
-    - [Release/Deploy](#release)
-    - [Collect data](#collect-data)
-    - [Export data](#export-data)
+  * [Requirements](#requirements)
+  * [Configuration](#configuration)
+  * [Release/Deploy](#release)
+  * [Collect data](#collect-data)
+  * [Export data](#export-data)
 * [Testing](#testing)
-    - [e2e testing](tests/e2e/README.md)
-    - [jmeter](tests/jmeter/README.md)
+  * [e2e testing](tests/e2e/README.md)
+  * [jmeter](tests/jmeter/README.md)
 * [Notes](#notes)
 * [Links](#links)
 * [License](#license)
 
-
 ## Data sources
 
 The list of the data sources what we are using for the application contains:
+
 * [Johns Hopkins University Center for Systems Science and Engineering](https://github.com/CSSEGISandData/COVID-19)
+  * [Countries and US Counties](https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports)
+  * [US States](https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports_us)
 * [The COVID Tracking Project](https://covidtracking.com/)
+  * [Covidtracking - API](https://covidtracking.com/data/api)
+
+Other resources
+* [CDC Covid Data Tracker](https://covid.cdc.gov/covid-data-tracker)
+* [Worldometer](https://www.worldometers.info/coronavirus/)
+* [Coronaboard](https://coronaboard.com/)
+* [The New York Times US Map and Case Count](https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html)
 
 ## Environment
 
@@ -46,7 +54,6 @@ Data layer for Covid-19 Tracker application.
 * [https://data.tistatech.com/common/v1/](https://data.tistatech.com/common/v1/index.html) - all public data (countries, states, counties, population, and etc. information)
 * [https://data.tistatech.com/covid/v1/](https://data.tistatech.com/covid/v1/index.html) - Covid-19 related data
 
-
 #### covid19.tistatech.com
 
 Web application hosting.
@@ -60,10 +67,10 @@ All Web server for Covid-19 Tracker Web Application are hosted on AWS S3 buckets
 
 * **https://covid19.tistatech.com** - Main public server.
 
-
 ## Quick Start
 
 The steps how to setup Tista COVID-19 Tracker Web Application:
+
 1. Get source code from the Github: https://github.com/TISTATechnologies/cv19.
 2. Create Postgresql database.
 3. Create AWS S3 bucket for data and setup static site hosting on it (ex: cv19data)
@@ -101,7 +108,7 @@ Get source code:
 git clone git@github.com:TISTATechnologies/cv19.git
 ```
 
-### Requirements:
+### Requirements
 
 1. Nodejs 12+
 1. Postgresql Client 10+
@@ -134,7 +141,6 @@ From other side you can create ```~/cv19.xxx.conf``` configuration file inside y
 and specify this configuration file with a system environment variable ```CV19_ENV=xxx```.
 
 *Note*: ```.env``` file has more priority than ~/cv19.xxx.conf file.
-
 
 ### Release
 
@@ -209,12 +215,10 @@ Use a command ```./scripts/upload-covid-data-to-s3-bucket.sh``` to deploy all da
 
 **NOTE:** Don't forget to remove all data inside the ```./build/``` directory which you are not planning to upload into the S3 Bucket.
 
-
 ## Testing
 
 * [e2e testing](tests/e2e/README.md)
 * [jmeter](tests/jmeter/README.md)
-
 
 ## Notes
 
