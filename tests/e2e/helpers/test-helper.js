@@ -94,7 +94,9 @@ class CovidPage {
     this.expectProperDataBox(level, data.state, 'Deaths', 'deaths', true);
     this.expectProperDataBox(level, data.state, 'Active Cases', 'active');
     this.expectProperDataBox(level, data.state, 'Recoveries', 'recovered');
-    this.expectProperDataBox(level, data.state, 'Current Hospitalized', 'hospitalized');
+    if (data.state && data.state.id !== 'US') {
+        this.expectProperDataBox(level, data.state, 'Current Hospitalized', 'hospitalized');
+    }
   }
   expectCountyData(data) {
     if (!data || !data.county) {

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Link from '@material-ui/core/Link';
+import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import { makeStyles } from '@material-ui/core/styles';
 import CardContent from '@material-ui/core/CardContent';
+import Visible from '../components/Visible';
 import { sortDate, determineAge } from '../util/dates';
 /*
   Displays State's Executive Orders from API.
@@ -20,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
       fontSize: '1.2em',
     },
   },
+  headline: {},
   bullet: {
     width: '35px',
     marginRight: '0px',
@@ -29,6 +32,13 @@ const useStyles = makeStyles((theme) => ({
   },
   fresh: {
     color: 'white',
+  },
+  age: {
+    textDecoration: 'none',
+    display: 'inline-block',
+    marginLeft: '10px',
+    fontSize: '0.8em',
+    opacity: 0.7,
   },
   title: {
     [theme.breakpoints.down('xs')]: {
@@ -40,6 +50,13 @@ const useStyles = makeStyles((theme) => ({
 const Feed = ({ data }) => {
   const classes = useStyles();
   const { myState, headlines = [], loadingZip } = data;
+  const headlinesByDate = headlines.sort(sortDate);
+  const topHeadlines = headlinesByDate.slice(0, 5);
+  const [showAll, setShowAll] = useState(false);
+  const showButton = headlines.length > topHeadlines.length;
+
+  const usedArray = showAll ? headlinesByDate : topHeadlines;
+  const buttonText = showAll ? 'View Recent Orders' : 'View All Orders';
   // show nothing if loaded without selected state
   if (!myState || myState === 'US') return null;
 
@@ -69,14 +86,13 @@ const Feed = ({ data }) => {
         subheader="The most important executive orders for this state:"
       />
       <CardContent>
-        {headlines.sort(sortDate).map(({ url: feedUrl = 'blank', created: createdDate, note }) => {
-          const age = determineAge(createdDate);
+        {usedArray.map(({ url: feedUrl = 'blank', created: createdDate, note }) => {
+          const age = Math.floor(determineAge(createdDate));
           const isFresh = age <= daysStillFresh;
           const key = feedUrl + createdDate + note;
           return (
-            <div>
+            <div key={key}>
               <Link
-                key={key}
                 classes={{
                   root: classes.url,
                 }}
@@ -91,7 +107,8 @@ const Feed = ({ data }) => {
                 variant="h6"
               >
                 <span className={classes.bullet}>{isFresh ? '🆕' : '●'}</span>
-                {note}
+                <span className={classes.headline}>{note}</span>
+                <span className={classes.age}>{` ${age} days ago`}</span>
               </Link>
             </div>
           );
@@ -104,6 +121,19 @@ const Feed = ({ data }) => {
             .
           </Typography>
         ) : null}
+        <Visible condition={showButton}>
+          <Button
+            component="button"
+            color="textPrimary"
+            onClick={() => setShowAll(!showAll)}
+            style={{
+              marginLeft: '10px',
+            }}
+          >
+            {buttonText}
+          </Button>
+        </Visible>
+
       </CardContent>
     </Card>
   );
