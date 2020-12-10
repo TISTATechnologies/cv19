@@ -19,7 +19,6 @@ const expectEqualNumbers = (num1, num2) => {
 
 const expectDataApiEqualRealData =async (day, realDataItems) => {
     // log.debug(JSON.stringify(realDataItems, null, 2));
-    
     if (!realDataItems || realDataItems.length <= 0) {
         // This is a specific situation when we don't have data for the zip code
         expect([]).toHaveLength(0);
@@ -46,8 +45,12 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
             expect(dataRow.state_id || 'US').toEqual(realData.state.id);
         }
 
+        expect(String(dataRow.date)).toEqual(day);
+        expect(String(dataRow.datetime || '').substring(0, 10)).toEqual(day);
+
         if (!realData.county) {
             expect(dataRow.name).toEqual(realData.state.name);
+            expectEqualNumbers(dataRow.datetime, realData.state.datetime);
             expectEqualNumbers(dataRow.population, realData.state.population);
             expectEqualNumbers(dataRow.confirmed, realData.state.confirmed_val1);
             expectEqualNumbers(dataRow.deaths, realData.state.deaths_val1);
@@ -57,6 +60,7 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
         } else {
             expect(dataRow.name).toEqual(realData.county.name);
             expect(dataRow.fips).toEqual(realData.county.fips);
+            expectEqualNumbers(dataRow.datetime, realData.county.datetime);
             expectEqualNumbers(dataRow.population, realData.county.population);
             expectEqualNumbers(dataRow.confirmed, realData.county.confirmed_val1);
             expectEqualNumbers(dataRow.deaths, realData.county.deaths_val1);

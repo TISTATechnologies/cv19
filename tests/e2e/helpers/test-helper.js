@@ -86,6 +86,11 @@ class CovidPage {
       'confirmed',
       true
     );
+    // TODO: wee need to check Last Update field by selector
+    if (data.state && data.state.datetime) {
+        const expectTime = new Date(Date.parse(data.state.datetime)).toLocaleDateString('en-US', {dateStyle: 'long', timeStyle: 'short'});
+        this.I.see(`Last updated: ${expectTime}`);
+    }
     this.expectProperDataBox(level, data.state, 'Deaths', 'deaths', true);
     this.expectProperDataBox(level, data.state, 'Active Cases', 'active');
     this.expectProperDataBox(level, data.state, 'Recoveries', 'recovered');
@@ -109,6 +114,11 @@ class CovidPage {
       'confirmed',
       true
     );
+    // TODO: wee need to check Last Update field by selector
+    if (data.county && data.county.datetime) {
+        const expectTime = new Date(Date.parse(data.county.datetime)).toLocaleDateString('en-US', {dateStyle: 'long', timeStyle: 'short'});
+        this.I.see(`Last updated: ${expectTime}`);
+    }
     this.expectProperDataBox('county', data.county, 'Deaths', 'deaths', true);
     this.expectProperDataBox('county', data.county, 'Active Cases', 'active');
     this.expectProperDataBox('county', data.county, 'Recoveries', 'recovered');

@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 const fs = require('fs');
-const { Client } = require('pg');
+const pg = require('pg');
 const { Config } = require('./config');
 const { shuffleArray } = require('./util');
 
 const config = new Config();
 const log = config.log;
+const Client = pg.Client;
+
+// Do not parse timestamp value to the Date, read it as a raw string value
+pg.types.setTypeParser(1114, (stringValue) => stringValue.replace(' ', 'T'));
 
 const formatItem = (item) => {
     if (!item) {
@@ -90,7 +94,8 @@ const executeInDataBase = async (query, params = undefined) => {
 const loadUSData = async (day) => {
     log.info(`Load US data on the ${day} day`);
     return executeInDataBase(
-        'SELECT \'US\' as id, location_name as name, population, confirmed, deaths, active, recovered, '
+        'SELECT \'US\' as id, location_name as name, datetime, '
+        + 'population, confirmed, deaths, active, recovered, '
         + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
         + 'on_ventilator_cumulative, on_ventilator_currently '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'country\' AND date = $1;',
@@ -100,7 +105,8 @@ const loadUSData = async (day) => {
 const loadStatesData = async (day) => {
     log.info(`Load States data on the ${day} day`);
     return executeInDataBase(
-        'SELECT state_id as id, location_name as name, population, confirmed, deaths, active, recovered, '
+        'SELECT state_id as id, location_name as name, datetime, '
+        + 'population, confirmed, deaths, active, recovered, '
         + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
         + 'on_ventilator_cumulative, on_ventilator_currently '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'state\' AND date = $1;',
@@ -110,7 +116,7 @@ const loadStatesData = async (day) => {
 const loadCountiesData = async (day) => {
     log.info(`Load Counties data on the ${day} day`);
     return executeInDataBase(
-        'SELECT r.fips, r.state_id, CONCAT(r.name, \', \', r.state_id) AS name, '
+        'SELECT r.fips, r.state_id, CONCAT(r.name, \', \', r.state_id) AS name, datetime, '
         + '  p.population, COALESCE(cds.confirmed, 0) AS confirmed, COALESCE(cds.deaths, 0) AS deaths, '
         + '  COALESCE(cds.active, 0) AS active, COALESCE(cds.recovered, 0) AS recovered '
         + 'FROM region AS r '
