@@ -1,3 +1,27 @@
 theme: jekyll-theme-slate
 title: Tista Covid-19 Tracker
 show_downloads: false
+include:
+  - README.md
+  - data/**/README.md
+  - tests/e2e/README.md
+exclude:
+  - _site
+  - '*.py'
+  - '*.sql'
+  - '*.sh'
+  - '*.js'
+  - '*.txt'
+  - '*.ts'
+  - .github
+  - .vscode
+  - scripts
+  - build
+  - data/covid-database
+  - webapp
+  - .sass-cache
+  - '**/node_modules'
+  - 'tests/**/*.json'
+  - 'tests/**/*.png'
+  - 'data/**/*.html'
+
