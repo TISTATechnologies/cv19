@@ -307,7 +307,7 @@ const LocalStatsTable = ({
                 />
               </Grid>
             </Visible>
-            <Visible condition={hospitalized}>
+            <Visible condition={hospitalized && level !== 'usa'}>
               <Grid item xs={6} sm>
                 <StatBlock
                   mini={mini}
@@ -316,11 +316,7 @@ const LocalStatsTable = ({
                   colorClass="hospitalized"
                   subvalue={hospitalized / population}
                   level={level}
-                  description={
-                    level === 'usa'
-                      ? 'Current number of people hospitalized totaled from reporting states'
-                      : 'Current number of people hospitalized'
-                  }
+                  description="Current number of people hospitalized"
                 />
               </Grid>
             </Visible>
@@ -417,7 +413,7 @@ const LocalStatsTable = ({
               />
             </Grid>
           </Visible>
-          <Visible condition={hospitalized}>
+          <Visible condition={hospitalized && level !== 'usa'}>
             <Grid item xs={12} sm md>
               <StatBlock
                 name="Current Hospitalized"

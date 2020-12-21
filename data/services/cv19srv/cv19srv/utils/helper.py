@@ -186,7 +186,7 @@ class Converter:
         if 'T24:' in value:
             value = value.replace('T24:', 'T00:')
         for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S%z',
-                    '%m/%d/%Y %H:%M',
+                    '%Y-%m-%dT%H:%M:%S', '%m/%d/%Y %H:%M',
                     '%m/%d/%y %H:%M', '%m/%d/%Y %H:%M:%S']:
             try:
                 return datetime.datetime.strptime(value, fmt)

@@ -8,15 +8,22 @@ let height;
 let mouseG;
 
 // order determines the color of the lines
-const findTrueProps = (obj) => [
+const findTrueProps = (obj, showHosp) => [
   ['trend2', obj.trend2],
   ['trend7', obj.trend7],
   ['trend30', obj.trend30],
   ['value', obj.value],
   ['trend14', obj.trend14],
-  ['hospitalized', obj.hospitalized],
+  ['hospitalized', obj.hospitalized && showHosp],
 ];
-const propsFormat = ['percent', 'percent', 'percent', 'number', 'percent', 'number'];
+const propsFormat = [
+  'percent', // trend2
+  'percent', // trend7
+  'percent', // trend30
+  'number', // value
+  'percent', // trend14
+  'number', // hospitalized
+];
 
 const colorScale = d3.scaleOrdinal(d3.schemeSet2);
 
@@ -66,9 +73,10 @@ function draw(
   h,
   historic = { active: [], hospitalized: [] },
   selected = { trend2: true },
+  showHosp = false,
   timeSpan,
 ) {
-  const params = findTrueProps(selected);
+  const params = findTrueProps(selected, showHosp);
   // only return rows with at least some of the data we're looking for.
   const activeData = historic.active
     ? historic.active

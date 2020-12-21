@@ -47,8 +47,11 @@ class CovidTrackingCollector(Collector):
                 else:
                     state_id = item.get('state')
                     fips_number = item.get_int('fips')
-                last_update_str = item.get('lastUpdateEt') or item.get('dateChecked')
-                
+                last_update_str = item.get('lastUpdate') or item.get('lastUpdateEt') or item.get('dateChecked')
+                if not last_update_str:
+                    log.warning(f'Incorrect last_update value = {last_update_str} for {state_id}/{fips_number}. Us {day} as a value.')
+                    last_update_str = DateTimeHelper.datetime_string(DateTimeHelper.get_end_day(day))
+
                 new_item = CovidDataItem(self.source_id, 'US', state_id,
                                          f'{fips_number:05}',                            # fips
                                          DateTimeHelper.get_end_day(day),                # datetime

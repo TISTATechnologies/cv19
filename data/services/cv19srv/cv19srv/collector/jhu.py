@@ -143,6 +143,9 @@ class JHUCollector(Collector):
         """
         log.info(f'Start calculating total country numbers')
         for country_id in [x for x in country_data if x]:
+            if country_id == 'US':
+                log.info(f'Skip calculation for "{country_id}" country: we will get information form CovidTracking.com')
+                continue
             # we need to check/calculate summary for the countries with more the 1 item
             if len(country_data[country_id]) < 2:
                 log.info(f'Skip calculation for "{country_id}" country: we have only one item')

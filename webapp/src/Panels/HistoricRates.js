@@ -15,12 +15,13 @@ import HistoricOptions from './HistoricOptions';
 import HistoricSlider from './HistoricSlider';
 import { init, draw } from '../d3/line/historic';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   tooltip: { fontSize: '0.8em', backgroundColor: '#222' },
 }));
 
 const HistoricRates = ({ location, historic, level }) => {
   const classes = useStyles();
+  const levelIsCounty = level === 'county';
   const [showing, setShowing] = useState(0);
   const [timeSpan, setTimeSpan] = useState(90);
   const [initialized, setInitialized] = useState(false);
@@ -41,7 +42,9 @@ const HistoricRates = ({ location, historic, level }) => {
 
   const [countyLevelLocation, stateLevelLocation] = location;
 
-  const currentLocationName = location[showing] && level === 'county' ? location[showing].name : countyLevelLocation.name;
+  const currentLocationName = location[showing] && levelIsCounty
+    ? location[showing].name
+    : countyLevelLocation.name;
   let otherLocationName = currentLocationName;
   if (showing === 0) {
     otherLocationName = stateLevelLocation ? stateLevelLocation.name : '';
@@ -49,7 +52,7 @@ const HistoricRates = ({ location, historic, level }) => {
     otherLocationName = countyLevelLocation.name;
   }
 
-  const action = level === 'county' ? (
+  const action = levelIsCounty ? (
     <IconButton color="secondary" size="small" onClick={toggleShowing}>
       <Tooltip
         enterTouchDelay={100}
@@ -70,7 +73,7 @@ const HistoricRates = ({ location, historic, level }) => {
         <HistoricOptions
           selection={selection}
           setSelection={setSelection}
-          showHosp={level === 'county' && showing === 1}
+          showHosp={levelIsCounty && showing === 1}
         />
       </Grid>
 
@@ -89,10 +92,10 @@ const HistoricRates = ({ location, historic, level }) => {
       const width = sectionEl.current.clientWidth || 900;
       const height = 100;
       // console.log(`%c Ready LINES (${width}x${height})`, 'color: lime');
-      draw(width, height, historic[show], selection, timeSpan);
+      draw(width, height, historic[show], selection, (levelIsCounty && showing === 1), timeSpan);
     };
     return getLinesReady;
-  }, [historic, selection, timeSpan, showing, level]);
+  }, [showing, level, historic, selection, levelIsCounty, timeSpan]);
 
   useLayoutEffect(() => {
     if (!initialized) {

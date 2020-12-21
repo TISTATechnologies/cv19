@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { makeStyles } from '@material-ui/core/styles';
 import { schemeSet2 } from 'd3';
 import FormControl from '@material-ui/core/FormControl';
@@ -90,6 +91,8 @@ const CheckboxesGroup = ({ selection, setSelection, showHosp }) => {
     trend2, trend7, trend14, trend30, value, hospitalized,
   } = selection;
 
+  const modHospitalized = showHosp && hospitalized;
+
   return (
     <div className={classes.root}>
       <FormControl component="fieldset" className={classes.formControl}>
@@ -168,7 +171,7 @@ const CheckboxesGroup = ({ selection, setSelection, showHosp }) => {
               <FormControlLabel
                 control={(
                   <Checkbox
-                    checked={hospitalized}
+                    checked={modHospitalized}
                     onChange={handleChange}
                     name="hospitalized"
                     classes={{ root: classes.checkRoot5, checked: classes.checked }}
