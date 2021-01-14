@@ -79,22 +79,16 @@ class CovidPage {
     //this.I.waitForText(stateHeader, this.defTimeout);
     this.I.see(stateHeader);
     this.I.see(`Population: ${data.state.population}`, `#${level}-population`);
-    this.expectProperDataBox(
-      level,
-      data.state,
-      'Confirmed Cases',
-      'confirmed',
-      true
-    );
+    this.expectProperDataBox(level, data.state, 'Confirmed Cases', 'confirmed', true);
     // TODO: wee need to check Last Update field by selector
     if (data.state && data.state.datetime) {
         const expectTime = new Date(Date.parse(data.state.datetime)).toLocaleDateString('en-US', {dateStyle: 'long', timeStyle: 'short'});
         this.I.see(`Last updated: ${expectTime}`);
     }
     this.expectProperDataBox(level, data.state, 'Deaths', 'deaths', true);
-    this.expectProperDataBox(level, data.state, 'Active Cases', 'active');
-    this.expectProperDataBox(level, data.state, 'Recoveries', 'recovered');
     if (data.state && data.state.id !== 'US') {
+        this.expectProperDataBox(level, data.state, 'Active Cases', 'active');
+        this.expectProperDataBox(level, data.state, 'Recoveries', 'recovered');
         this.expectProperDataBox(level, data.state, 'Current Hospitalized', 'hospitalized');
     }
   }

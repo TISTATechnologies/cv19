@@ -233,7 +233,8 @@ export default function SimpleTable({
     handleRequestSort(event, property);
   };
 
-  const rows = data.map((d) => ({
+  // Filter out 00000/usa rows
+  const rows = data.filter((x) => x.fips !== '00000').map((d) => ({
     ...d,
     activeRatio: Math.ceil((d.active / d.population) * 1e5),
   }));

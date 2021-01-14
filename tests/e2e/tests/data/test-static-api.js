@@ -12,8 +12,8 @@ const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
 const testZips = cvData.getTestZips();
 const yesterday = config.testDate;
 const expectEqualNumbers = (num1, num2) => {
-    const num1Str = String(num1).split(',').join('');
-    const num2Str = String(num2).split(',').join('');
+    const num1Str = String(num1 === undefined ? null : num1).split(',').join('');
+    const num2Str = String(num2 === undefined ? null : num2).split(',').join('');
     expect(num1Str).toEqual(num2Str);
 }
 

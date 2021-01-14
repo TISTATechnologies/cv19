@@ -211,10 +211,6 @@ function App() {
       fips: '11001',
       zip: '20202',
     },
-    {
-      name: 'United States',
-      fips: '00000',
-    },
   ]);
   const [myLocations, setMyLocations] = useState(savedLocations);
 
@@ -502,25 +498,24 @@ function App() {
   // My Locations
   useEffect(() => {
     const f = async (list = []) => {
-      // console.log('%cFetching my locations', 'color: yellow');
+      console.log('%cFetching my locations', 'color: yellow');
       // Fetch USA data for country
       await savedLocations.reduce(async (memo, { fips: savedFips, zip }) => {
-        // console.log(`%c${savedFips}`, 'color: green; border: yellow 1px solid');
+        console.log(`%c${savedFips}`, 'color: green; border: yellow 1px solid');
         await memo;
+        // ignore '00000'/'usa' locations
+        if (savedFips === '00000') return;
         const { data } = await fetchTrendFromFips(savedFips);
         if (!data) return;
         const [d] = data;
-        // console.log(`%c🟡 ${savedFips} ${d.name}`, 'color: goldenrod');
+        console.log(`%c🟡 ${savedFips} ${d.name}`, 'color: goldenrod');
         list.push(readyLocation(d, zip));
       }, undefined);
-      setMyLocations(list);
+      // try to remove 00000/usa locations from list
+      setMyLocations(list.filter((x) => x.fips !== '00000'));
     };
     if (savedLocations.length) {
-      if (!savedLocations.some((x) => x.fips === '00000')) {
-        f([{ name: 'United States', fips: '00000' }]);
-      } else {
-        f();
-      }
+      f();
     }
   }, [savedLocations, setMyLocations]);
 
@@ -810,17 +805,20 @@ function App() {
               </ErrorBoundary>
             </Grid>
 
-            <Grid item xs={12}>
-              <ErrorBoundary>
-                <Suspense fallback={fallback}>
-                  <HistoricRates
-                    level={level}
-                    location={[countyStats, myStateStats]}
-                    historic={historic}
-                  />
-                </Suspense>
-              </ErrorBoundary>
-            </Grid>
+            <Visible condition={level !== 'usa'}>
+              {/* Don't show trends at USA level */}
+              <Grid item xs={12}>
+                <ErrorBoundary>
+                  <Suspense fallback={fallback}>
+                    <HistoricRates
+                      level={level}
+                      location={[countyStats, myStateStats]}
+                      historic={historic}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </Grid>
+            </Visible>
           </Grid>
 
           <Grid item xs={12}>
