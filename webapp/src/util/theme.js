@@ -1,11 +1,13 @@
 import { createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import cyan from '@material-ui/core/colors/cyan';
+import pink from '@material-ui/core/colors/pink';
 
 const coreTheme = createMuiTheme({
   palette: {
     type: 'dark',
     primary: { main: '#002E8C' },
     secondary: { main: cyan[500] },
+    pink: { main: pink[300] },
   },
   spacing: 4,
   overrides: {
@@ -36,6 +38,11 @@ const coreTheme = createMuiTheme({
         '&:last-child': {
           paddingBottom: '8px',
         },
+      },
+    },
+    MuiTooltip: {
+      tooltip: {
+        maxWidth: '350px',
       },
     },
   },

@@ -9,6 +9,7 @@ import Link from '@material-ui/core/Link';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import InfoIcon from '@material-ui/icons/Info';
+import HelpIcon from '@material-ui/icons/Help';
 import Popover from '@material-ui/core/Popover';
 import ListItem from '@material-ui/core/ListItem';
 
@@ -25,23 +26,37 @@ const useStyles = makeStyles((theme) => ({
   tooltip: { fontSize: '1.1rem', backgroundColor: '#222' },
   arrow: {
     color: '#222',
+    fontSize: 15,
+    '&::before': {
+      backgroundColor: '#222',
+      border: '2px solid',
+    },
   },
-  iconButton: {
-    position: 'absolute',
-    right: '0',
+  confirmedArrow: { '&::before': { borderColor: theme.palette.grey[500] } },
+  activeArrow: { '&::before': { borderColor: theme.palette.warning.main } },
+  deathsArrow: { '&::before': { borderColor: theme.palette.error.main } },
+  recoveredArrow: { '&::before': { borderColor: theme.palette.success.main } },
+  hospitalizedArrow: { '&::before': { borderColor: theme.palette.info.main } },
+  vaccineArrow: { '&::before': { borderColor: theme.palette.pink.main } },
+
+  infoButton: {
     color: '#222',
     cursor: 'pointer',
+    transform: 'translateY(2px)',
+    // padding: '0.1em'
   },
   confirmed: { color: theme.palette.grey[500], backgroundColor: '#222' },
   active: { color: theme.palette.warning.main, backgroundColor: '#222' },
   deaths: { color: theme.palette.error.main, backgroundColor: '#222' },
   recovered: { color: theme.palette.success.main, backgroundColor: '#222' },
   hospitalized: { color: theme.palette.info.main, backgroundColor: '#222' },
-  confirmedBorder: { border: '1px solid', borderColor: theme.palette.grey[500] },
-  activeBorder: { border: '1px solid', borderColor: theme.palette.warning.main },
-  deathsBorder: { border: '1px solid', borderColor: theme.palette.error.main },
-  recoveredBorder: { border: '1px solid', borderColor: theme.palette.success.main },
-  hospitalizedBorder: { border: '1px solid', borderColor: theme.palette.info.main },
+  vaccine: { color: theme.palette.pink.main, backgroundColor: '#222' },
+  confirmedBorder: { border: '2px solid', borderColor: theme.palette.grey[500] },
+  activeBorder: { border: '2px solid', borderColor: theme.palette.warning.main },
+  deathsBorder: { border: '2px solid', borderColor: theme.palette.error.main },
+  recoveredBorder: { border: '2px solid', borderColor: theme.palette.success.main },
+  hospitalizedBorder: { border: '2px solid', borderColor: theme.palette.info.main },
+  vaccineBorder: { border: '2px solid', borderColor: theme.palette.pink.main },
   title: {
     [theme.breakpoints.down('xs')]: {
       fontSize: '1.2em',
@@ -51,6 +66,7 @@ const useStyles = makeStyles((theme) => ({
     margin: '0 -16px',
     color: '#222',
     position: 'relative',
+    width: 'auto',
   },
   confirmedBar: {
     backgroundColor: theme.palette.grey[500],
@@ -66,6 +82,9 @@ const useStyles = makeStyles((theme) => ({
   },
   hospitalizedBar: {
     backgroundColor: theme.palette.info.main,
+  },
+  vaccineBar: {
+    backgroundColor: theme.palette.pink.main,
   },
   rates: { color: 'white' },
   flag: {
@@ -87,12 +106,122 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const bigNumberFormat = new Intl.NumberFormat('en', {});
+const percentFormat = new Intl.NumberFormat('en', { style: 'percent', minimumFractionDigits: 2 });
 const updatedTimeFormat = (date) => (date.toString() !== 'Invalid Date'
   ? `Last updated: ${date.toLocaleString('en', {
     timeStyle: 'short',
     dateStyle: 'long',
   })}`
   : '---');
+
+const formatVal = (value) => {
+  if (Number.isNaN(value)) {
+    return 'N/A';
+  }
+  if (typeof value === 'number') {
+    return bigNumberFormat.format(value);
+  }
+  return value;
+};
+
+const formatSubVal = (subvalue) => {
+  if (Number.isNaN(subvalue)) {
+    return 'N/A';
+  }
+  if (typeof subvalue === 'number') {
+    return bigNumberFormat.format(Math.ceil(subvalue * 1e5));
+  }
+  return subvalue;
+};
+
+const createExtraList = ({
+  vaccinationDistributed,
+  vaccine,
+  vaccinationAdmDose1,
+  vaccinationAdmDose2,
+  population,
+}) => {
+  const supplyPercent = vaccine / vaccinationDistributed;
+  const singlePer = vaccinationAdmDose1 / population;
+  const doublePer = vaccinationAdmDose2 / population;
+  return (
+    <>
+      <Typography variant="h6">Vax Stats</Typography>
+      <Grid container>
+        <Grid item xs={8}>
+          {'● Doses Distributed: '}
+        </Grid>
+        <Grid item xs={4}>{`${formatVal(vaccinationDistributed)}`}</Grid>
+        <Grid item xs={8}>
+          {'● Percent of Supply Used: '}
+        </Grid>
+        <Grid item xs={4}>{`${percentFormat.format(supplyPercent)}`}</Grid>
+        <Grid item xs={8}>
+          {'● People with 1+ Dose: '}
+        </Grid>
+        <Grid item xs={4}>{`${formatVal(vaccinationAdmDose1)}`}</Grid>
+        <Grid item xs={8}>
+          {'○ per 100,000: '}
+        </Grid>
+        <Grid item xs={4}>{`(${formatSubVal(singlePer)})`}</Grid>
+        <Grid item xs={8}>
+          {'● People with 2 Doses: '}
+        </Grid>
+        <Grid item xs={4}>{`${formatVal(vaccinationAdmDose2)}`}</Grid>
+        <Grid item xs={8}>
+          {'○ per 100,000: '}
+        </Grid>
+        <Grid item xs={4}>{`(${formatSubVal(doublePer)})`}</Grid>
+      </Grid>
+    </>
+  );
+};
+
+const Hover = ({
+  children, placement = 'left', title, colorClass = '',
+}) => {
+  const classes = useStyles();
+  return (
+    <Tooltip
+      enterTouchDelay={100}
+      interactive
+      leaveDelay={500}
+      arrow
+      title={title}
+      classes={{
+        tooltip: `${classes.tooltip} ${classes[`${colorClass}Border`]}`,
+        arrow: `${classes.arrow} ${classes[`${colorClass}Arrow`]}`,
+      }}
+      placement={placement}
+    >
+      {children}
+    </Tooltip>
+  );
+};
+
+const MiniStatBlock = ({
+  value = 'N/A',
+  colorClass = '',
+  level = 'x',
+  description = '',
+  extra = null,
+}) => {
+  const classes = useStyles();
+  return (
+    <Hover placement="bottom" title={description} colorClass={colorClass}>
+      <Card className={`${classes[colorClass]}`} id={`${level}-${colorClass}`}>
+        <Typography
+          variant="h6"
+          align="center"
+          id={`${level}-${colorClass}-value`}
+          className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
+        >
+          {formatVal(value)}
+        </Typography>
+      </Card>
+    </Hover>
+  );
+};
 
 const StatBlock = ({
   name,
@@ -101,56 +230,10 @@ const StatBlock = ({
   subvalue = '',
   colorClass = '',
   level = 'x',
-  mini = false,
   description = '',
+  extra = null,
 }) => {
   const classes = useStyles();
-  let formattedVal = value;
-  let formattedSubVal = subvalue;
-
-  if (Number.isNaN(value)) {
-    formattedVal = 'N/A';
-  } else if (typeof value === 'number') {
-    formattedVal = bigNumberFormat.format(value);
-  }
-
-  if (Number.isNaN(subvalue)) {
-    formattedSubVal = 'N/A';
-  } else if (typeof subvalue === 'number') {
-    formattedSubVal = Math.ceil(subvalue * 1e5);
-  }
-
-  const Hover = ({ children, placement = 'left' }) => (
-    <Tooltip
-      enterTouchDelay={100}
-      arrow
-      title={description}
-      classes={{
-        tooltip: `${classes.tooltip} ${classes[`${colorClass}Border`]}`,
-        arrow: classes.arrow,
-      }}
-      placement={placement}
-    >
-      {children}
-    </Tooltip>
-  );
-
-  if (mini) {
-    return (
-      <Hover placement="bottom">
-        <Card className={`${classes[colorClass]}`} id={`${level}-${colorClass}`}>
-          <Typography
-            variant="h6"
-            align="center"
-            id={`${level}-${colorClass}-value`}
-            className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
-          >
-            {formattedVal}
-          </Typography>
-        </Card>
-      </Hover>
-    );
-  }
 
   return (
     <Card
@@ -160,7 +243,7 @@ const StatBlock = ({
       <CardContent>
         <Hidden only="xs">
           <Typography variant="h4" align="center" id={`${level}-${colorClass}-value`}>
-            {formattedVal}
+            {formatVal(value)}
           </Typography>
           <Typography
             variant="h6"
@@ -168,38 +251,60 @@ const StatBlock = ({
             className={classes.rates}
             id={`${level}-${colorClass}-rate`}
           >
-            {formattedSubVal}
+            {formatSubVal(subvalue)}
             {' '}
             {subname}
           </Typography>
-          <Typography
-            variant="h5"
-            align="center"
-            className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
-          >
-            {name}
-            <Hover>
-              <InfoIcon className={classes.iconButton} />
-            </Hover>
-          </Typography>
+          <Grid container spacing={0} className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}>
+            <Grid item xs={1}>
+              <Hover title={description} colorClass={colorClass} placement="right">
+                <HelpIcon className={classes.infoButton} />
+              </Hover>
+            </Grid>
+
+            <Grid item xs>
+              <Typography variant="h5" align="center" >
+                {name}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={1}>
+              {extra ? (
+                <Hover title={extra} colorClass={colorClass} placement="left">
+                  <InfoIcon className={classes.infoButton} />
+                </Hover>
+              ) : null}
+            </Grid>
+          </Grid>
         </Hidden>
 
         <Hidden smUp>
-          <Typography
-            variant="h5"
-            align="center"
-            className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}
-          >
-            {name}
-            <Hover>
-              <InfoIcon className={classes.iconButton} />
-            </Hover>
-          </Typography>
+          <Grid container spacing={0} className={`${classes[`${colorClass}Bar`]} ${classes.bar}`}>
+            <Grid item xs>
+              <Hover title={description} colorClass={colorClass} placement="right">
+                <HelpIcon className={classes.infoButton} />
+              </Hover>
+            </Grid>
+
+            <Grid item xs={9}>
+              <Typography variant="h5" align="center" style={{ fontSize: '1.4rem' }}>
+                {name}
+              </Typography>
+            </Grid>
+
+            <Grid item xs>
+              {extra ? (
+                <Hover title={extra} colorClass={colorClass} placement="left">
+                  <InfoIcon className={classes.infoButton} />
+                </Hover>
+              ) : null}
+            </Grid>
+          </Grid>
           <Typography variant="h5" align="center">
-            {formattedVal}
+            {formatVal(value)}
           </Typography>
           <Typography variant="h6" align="center" className={classes.rates}>
-            {formattedSubVal}
+            {formatSubVal(subvalue)}
             {' '}
             {subname}
           </Typography>
@@ -225,10 +330,23 @@ const LocalStatsTable = ({
     recovered = 0,
     hospitalized_currently: hospitalized = 0,
     active = 0,
+    vaccination_distributed: vaccinationDistributed = 0,
+    vaccination_administered: vaccine = 0,
+    vaccination_adm_dose1: vaccinationAdmDose1 = 0,
+    vaccination_adm_dose2: vaccinationAdmDose2 = 0,
     datetime: updated,
     population = 0,
     state_id: stateId,
   } = data;
+
+  const extraData = {
+    vaccinationDistributed,
+    vaccine,
+    vaccinationAdmDose1,
+    vaccinationAdmDose2,
+    population,
+  };
+
   const lastUpdated = new Date(updated);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -273,7 +391,7 @@ const LocalStatsTable = ({
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={6} sm>
-              <StatBlock
+              <MiniStatBlock
                 mini={mini}
                 name="Confirmed Cases"
                 value={confirmed}
@@ -284,7 +402,7 @@ const LocalStatsTable = ({
               />
             </Grid>
             <Grid item xs={6} sm>
-              <StatBlock
+              <MiniStatBlock
                 mini={mini}
                 name="Deaths"
                 value={deaths}
@@ -296,7 +414,7 @@ const LocalStatsTable = ({
             </Grid>
             <Visible condition={recovered}>
               <Grid item xs={6} sm>
-                <StatBlock
+                <MiniStatBlock
                   mini={mini}
                   name="Recoveries"
                   value={recovered}
@@ -309,7 +427,7 @@ const LocalStatsTable = ({
             </Visible>
             <Visible condition={hospitalized && level !== 'usa'}>
               <Grid item xs={6} sm>
-                <StatBlock
+                <MiniStatBlock
                   mini={mini}
                   name="Hospitalizations"
                   value={hospitalized}
@@ -320,46 +438,38 @@ const LocalStatsTable = ({
                 />
               </Grid>
             </Visible>
+            <Visible condition={vaccine}>
+              <Grid item xs={6} sm>
+                <MiniStatBlock
+                  mini={mini}
+                  name="Vaccinations"
+                  value={vaccine}
+                  colorClass="vaccine"
+                  subvalue={vaccine / population}
+                  level={level}
+                  description="Current number of vaccine doses administered"
+                />
+              </Grid>
+            </Visible>
             <Visible condition={active}>
               <Grid item xs={6} sm>
-                <StatBlock
+                <MiniStatBlock
                   mini={mini}
                   name="Active Cases"
                   value={active}
                   colorClass="active"
                   subvalue={active / population}
                   level={level}
-                  description="Aggregated confirmed cases that have not been resolved (active cases = total cases - total recovered - total deaths)"
+                  description={(
+                    <>
+                      <div>Aggregated confirmed cases that have not been resolved</div>
+                      <div>(active cases = total cases - total recovered - total deaths)</div>
+                    </>
+                  )}
                 />
               </Grid>
             </Visible>
           </Grid>
-          {!mini ? (
-            <Grid container item xs={12} justify="space-between" style={{ paddingTop: '8px' }}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2">
-                  {lastUpdated.toString() !== 'Invalid Date'
-                    ? `Last updated: ${lastUpdated.toLocaleString('en', {
-                      timeStyle: 'long',
-                      dateStyle: 'long',
-                    })}`
-                    : '---'}
-                </Typography>
-              </Grid>
-              <Grid item xs>
-                <Typography variant="body2" align="right">
-                  <Button
-                    component="button"
-                    color="default"
-                    onClick={handleClick}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Data sources
-                  </Button>
-                </Typography>
-              </Grid>
-            </Grid>
-          ) : null}
         </CardContent>
       </Card>
     );
@@ -416,12 +526,25 @@ const LocalStatsTable = ({
           <Visible condition={hospitalized && level !== 'usa'}>
             <Grid item xs={12} sm md>
               <StatBlock
-                name="Current Hospitalized"
+                name="Hospitalized"
                 value={hospitalized}
                 colorClass="hospitalized"
                 subvalue={hospitalized / population}
                 level={level}
                 description="Current number of people hospitalized"
+              />
+            </Grid>
+          </Visible>
+          <Visible condition={vaccine && (level === 'state' || level === 'usa')}>
+            <Grid item xs={12} sm md>
+              <StatBlock
+                name="Vax Doses Given"
+                value={vaccine}
+                colorClass="vaccine"
+                subvalue={vaccine / population}
+                level={level}
+                description="Current number of  vaccine doses administered"
+                extra={createExtraList(extraData)}
               />
             </Grid>
           </Visible>
@@ -433,7 +556,12 @@ const LocalStatsTable = ({
                 colorClass="active"
                 subvalue={active / population}
                 level={level}
-                description="Aggregated confirmed cases that have not been resolved (active cases = total cases - total recovered - total deaths)"
+                description={(
+                  <>
+                    <div>Aggregated confirmed cases that have not been resolved</div>
+                    <div>(active cases = total cases - total recovered - total deaths)</div>
+                  </>
+                )}
               />
             </Grid>
           </Visible>

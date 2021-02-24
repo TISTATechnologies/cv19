@@ -6,7 +6,6 @@ import { fade, makeStyles } from '@material-ui/core/styles';
 import useGeolocation from 'react-hook-geolocation';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
-import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MyLocationIcon from '@material-ui/icons/MyLocation';
@@ -49,6 +48,7 @@ import './App.css';
 
 import Logo from './resources/tista-logo-1.png';
 
+const AppBar = React.lazy(() => import('@material-ui/core/AppBar'));
 const UsaMap = React.lazy(() => import('./Panels/UsaMap'));
 const Feed = React.lazy(() => import('./Panels/Feed'));
 const LocalStatsTable = React.lazy(() => import('./Panels/LocalStatsTable'));
@@ -621,6 +621,9 @@ function App() {
   const classes = useStyles();
   return (
     <div className={classes.root}>
+    <Suspense fallback={fallback}>
+
+
       <AppBar position="sticky">
         <Toolbar>
           <Hidden only="xs">
@@ -697,6 +700,7 @@ function App() {
           </Hidden>
         </Toolbar>
       </AppBar>
+      </Suspense>
 
       <Snackbar
         open={!!errorMessage}
@@ -710,7 +714,7 @@ function App() {
       <Refresher />
 
       <Container maxWidth={false}>
-        <Grid container spacing={2} justify="space-between">
+        <Grid container spacing={1} justify="space-between">
           <Grid item container xs={12} justify="center">
             <Suspense fallback={fallback}>
               <CdcNotice zones={metroZones} />
