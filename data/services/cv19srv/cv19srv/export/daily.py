@@ -16,21 +16,18 @@ class CovidDataExporter(Exporter):
     def load_grouped_data(self, day: datetime.datetime) -> None:
         log.debug(f'Load all data from the database...')
         with DatabaseContext() as db:
+            sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
+                   'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type, '
+                   'hospitalized_currently, hospitalized_cumulative, '
+                   'in_icu_currently, in_icu_cumulative, '
+                   'on_ventilator_currently, on_ventilator_cumulative, '
+                   'vaccination_distributed, vaccination_administered, '
+                   'vaccination_adm_dose1, vaccination_adm_dose2 ')
             if self.is_day_latest(day):
-                sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
-                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type, '
-                       'hospitalized_currently, hospitalized_cumulative, '
-                       'in_icu_currently, in_icu_cumulative, '
-                       'on_ventilator_currently, on_ventilator_cumulative '
-                       'FROM covid_data_stat_latest;')
+                sql += ' FROM covid_data_stat_latest;'
                 values = None
             else:
-                sql = ('country_id, state_id, fips, population, confirmed, deaths, recovered, active, '
-                       'geo_lat, geo_long, note, date, datetime, updated, location_name, location_type, '
-                       'hospitalized_currently, hospitalized_cumulative, '
-                       'in_icu_currently, in_icu_cumulative, '
-                       'on_ventilator_currently, on_ventilator_cumulative '
-                       'FROM covid_data_stat WHERE date = %s;')
+                sql += ' FROM covid_data_stat WHERE date = %s;'
                 values = [day]
             for row in db.select(sql, values):
                 (country_id, state_id, fips, population,
@@ -39,7 +36,9 @@ class CovidDataExporter(Exporter):
                  note, date, collected_datetime, updated, location_name, location_type,
                  hospitalized_currently, hospitalized_cumulative,
                  in_icu_currently, in_icu_cumulative,
-                 on_ventilator_currently, on_ventilator_cumulative) = row
+                 on_ventilator_currently, on_ventilator_cumulative,
+                 vaccination_distributed, vaccination_administered,
+                 vaccination_adm_dose1, vaccination_adm_dose2) = row
                 item = {'country_id': country_id}
                 if state_id:
                     item['state_id'] = state_id
@@ -62,11 +61,18 @@ class CovidDataExporter(Exporter):
                     item['on_ventilator_currently'] = on_ventilator_currently
                 if on_ventilator_cumulative is not None:
                     item['on_ventilator_cumulative'] = on_ventilator_cumulative
+                if vaccination_distributed is not None:
+                    item['vaccination_distributed'] = vaccination_distributed
+                if vaccination_administered is not None:
+                    item['vaccination_administered'] = vaccination_administered
+                if vaccination_adm_dose1 is not None:
+                    item['vaccination_adm_dose1'] = vaccination_adm_dose1
+                if vaccination_adm_dose2 is not None:
+                    item['vaccination_adm_dose2'] = vaccination_adm_dose2
                 item['geo_lat'] = Converter.to_string(geo_lat)
                 item['geo_long'] = Converter.to_string(geo_long)
                 item['date'] = DateTimeHelper.date_string(date)
                 item['datetime'] = DateTimeHelper.datetime_string(collected_datetime)
-                item['updated'] = DateTimeHelper.datetime_string(updated)
                 item['name'] = location_name
                 item['type'] = location_type
                 if note:

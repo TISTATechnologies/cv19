@@ -16,7 +16,7 @@ class CovidTrackingCollector(Collector):
     Site: https://covidtracking.com/api
     """
     def __init__(self):
-        super().__init__('covidtracking', 2)
+        super().__init__('covidtracking', CovidDataItem.SOURCE_COVIDTRACKING)
 
     def pull_data_by_day(self, day):
         filter_day = day.strftime("%Y%m%d")
@@ -49,7 +49,8 @@ class CovidTrackingCollector(Collector):
                     fips_number = item.get_int('fips')
                 last_update_str = item.get('lastUpdate') or item.get('lastUpdateEt') or item.get('dateChecked')
                 if not last_update_str:
-                    log.warning(f'Incorrect last_update value = {last_update_str} for {state_id}/{fips_number}. Us {day} as a value.')
+                    log.warning(f'Incorrect last_update value = {last_update_str} for {state_id}/{fips_number}. '
+                                f'Use {day} as a value.')
                     last_update_str = DateTimeHelper.datetime_string(DateTimeHelper.get_end_day(day))
 
                 new_item = CovidDataItem(self.source_id, 'US', state_id,

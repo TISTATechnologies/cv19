@@ -1,6 +1,7 @@
 import datetime
 from ..utils import logger
 from ..utils.helper import DateTimeHelper
+from . import cdc
 from . import covidtracking
 from . import custom_areas
 from . import executive_news
@@ -25,6 +26,13 @@ ENGINES = {
         'url': 'https://covidtracking.com',
         'description': ('The COVID Tracking Project collects and publishes the most complete testing data '
                         'available for US states and territories.')
+    },
+    'cdc': {
+        'name': 'Centers for Disease Control and Prevention',
+        'instance': cdc,
+        'url': 'https://cdc.gov.com',
+        'description': ('As the nation\'s health protection agency, CDC saves lives and protects people from health, '
+                        'safety, and security threats.')
     },
     'executive-news': {
         'name': 'COVID-19 Resources for State Leaders',

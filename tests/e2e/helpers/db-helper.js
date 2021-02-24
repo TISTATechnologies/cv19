@@ -11,54 +11,35 @@ const Client = pg.Client;
 // Do not parse timestamp value to the Date, read it as a raw string value
 pg.types.setTypeParser(1114, (stringValue) => stringValue.replace(' ', 'T'));
 
+const createVal1AndVal2 = (item, fieldName) => {
+    if (item.population) {
+        if (item[fieldName] !== undefined && item[fieldName] !== null) {
+            item[`${fieldName}_val1`] = item[fieldName].toLocaleString();
+            item[`${fieldName}_val2`] = Math.ceil((item[fieldName] / item.population) * 1e5);
+        }
+        item[fieldName] = undefined;
+    } else {
+        item[`${fieldName}_val1`] = null;
+        item[`${fieldName}_val2`] = null;
+    }
+}
+
 const formatItem = (item) => {
     if (!item) {
         log.warn(`Received an empty item`);
         return null;
     }
-    if (item && item.population) {
-        if (item.confirmed !== undefined && item.confirmed !== null) {
-            item.confirmed_val1 = item.confirmed.toLocaleString();
-            item.confirmed_val2 = Math.ceil((item.confirmed / item.population) * 1e5);
-        }
-        item.confirmed = undefined;
-        if (item.deaths !== undefined && item.deaths !== null) {
-            item.deaths_val1 = item.deaths.toLocaleString();
-            item.deaths_val2 = Math.ceil((item.deaths / item.population) * 1e5);
-        }
-        item.deaths = undefined;
-        if (item.active !== undefined && item.active !== null) {
-            item.active_val1 = item.active.toLocaleString();
-            item.active_val2 = Math.ceil((item.active / item.population) * 1e5);
-        }
-        item.active = undefined;
-        if (item.recovered !== undefined && item.recovered !== null) {
-            item.recovered_val1 = item.recovered.toLocaleString();
-            item.recovered_val2 = Math.ceil((item.recovered / item.population) * 1e5);
-        }
-        item.recovered = undefined;
-        if (item.hospitalized_currently !== undefined && item.hospitalized_currently !== null) {
-            item.hospitalized_currently_val1 = item.hospitalized_currently.toLocaleString();
-            item.hospitalized_currently_val2 = Math.ceil((item.hospitalized_currently / item.population) * 1e5);
-        }
-        item.hospitalized_currently = undefined;
+    createVal1AndVal2(item, 'confirmed');
+    createVal1AndVal2(item, 'deaths');
+    createVal1AndVal2(item, 'active');
+    createVal1AndVal2(item, 'recovered');
+    createVal1AndVal2(item, 'hospitalized_currently');
+    createVal1AndVal2(item, 'vaccination_distributed');
+    createVal1AndVal2(item, 'vaccination_administered');
+    createVal1AndVal2(item, 'vaccination_adm_dose1');
+    createVal1AndVal2(item, 'vaccination_adm_dose2');
+    if (item.population) {
         item.population = item.population.toLocaleString();
-    } else {
-        item.confirmed_val1 = null;
-        item.confirmed_val2 = null;
-        item.confirmed = undefined;
-        item.deaths_val1 = null;
-        item.deaths_val2 = null;
-        item.deaths = undefined;
-        item.active_val1 = null;
-        item.active_val2 = null;
-        item.active = undefined;
-        item.recovered_val1 = null;
-        item.recovered_val2 = null;
-        item.recovered = undefined;
-        item.hospitalized_currently_val1 = null;
-        item.hospitalized_currently_val2 = null;
-        item.hospitalized_currently = undefined;
     }
     item.hospitalized_val1 = item.hospitalized_currently_val1;
     item.hospitalized_val2 = item.hospitalized_currently_val2;
@@ -97,7 +78,8 @@ const loadUSData = async (day) => {
         'SELECT \'US\' as id, location_name as name, datetime, '
         + 'population, confirmed, deaths, active, recovered, '
         + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
-        + 'on_ventilator_cumulative, on_ventilator_currently '
+        + 'on_ventilator_cumulative, on_ventilator_currently, '
+        + 'vaccination_distributed, vaccination_administered, vaccination_adm_dose1, vaccination_adm_dose2 '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'country\' AND date = $1;',
         [day]);
 }
@@ -108,7 +90,8 @@ const loadStatesData = async (day) => {
         'SELECT state_id as id, location_name as name, datetime, '
         + 'population, confirmed, deaths, active, recovered, '
         + 'hospitalized_currently, hospitalized_cumulative, in_icu_currently, in_icu_cumulative, '
-        + 'on_ventilator_cumulative, on_ventilator_currently '
+        + 'on_ventilator_cumulative, on_ventilator_currently, '
+        + 'vaccination_distributed, vaccination_administered, vaccination_adm_dose1, vaccination_adm_dose2 '
         + 'FROM covid_data_stat WHERE country_id = \'US\' AND location_type = \'state\' AND date = $1;',
         [day]);
 }

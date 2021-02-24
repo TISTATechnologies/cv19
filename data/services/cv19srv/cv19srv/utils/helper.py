@@ -28,15 +28,19 @@ def trace(message):
 class DateTimeHelper:
     @staticmethod
     def get_yesterday_date():
-        return DateTimeHelper.add_days(datetime.date.today(), -1)
+        return DateTimeHelper.add_days(DateTimeHelper.get_today_date(), -1)
 
     @staticmethod
     def add_days(date, days=0):
-        return (date or datetime.date.today()) + datetime.timedelta(days=days)
+        return (date or DateTimeHelper.get_today_date()) + datetime.timedelta(days=days)
 
     @staticmethod
     def get_today_date():
         return datetime.date.today()
+
+    @staticmethod
+    def now():
+        return datetime.datetime.utcnow()
 
     @staticmethod
     def get_end_day(day):
@@ -73,7 +77,7 @@ class DownloadHelper:
         parts = [uri.hostname]
         parts.extend(uri.path.split('/'))
         if uri.query:
-            query_hash =  hashlib.sha1(uri.query.encode('utf-8')).hexdigest()
+            query_hash = hashlib.sha1(uri.query.encode('utf-8')).hexdigest()
             # If we are worried about a collision use a whole query_hash instead of the short version
             parts[-1] = parts[-1] + '-' + query_hash[:6] + query_hash[-6:]
         if (data_size or 0) > 0:
@@ -176,6 +180,17 @@ class CsvHelper:
         values = [item.values() for item in data_for_csv]
         csv_helper.write_csv_file(output_file, header, values)
         log.info(f'Save {data_len} items into the file {output_file}')
+
+
+class MathHelper:
+    @staticmethod
+    def sum(*numbers):
+        res = 0
+        for num in (numbers or []):
+            if num is None:
+                return None
+            res += int(num)
+        return res
 
 
 class Converter:
@@ -360,6 +375,15 @@ class References:
                 continue
             if key.upper() == filter_name.upper() or name == filter_name or filter_name in aliases:
                 return key
+        return None
+
+    def find_state_fips(self, country_id, state_name):
+        if state_name in ('US', 'USA'):
+            return '00000'
+        state_id = self.find_state_id(country_id, state_name)
+        state = self.states[country_id].get(state_id)
+        if state:
+            return state['fips'].rjust(5, '0')
         return None
 
 

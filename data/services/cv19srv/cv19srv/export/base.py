@@ -14,6 +14,7 @@ class DataType(Enum):
     ACTIVE = 'active'
     RECOVERED = 'recovered'
     HOSPITALIZED = 'hospitalized'
+    VACCINATION = 'vaccination'
 
 
 class Location:

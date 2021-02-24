@@ -12,7 +12,7 @@
 import datetime
 
 from ..utils import logger
-from ..utils.helper import CsvHelper, DatabaseContext, DateTimeHelper
+from ..utils.helper import CsvHelper, DatabaseContext, DateTimeHelper, MathHelper
 from .base import Collector, CovidDataItem, RawDataItem
 
 log = logger.get_logger(__file__)
@@ -25,23 +25,8 @@ class JHUCollector(Collector):
     STATE_ID_UNKNOWN = '--'
 
     def __init__(self):
-        super().__init__('jhu', 1)
+        super().__init__('jhu', CovidDataItem.SOURCE_JHU)
         self.csv_helper = CsvHelper()
-
-    # def _get_row_val(self, row, idx, default=None):
-    #     return row[idx] if len(row or []) > idx else default
-
-    # def _get_row_val_int(self, row, idx, default=None):
-    #     val = self._get_row_val(row, idx, default)
-    #     return int(float(val)) if val else default
-
-    # def _get_row_val_decimal(self, row, idx, default=None):
-    #     val = self._get_row_val(row, idx, default)
-    #     return Decimal(val) if val else default
-
-    # def _get_row_val_datetime(self, row, idx, default=None):
-    #     val = self._get_row_val(row, idx, default)
-    #     return Converter.parse_datetime(val) if val else default
 
     def _read_jhu_dataline(self, url):
         idx = -1
@@ -129,13 +114,6 @@ class JHUCollector(Collector):
                            )
         return res
 
-    def _sum_or_none(self, a, b):
-        """ Calculate sum of the two numbers or return None if the second number is None
-        """
-        if b is not None:
-            return (a or 0) + b
-        return None
-
     def _calculate_total_country_numbers(self, db, collected_date, country_data):
         """ If the country has states or counties in JHU data source,
         that's mean this country doesn't have summary numbers for the whole country.
@@ -144,7 +122,8 @@ class JHUCollector(Collector):
         log.info(f'Start calculating total country numbers')
         for country_id in [x for x in country_data if x]:
             if country_id == 'US':
-                log.info(f'Skip calculation for "{country_id}" country: we will get information form CovidTracking.com')
+                log.info(f'Skip calculation for "{country_id}" country: we will get this information '
+                         'from CovidTracking.com')
                 continue
             # we need to check/calculate summary for the countries with more the 1 item
             if len(country_data[country_id]) < 2:
@@ -174,22 +153,22 @@ class JHUCollector(Collector):
                 total_item.source_updated = max(total_item.source_updated, item.source_updated)
                 total_item.confirmed += item.confirmed
                 total_item.deaths += item.deaths
-                total_item.recovered = self._sum_or_none(total_item.recovered, item.recovered)
-                # total_item.active = self._sum_or_none(total_item.active, item.active)
+                total_item.recovered = MathHelper.sum(total_item.recovered, item.recovered)
+                # total_item.active = MathHelper.sum(total_item.active, item.active)
                 total_item.active = total_item.active_calculated
 
-                total_item.hospitalized_currently = self._sum_or_none(total_item.hospitalized_currently,
-                                                                      item.hospitalized_currently)
-                total_item.hospitalized_cumulative = self._sum_or_none(total_item.hospitalized_cumulative,
-                                                                       item.hospitalized_cumulative)
-                total_item.in_icu_currently = self._sum_or_none(total_item.in_icu_currently,
-                                                                item.in_icu_currently)
-                total_item.in_icu_cumulative = self._sum_or_none(total_item.in_icu_cumulative,
-                                                                 item.in_icu_cumulative)
-                total_item.on_ventilator_currently = self._sum_or_none(total_item.on_ventilator_currently,
-                                                                       item.on_ventilator_currently)
-                total_item.on_ventilator_cumulative = self._sum_or_none(total_item.on_ventilator_cumulative,
-                                                                        item.on_ventilator_cumulative)
+                total_item.hospitalized_currently = MathHelper.sum(total_item.hospitalized_currently,
+                                                                   item.hospitalized_currently)
+                total_item.hospitalized_cumulative = MathHelper.sum(total_item.hospitalized_cumulative,
+                                                                    item.hospitalized_cumulative)
+                total_item.in_icu_currently = MathHelper.sum(total_item.in_icu_currently,
+                                                             item.in_icu_currently)
+                total_item.in_icu_cumulative = MathHelper.sum(total_item.in_icu_cumulative,
+                                                              item.in_icu_cumulative)
+                total_item.on_ventilator_currently = MathHelper.sum(total_item.on_ventilator_currently,
+                                                                    item.on_ventilator_currently)
+                total_item.on_ventilator_cumulative = MathHelper.sum(total_item.on_ventilator_cumulative,
+                                                                     item.on_ventilator_cumulative)
             if total_item:
                 log.debug(f'Calculate summary item for "{country_id}" country - success: {total_item}')
                 if total_item.country_id == 'US' and not total_item.state_id and not total_item.fips:
@@ -240,7 +219,7 @@ class JHUCollector(Collector):
                             new_items[item_key] = item
                             log.debug(f'Add item: {item}')
 
-            new_items_values = new_items.values()
+            new_items_values = [x for x in new_items.values()]
             new_items_len = len(new_items_values)
             self.save_covid_data_items(db, new_items_values)
             log.info(f'Save data into the DB complete ({new_items_len} items)')

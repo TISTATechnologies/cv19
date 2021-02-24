@@ -62,12 +62,15 @@ class HistoryData(Exporter):
         with DatabaseContext() as db:
             prev_loc = None
             sql = ('country_id, state_id, fips, confirmed, deaths, recovered, active, date, datetime, '
-                   'hospitalized_currently, hospitalized_cumulative '
+                   'hospitalized_currently, hospitalized_cumulative, '
+                   'vaccination_distributed, vaccination_administered, vaccination_adm_dose1, vaccination_adm_dose2 '
                    'FROM covid_data_stat ORDER BY fips, state_id, country_id, date;')
             log.info(f'Load all historical data')
             grouped_values = None
             for (country_id, state_id, fips, confirmed, deaths, recovered, active, date, _,
-                 hospitalized_currently, hospitalized_cumulative) in db.select(sql):
+                 hospitalized_currently, hospitalized_cumulative,
+                 vaccination_distributed, vaccination_administered,
+                 vaccination_adm_dose1, vaccination_adm_dose2) in db.select(sql):
                 cur_loc = self.get_location(country_id, state_id, fips)
                 if prev_loc is None:
                     prev_loc = cur_loc
@@ -78,7 +81,7 @@ class HistoryData(Exporter):
                     log.info(f'Processing {cur_loc}: {confirmed}, {deaths}, {recovered}, {active}...')
 
                 if grouped_values is None:
-                    grouped_values = {DataType.ACTIVE: [], DataType.HOSPITALIZED: []}
+                    grouped_values = {DataType.ACTIVE: [], DataType.HOSPITALIZED: [], DataType.VACCINATION: []}
                 date_str = DateTimeHelper.date_string(date)
                 log.debug(f'Processing {cur_loc} on {date_str}...')
                 # For today we need an 'active' cases only,
@@ -87,8 +90,16 @@ class HistoryData(Exporter):
                 # grouped_values['deaths'].append({'date': date_str, 'value': deaths})
                 # grouped_values['recovered'].append({'date': date_str, 'value': recovered})
                 grouped_values[DataType.ACTIVE].append({'date': date_str, 'value': active})
-                grouped_values[DataType.HOSPITALIZED].append(
-                    {'date': date_str, 'currently': hospitalized_currently, 'cumulative': hospitalized_cumulative})
+                if hospitalized_currently or hospitalized_cumulative:
+                    grouped_values[DataType.HOSPITALIZED].append(
+                        {'date': date_str, 'currently': hospitalized_currently,
+                         'cumulative': hospitalized_cumulative})
+                if vaccination_distributed or vaccination_administered \
+                   or vaccination_adm_dose1 or vaccination_adm_dose2:
+                    grouped_values[DataType.VACCINATION].append(
+                        {'date': date_str, 'distributed': vaccination_distributed,
+                         'administered': vaccination_administered,
+                         'adm_dose1': vaccination_adm_dose1, 'adm_dose2': vaccination_adm_dose2})
             self._save_grouped_values(prev_loc, grouped_values)
             grouped_values = None
             log.info(f'Load all historical data complete.')
