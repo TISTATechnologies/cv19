@@ -77,6 +77,7 @@ function draw(
   timeSpan,
 ) {
   const params = findTrueProps(selected, showHosp);
+
   // only return rows with at least some of the data we're looking for.
   const activeData = historic.active
     ? historic.active
@@ -88,19 +89,26 @@ function draw(
       ))
       .map((d) => ({ ...d, date: d3.isoParse(d.date) }))
     : [];
+
   const hospData = historic.hospitalized
     ? historic.hospitalized
       .slice(0, timeSpan)
       .map((d) => ({ hospitalized: d.currently, date: d3.isoParse(d.date) }))
     : [];
-  const data = joinTables(activeData, hospData, 'date', 'date', (g, f) => ({
-    ...g,
-    ...f,
-  }));
+  let data = activeData;
+
+  if (hospData.length) {
+    data = joinTables(activeData, hospData, 'date', 'date', (g, f) => ({
+      ...g,
+      ...f,
+    }));
+  }
+
   const X = d3
     .scaleTime()
     .domain(d3.extent(data, (d) => d.date))
     .range([0, w]);
+
   const scales = params.map(([param]) => d3
     .scaleLinear()
     .domain([d3.min(data, (d) => Math.min(0, +d[param])), d3.max(data, (d) => +d[param])])
@@ -122,11 +130,6 @@ function draw(
     .data(params)
     .join('path')
     .attr('class', (d) => `graphs ${d[0]}`);
-  svg
-    .selectAll('path.regression')
-    .data(params)
-    .join('path')
-    .attr('class', (d) => `regression ${d[0]}`);
 
   mouseG = d3.select('.mouse-line-effects');
 

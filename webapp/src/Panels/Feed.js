@@ -124,7 +124,7 @@ const Feed = ({ data }) => {
         <Visible condition={showButton}>
           <Button
             component="button"
-            color="textPrimary"
+            color="inherit"
             onClick={() => setShowAll(!showAll)}
             style={{
               marginLeft: '10px',
