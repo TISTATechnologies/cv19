@@ -15,7 +15,7 @@ const createVal1AndVal2 = (item, fieldName) => {
     if (item.population) {
         if (item[fieldName] !== undefined && item[fieldName] !== null) {
             item[`${fieldName}_val1`] = item[fieldName].toLocaleString();
-            item[`${fieldName}_val2`] = Math.ceil((item[fieldName] / item.population) * 1e5);
+            item[`${fieldName}_val2`] = Math.ceil((item[fieldName] / item.population) * 1e5).toLocaleString();
         }
         item[fieldName] = undefined;
     } else {
@@ -43,6 +43,10 @@ const formatItem = (item) => {
     }
     item.hospitalized_val1 = item.hospitalized_currently_val1;
     item.hospitalized_val2 = item.hospitalized_currently_val2;
+    item.vaccination_val1 = item.vaccination_administered_val1;
+    item.vaccination_val2 = item.vaccination_administered_val2;
+    item.vaccine_val1 = item.vaccination_val1;
+    item.vaccine_val2 = item.vaccination_val2;
     return item;
 }
 

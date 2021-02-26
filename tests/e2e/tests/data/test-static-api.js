@@ -39,14 +39,15 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
         expect(data).toBeTruthy();
         expect(data).toHaveLength(1);
         const dataRow = data[0];
-        expect(dataRow.date).toEqual(day === 'latest' ? yesterday : day);
+        const expectedDay = (day === 'latest' ? yesterday : day);
+        expect(dataRow.date).toEqual(expectedDay);
         expect(dataRow.country_id).toEqual('US');
         if (stateMustHave) {
             expect(dataRow.state_id || 'US').toEqual(realData.state.id);
         }
 
-        expect(String(dataRow.date)).toEqual(day);
-        expect(String(dataRow.datetime || '').substring(0, 10)).toEqual(day);
+        expect(String(dataRow.date)).toEqual(String(expectedDay));
+        expect(String(dataRow.datetime || '').substring(0, 10)).toEqual(String(expectedDay));
 
         if (!realData.county) {
             expect(dataRow.name).toEqual(realData.state.name);
@@ -57,6 +58,10 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
             expectEqualNumbers(dataRow.active, realData.state.active_val1);
             expectEqualNumbers(dataRow.recovered, realData.state.recovered_val1);
             expectEqualNumbers(dataRow.hospitalized_currently, realData.state.hospitalized_currently_val1);
+            expectEqualNumbers(dataRow.vaccination_distributed, realData.state.vaccination_distributed_val1);
+            expectEqualNumbers(dataRow.vaccination_administered, realData.state.vaccination_administered_val1);
+            expectEqualNumbers(dataRow.vaccination_adm_dose1, realData.state.vaccination_adm_dose1_val1);
+            expectEqualNumbers(dataRow.vaccination_adm_dose2, realData.state.vaccination_adm_dose2_val1);
         } else {
             expect(dataRow.name).toEqual(realData.county.name);
             expect(dataRow.fips).toEqual(realData.county.fips);
