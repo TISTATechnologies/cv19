@@ -38,8 +38,10 @@ jobs:
           REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
           if [ "${BUILD_ENV}" == "a" ] || [ "${BUILD_ENV}" == "A" ]; then
             S3_BUCKET="${{ secrets.PROD_A_S3_BUCKET }}"
+            APP_SERVER_URL="${{ secrets.PROD_A_APP_SERVER_URL}}"
           else if [ "${BUILD_ENV}" == "b" ] || [ "${BUILD_ENV}" == "B" ]; then
             S3_BUCKET="${{ secrets.PROD_B_S3_BUCKET }}"
+            APP_SERVER_URL="${{ secrets.PROD_B_APP_SERVER_URL}}"
           else
             echo "Error: Incorrect Environment value: build_env = ${BUILD_ENV}"
             exit 1
@@ -50,11 +52,13 @@ jobs:
           echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
+          echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"
           echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"
+          echo "APP_SERVER_URL=${APP_SERVER_URL}"
           ) | "${PWD}/../.github/scripts/write-to-log.sh"
 
       - name: Show last commits
@@ -132,8 +136,10 @@ jobs:
           REACT_APP_GOOGLE_ANALYTICS_KEY="${{ secrets.PROD_GOOGLE_ANALYTICS_KEY }}"
           if [ "${BUILD_ENV}" == "a" ] || [ "${BUILD_ENV}" == "A" ]; then
             S3_BUCKET="${{ secrets.PROD_INTERNAL_A_S3_BUCKET }}"
+            APP_SERVER_URL="${{ secrets.PROD_INTERNAL_A_APP_SERVER_URL}}"
           else if [ "${BUILD_ENV}" == "b" ] || [ "${BUILD_ENV}" == "B" ]; then
             S3_BUCKET="${{ secrets.PROD_INTERNAL_B_S3_BUCKET }}"
+            APP_SERVER_URL="${{ secrets.PROD_INTERNAL_B_APP_SERVER_URL}}"
           else
             echo "Error: Incorrect Environment value: build_env = ${BUILD_ENV}"
             exit 1
@@ -144,11 +150,13 @@ jobs:
           echo "GOOGLE_ANALYTICS_KEY=${GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_GOOGLE_ANALYTICS_KEY=${REACT_APP_GOOGLE_ANALYTICS_KEY}" >> $GITHUB_ENV
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}" >> $GITHUB_ENV
+          echo "APP_SERVER_URL=${APP_SERVER_URL}" >> $GITHUB_ENV
 
           (echo "NODE_ENV=${NODE_ENV}"
           echo "BUILD_ENV=${BUILD_ENV}"
           echo "S3_BUCKET=$(echo "${S3_BUCKET}" | sed -e 's/\(.\)/\1_/g')"
           echo "REACT_APP_VIEW_ASSOCIATES=${REACT_APP_VIEW_ASSOCIATES}"
+          echo "APP_SERVER_URL=${APP_SERVER_URL}"
           ) | "${PWD}/../.github/scripts/write-to-log.sh"
 
       - name: Show last commits
