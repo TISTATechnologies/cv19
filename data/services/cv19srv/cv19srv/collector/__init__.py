@@ -30,7 +30,7 @@ ENGINES = {
     'cdc': {
         'name': 'Centers for Disease Control and Prevention',
         'instance': cdc,
-        'url': 'https://cdc.gov.com',
+        'url': 'https://cdc.gov',
         'description': ('As the nation\'s health protection agency, CDC saves lives and protects people from health, '
                         'safety, and security threats.')
     },
