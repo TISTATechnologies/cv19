@@ -12,7 +12,7 @@
 import datetime
 
 from ..utils import logger
-from ..utils.helper import CsvHelper, DatabaseContext, DateTimeHelper, MathHelper
+from ..utils.helper import CsvHelper, DatabaseContext, DateTimeHelper
 from .base import Collector, CovidDataItem, RawDataItem
 
 log = logger.get_logger(__file__)
@@ -114,16 +114,17 @@ class JHUCollector(Collector):
                            )
         return res
 
-    def _calculate_total_country_numbers(self, db, collected_date, country_data):
+    def _calculate_total_country_numbers(self, db, collected_date, country_data, data_level):
         """ If the country has states or counties in JHU data source,
         that's mean this country doesn't have summary numbers for the whole country.
         We need to calculate it.
         """
         log.info(f'Start calculating total country numbers')
         for country_id in [x for x in country_data if x]:
-            if country_id == 'US':
-                log.info(f'Skip calculation for "{country_id}" country: we will get this information '
-                         'from CovidTracking.com')
+            if country_id == 'US' and data_level == 'county':
+                log.info(f'Skip calculation for "{country_id}" country: we will calculate numbers on state level')
+                continue
+            if country_id != 'US' and data_level != 'county':
                 continue
             # we need to check/calculate summary for the countries with more the 1 item
             if len(country_data[country_id]) < 2:
@@ -151,24 +152,7 @@ class JHUCollector(Collector):
                 log.debug(f'Include "{item.state_id}/{item.fips}" state to the calculation for "{country_id}" '
                           f'country: location = {item.source_location}')
                 total_item.source_updated = max(total_item.source_updated, item.source_updated)
-                total_item.confirmed += item.confirmed
-                total_item.deaths += item.deaths
-                total_item.recovered = MathHelper.sum(total_item.recovered, item.recovered)
-                # total_item.active = MathHelper.sum(total_item.active, item.active)
-                total_item.active = total_item.active_calculated
-
-                total_item.hospitalized_currently = MathHelper.sum(total_item.hospitalized_currently,
-                                                                   item.hospitalized_currently)
-                total_item.hospitalized_cumulative = MathHelper.sum(total_item.hospitalized_cumulative,
-                                                                    item.hospitalized_cumulative)
-                total_item.in_icu_currently = MathHelper.sum(total_item.in_icu_currently,
-                                                             item.in_icu_currently)
-                total_item.in_icu_cumulative = MathHelper.sum(total_item.in_icu_cumulative,
-                                                              item.in_icu_cumulative)
-                total_item.on_ventilator_currently = MathHelper.sum(total_item.on_ventilator_currently,
-                                                                    item.on_ventilator_currently)
-                total_item.on_ventilator_cumulative = MathHelper.sum(total_item.on_ventilator_cumulative,
-                                                                     item.on_ventilator_cumulative)
+                total_item += item
             if total_item:
                 log.debug(f'Calculate summary item for "{country_id}" country - success: {total_item}')
                 if total_item.country_id == 'US' and not total_item.state_id and not total_item.fips:
@@ -186,9 +170,9 @@ class JHUCollector(Collector):
             db.commit()
 
     def _pull_data_and_save(self, data_type: str, url: str, collected_date, row_parser,
-                            need_to_calculate_total_country_numbers=False):
+                            need_to_calculate_total_country_numbers=False, level='county'):
         day = collected_date.date()
-        log.info(f'Start pull {data_type} information - day={day}')
+        log.info(f'Start pull {data_type} information - day={day} (level={level})')
         country_data = {}
         with DatabaseContext() as db:
             self.start_pulling(db, day)
@@ -203,13 +187,20 @@ class JHUCollector(Collector):
                 country_data[new_item.country_id].append(new_item)
             log.info(f'End pull {data_type} information from the source')
             if need_to_calculate_total_country_numbers:
-                self._calculate_total_country_numbers(db, collected_date, country_data)
+                self._calculate_total_country_numbers(db, collected_date, country_data, level)
             new_items = {}
-            log.info(f'Saving it to the DB')
+            log.info(f'Saving items into the DB')
             for country_id in country_data:
+                log.debug(f'Saving {len(country_data[country_id])} items for {country_id} country')
                 for item in country_data[country_id]:
                     if item.state_id == JHUCollector.STATE_ID_UNKNOWN:
-                        log.debug(f'Skip saving item: unknown state: {item}')
+                        # log.debug(f'Skip saving item: unknown state: {item}')
+                        item.state_id = None
+                    if item.country_id == 'US' and level != 'state' and (item.fips or '').startswith('000'):
+                        log.debug(f'Skip state item for {level} level')
+                    elif item.country_id == 'US' and level == 'state' \
+                        and (not item.fips or not item.fips.startswith('000')):
+                        log.debug(f'Skip non state item for {level} level')
                     else:
                         item_key = item.get_unique_key()
                         if item_key in new_items:
@@ -233,12 +224,11 @@ class JHUCollector(Collector):
 
         self._clean_old_data(collected_date)
 
-        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports/{day.strftime("%m-%d-%Y")}.csv'])
-        self._pull_data_and_save('county', url, collected_date, self._parse_county_row, True)
+        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
+        self._pull_data_and_save('state', url, collected_date, self._parse_state_row, True, 'state')
 
-        # We are collect US state level data from CovidTracking
-        # url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports_us/{day.strftime("%m-%d-%Y")}.csv'])
-        # self._pull_data_and_save('state', url, collected_date, self._parse_state_row, False)
+        url = ''.join([f'{JHUCollector.DATA_PATH}/csse_covid_19_daily_reports/{day.strftime("%m-%d-%Y")}.csv'])
+        self._pull_data_and_save('county', url, collected_date, self._parse_county_row, True, 'conty')
 
 
 # pylint: disable=unused-argument

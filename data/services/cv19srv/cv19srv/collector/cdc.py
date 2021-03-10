@@ -57,8 +57,8 @@ class CDCCollector(Collector):
                                          source_updated=Converter.parse_datetime(last_update_str),
                                          vaccination_distributed=item.get_int('Doses_Distributed', None),
                                          vaccination_administered=item.get_int('Doses_Administered', None),
-                                         vaccination_adm_dose1=item.get_int('Administered_Dose1', None),
-                                         vaccination_adm_dose2=item.get_int('Administered_Dose2', None))
+                                         vaccination_adm_dose1=item.get_int('Administered_Dose1_Recip', None),
+                                         vaccination_adm_dose2=item.get_int('Administered_Dose2_Recip', None))
                 log.info(f'Item: {new_item.country_id},{new_item.state_id},{new_item.fips},{new_item.datetime},'
                          f'{new_item.vaccination_distributed},{new_item.vaccination_administered},'
                          f'{new_item.vaccination_adm_dose1},{new_item.vaccination_adm_dose2}')

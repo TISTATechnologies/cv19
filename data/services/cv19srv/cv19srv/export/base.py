@@ -129,12 +129,27 @@ class Exporter:
         if self.is_day_latest(day):
             days.append('latest')
         items = self._items_for_export
+        count = 0
+        old_log_name = ''
         for fname in items:
+            log.debug(f'Processing {fname} file...')
+            fname_parts = (fname or '').split('/')
+            if len(fname_parts) == 3:
+                log_name = f'{fname_parts[0]}/{fname_parts[2][0:2]}-xxx'
+            else:
+                log_name = fname
+            if old_log_name != log_name:
+                log.info(f'Processing {log_name}...')
+                old_log_name = log_name
+
             for day_str in days:
+                day_items = items[fname]
+                count += len(day_items)
                 if fname is not None:
-                    self._save_data_to_file(day_str, fname, items[fname])
+                    self._save_data_to_file(day_str, fname, day_items)
                 else:
-                    self._save_data_to_file(None, day_str, items[fname])
+                    self._save_data_to_file(None, day_str, day_items)
+        log.info(f'Saved {count} items into the files')
 
     def save_loc_data_to_file(self, dir_name: str, location: Location, items: list) -> None:
         self._save_data_to_file(dir_name, location.get_file_path(use_state_fips_for_county=False), items)

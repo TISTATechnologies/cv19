@@ -60,7 +60,7 @@ class CovidDataItem:
             for key in self.keys():
                 # walk throw all 'numbers' fields and make a summary
                 if key.endswith('_id') or key.startswith('geo_') or key.startswith('source_') \
-                   or key in ('fips', 'datetime'):
+                    or key.endswith('_key') or key in ('fips', 'datetime'):
                     continue
                 self[key] = MathHelper.sum(self[key], other[key])
             self.source_updated = DateTimeHelper.now()

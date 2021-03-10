@@ -179,7 +179,7 @@ class CsvHelper:
         header = data_for_csv[0].keys() if len(data_for_csv) > 0 else []
         values = [item.values() for item in data_for_csv]
         csv_helper.write_csv_file(output_file, header, values)
-        log.info(f'Save {data_len} items into the file {output_file}')
+        log.debug(f'Save {data_len} items into the file {output_file}')
 
 
 class MathHelper:
@@ -409,7 +409,7 @@ class JsonHelper:
             json.dump(items or [], fo,
                       indent=None if config.minify else 2,
                       separators=(',', ':') if config.minify else None)
-        log.info(f'Save {items_len} items into the file {output_file}')
+        log.debug(f'Save {items_len} items into the file {output_file}')
 
 
 class Log:

@@ -9,6 +9,7 @@ from .base import Exporter
 log = logger.get_logger(__file__)
 
 
+# pylint: disable=too-many-branches
 class CovidDataExporter(Exporter):
     def __init__(self, output_dir: Path):
         super().__init__('covid data', output_dir / 'daily')
@@ -33,7 +34,7 @@ class CovidDataExporter(Exporter):
                 (country_id, state_id, fips, population,
                  confirmed, deaths, recovered, active,
                  geo_lat, geo_long,
-                 note, date, collected_datetime, updated, location_name, location_type,
+                 note, date, collected_datetime, _, location_name, location_type,
                  hospitalized_currently, hospitalized_cumulative,
                  in_icu_currently, in_icu_cumulative,
                  on_ventilator_currently, on_ventilator_cumulative,

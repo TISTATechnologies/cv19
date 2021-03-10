@@ -70,8 +70,9 @@ python3 cv19srv check-database 2>&1 | tee -a "${LOG_FILE}" && \
 title "Pull data from the JHU dataset" | tee -a "${LOG_FILE}" && \
 python3 cv19srv collect jhu $@ 2>&1 | tee -a "${LOG_FILE}" && \
 \
-title "Pull data from the CovidTracking dataset" | tee -a "${LOG_FILE}" && \
-python3 cv19srv collect covidtracking $@ 2>&1 | tee -a "${LOG_FILE}" && \
+# The covidtracking project stop working at March 7, 2021
+# title "Pull data from the CovidTracking dataset" | tee -a "${LOG_FILE}" && \
+# python3 cv19srv collect covidtracking $@ 2>&1 | tee -a "${LOG_FILE}" && \
 \
 title "Pull data from the CDC dataset" | tee -a "${LOG_FILE}" && \
 python3 cv19srv collect cdc $@ 2>&1 | tee -a "${LOG_FILE}" && \

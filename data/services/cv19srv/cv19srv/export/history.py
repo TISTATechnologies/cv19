@@ -23,7 +23,7 @@ class HistoryData(Exporter):
     def _calculate_past_data(self, data_group: DataType, location: Location, items: list) -> None:
         """ Calculate delta and trend value for each of the datatype
         """
-        log.info(f'Calculating past "{data_group}" data for {location} ({self.trend_periods} days)...')
+        log.debug(f'Calculating past "{data_group}" data for {location} ({self.trend_periods} days)...')
         for days in self.trend_periods:
             log.debug(f'[{location}] past "{data_group}" data {days} days period...')
             for idx, item in enumerate(items or []):
@@ -36,7 +36,7 @@ class HistoryData(Exporter):
                 if trend_val:
                     item[f'trend{days}'] = trend_val
             log.debug(f'[{location}] past "{data_group}" data {days} days period complete')
-        log.info(f'Calculate past "{data_group}" data for {location} complete')
+        log.debug(f'Calculate past "{data_group}" data for {location} complete')
 
     def _save_grouped_values(self, location: Location, grouped_values: dict) -> None:
         """ Save all items wich are grouped by datetype
@@ -51,7 +51,7 @@ class HistoryData(Exporter):
             self._validate_ordered_data(data_group, location, items)
             if data_group in (DataType.CONFIRMED, DataType.DEATHS, DataType.ACTIVE, DataType.RECOVERED):
                 self._calculate_past_data(data_group, location, items)
-            log.info(f'Save {len(items)} {data_group} cases for {location}')
+            log.debug(f'Save {len(items)} {data_group} cases for {location}')
             data[data_group.value] = sorted(items, key=lambda x: x['date'], reverse=True)
         self.save_loc_data_to_file(None, location, data)
 
@@ -78,7 +78,7 @@ class HistoryData(Exporter):
                     self._save_grouped_values(prev_loc, grouped_values)
                     grouped_values = None
                     prev_loc = cur_loc
-                    log.info(f'Processing {cur_loc}: {confirmed}, {deaths}, {recovered}, {active}...')
+                    log.debug(f'Processing {cur_loc}: {confirmed}, {deaths}, {recovered}, {active}...')
 
                 if grouped_values is None:
                     grouped_values = {DataType.ACTIVE: [], DataType.HOSPITALIZED: [], DataType.VACCINATION: []}
