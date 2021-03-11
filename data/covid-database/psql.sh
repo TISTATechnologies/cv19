@@ -6,10 +6,13 @@
 # #############################################################################
 wd="$(dirname "${0}")/../.."
 . "${wd}/scripts/load.env" "${wd}" || exit 1
+app=pgcli
+if ! which ${app} >/dev/null; then app=psql; fi
+
 echo "Connection string is postres://${PGUSER}:****@${PGHOST}:${PGPORT}/${PGDATABASE}?schema=${PGSCHEMA}"
-echo "Command line: psql -h \"${PGHOST}\" -p ${PGPORT} -U \"${PGUSER}\" \"${PGDATABASE}\" $@"
+echo "Command line: ${app} -h \"${PGHOST}\" -p ${PGPORT} -U \"${PGUSER}\" \"${PGDATABASE}\" $@"
 if [ "${1}" == '-f' ] && [ -n "${2}" ]; then
-    psql -h "${PGHOST}" -p ${PGPORT} -U "${PGUSER}" -f ${2} "${PGDATABASE}"
+    cat "${2}" | ${app} -h "${PGHOST}" -p ${PGPORT} -U "${PGUSER}" "${PGDATABASE}"
 else
-    psql -h "${PGHOST}" -p ${PGPORT} -U "${PGUSER}" "${PGDATABASE}" $@
+    ${app} -h "${PGHOST}" -p ${PGPORT} -U "${PGUSER}" "${PGDATABASE}" $@
 fi
