@@ -10,7 +10,7 @@ const log = config.log;
 const fipsWithNoData = countiesWithoutData.map((i) => i['fips']);
 
 const testZips = cvData.getTestZips();
-const yesterday = config.testDate;
+const testDate = config.testDate;
 const expectEqualNumbers = (num1, num2) => {
     const num1Str = String(num1 === undefined ? null : num1).split(',').join('');
     const num2Str = String(num2 === undefined ? null : num2).split(',').join('');
@@ -39,7 +39,7 @@ const expectDataApiEqualRealData =async (day, realDataItems) => {
         expect(data).toBeTruthy();
         expect(data).toHaveLength(1);
         const dataRow = data[0];
-        const expectedDay = (day === 'latest' ? yesterday : day);
+        const expectedDay = (day === 'latest' ? testDate : day);
         expect(dataRow.date).toEqual(expectedDay);
         expect(dataRow.country_id).toEqual('US');
         if (stateMustHave) {
@@ -101,13 +101,15 @@ describe("Test Static API calls ", () => {
         jest.setTimeout(config.apiTimeout);
         log.info(`Start static api tests on the CV19 server: ${cvApi.apiDataUrl.href}`)
     })
-    describe(`Test special locations (${yesterday})`, () => {
+    describe(`Test special locations (${testDate})`, () => {
         const specialLocationsFiltered = cvData.specialLocationsFips.filter((i) => !fipsWithNoData.includes(i));
         testStaticDataOnDayByFips('latest', specialLocationsFiltered);
     });
-    describe(`Test data (${yesterday})`, () => {
-        testStaticDataOnDayByZips(yesterday);
-        testStaticDataOnDayByFips(yesterday, ['USDC1']);
+    describe(`Test data (${testDate})`, () => {
+        testStaticDataOnDayByZips(testDate);
+        testStaticDataOnDayByFips(testDate, ['USDC1']);
+        testStaticDataOnDayByFips(testDate, ['USNY1']);
+        testStaticDataOnDayByFips(testDate, ['USIL1']);
     });
     // TODO: Add historical data test
 });

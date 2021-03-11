@@ -104,8 +104,7 @@ const loadCountiesData = async (day) => {
     log.info(`Load Counties data on the ${day} day`);
     return executeInDataBase(
         'SELECT r.fips, r.state_id, CONCAT(r.name, \', \', r.state_id) AS name, datetime, '
-        + '  p.population, COALESCE(cds.confirmed, 0) AS confirmed, COALESCE(cds.deaths, 0) AS deaths, '
-        + '  COALESCE(cds.active, 0) AS active, COALESCE(cds.recovered, 0) AS recovered '
+        + '  p.population, cds.confirmed, cds.deaths, cds.active, cds.recovered '
         + 'FROM region AS r '
         + 'INNER JOIN region_population AS p ON p.country_id = r.country_id AND p.state_id = r.state_id AND p.fips = r.fips '
         + 'INNER JOIN covid_data_stat AS cds ON cds.country_id = r.country_id AND cds.state_id = r.state_id AND cds.fips = r.fips '
