@@ -115,7 +115,7 @@ const updatedTimeFormat = (date) => (date.toString() !== 'Invalid Date'
   : '---');
 
 const formatVal = (value) => {
-  if (Number.isNaN(value)) {
+  if (Number.isNaN(value) || value === null) {
     return 'N/A';
   }
   if (typeof value === 'number') {
@@ -125,7 +125,7 @@ const formatVal = (value) => {
 };
 
 const formatSubVal = (subvalue) => {
-  if (Number.isNaN(subvalue)) {
+  if (Number.isNaN(subvalue) || subvalue === null) {
     return 'N/A';
   }
   if (typeof subvalue === 'number') {
@@ -200,11 +200,7 @@ const Hover = ({
 };
 
 const MiniStatBlock = ({
-  value = 'N/A',
-  colorClass = '',
-  level = 'x',
-  description = '',
-  extra = null,
+  value = 'N/A', colorClass = '', level = 'x', description = '',
 }) => {
   const classes = useStyles();
   return (
@@ -227,7 +223,7 @@ const StatBlock = ({
   name,
   value = 'N/A',
   subname = 'per 100k',
-  subvalue = '',
+  subvalue = 'N/A',
   colorClass = '',
   level = 'x',
   description = '',
@@ -263,7 +259,7 @@ const StatBlock = ({
             </Grid>
 
             <Grid item xs>
-              <Typography variant="h5" align="center" >
+              <Typography variant="h5" align="center">
                 {name}
               </Typography>
             </Grid>

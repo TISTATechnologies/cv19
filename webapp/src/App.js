@@ -31,17 +31,14 @@ import { removeDouble } from './util/strings';
 import useLocalStorage from './util/useLocalStorage';
 import {
   fetchDataFromFips,
-  fetchTrendFromFips,
   findLocationData,
   fetchDataFromState,
   fetchDataFromUSA,
   fetchStateHeadlines,
   fetchDataSources,
   fetchFipsFromZip,
-  fetchHistoric,
   fetchMetroZones,
 } from './util/fetch';
-import { diffPercent } from './util/math';
 import { createUrl, createFipsUrl, decodeUrl } from './util/url';
 
 import './App.css';
@@ -52,9 +49,7 @@ const AppBar = React.lazy(() => import('@material-ui/core/AppBar'));
 const UsaMap = React.lazy(() => import('./Panels/UsaMap'));
 const Feed = React.lazy(() => import('./Panels/Feed'));
 const LocalStatsTable = React.lazy(() => import('./Panels/LocalStatsTable'));
-const LocationsTable = React.lazy(() => import('./Panels/LocationsTable'));
-const HistoricRates = React.lazy(() => import('./Panels/HistoricRates'));
-const CdcNotice = React.lazy(() => import('./components/CdcNotice'));
+const BannerNotice = React.lazy(() => import('./components/BannerNotice'));
 
 const gtag = window.gtag
   || (() => {
@@ -190,29 +185,10 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [sources, setSources] = useState(emptyArray);
   const [zipOptions, setZipOptions] = useState([]);
-  const [historic, setHistoric] = useState(emptyArray);
+  // const [historic, setHistoric] = useState(emptyArray);
   const geoLocation = useGeolocation();
   const [hasMetro, setHasMetro] = useState(false);
   const [metroCounties, setMetroCounties] = useState([]);
-  const [metroZones, setMetroZones] = useState([]);
-  const [savedLocations, setSavedLocations] = useLocalStorage('MyLocations', [
-    {
-      name: 'Montogomery County, MD',
-      fips: '24031',
-      zip: '20850',
-    },
-    {
-      name: 'Fairfax County, VA',
-      fips: '51059',
-      zip: '22003',
-    },
-    {
-      name: 'District of Columbia, DC',
-      fips: '11001',
-      zip: '20202',
-    },
-  ]);
-  const [myLocations, setMyLocations] = useState(savedLocations);
 
   const goToLevel = useCallback(
     (lvl) => {
@@ -380,7 +356,6 @@ function App() {
           [],
         );
         // console.log('building zone list', zones);
-        setMetroZones(data);
         setMetroCounties(zones);
         f(zones);
       }
@@ -464,61 +439,6 @@ function App() {
     f();
   }, []);
 
-  // Historic
-  useEffect(() => {
-    const f = async () => {
-      // console.log('%cFetching historic', 'color: cyan');
-      const target = level === 'usa' ? undefined : countyStats.fips;
-      const { data, sData, error } = await fetchHistoric(target);
-      if (data && data.message) {
-        setErrorMessage(data.message);
-      } else if (!error) {
-        setHistoric([data, sData]);
-      } else {
-        setErrorMessage(error);
-      }
-    };
-    f();
-  }, [countyStats, level]);
-
-  function readyLocation(d, zip = undefined) {
-    return {
-      ...d,
-      zip,
-      name: removeDouble(d.name),
-      active_trend2: diffPercent(d.active, d.active_trend2),
-      active_trend7: diffPercent(d.active, d.active_trend7),
-      active_trend14: diffPercent(d.active, d.active_trend14),
-      active_trend30: diffPercent(d.active, d.active_trend30),
-      active_trend60: diffPercent(d.active, d.active_trend60),
-      active_trend90: diffPercent(d.active, d.active_trend90),
-    };
-  }
-
-  // My Locations
-  useEffect(() => {
-    const f = async (list = []) => {
-      console.log('%cFetching my locations', 'color: yellow');
-      // Fetch USA data for country
-      await savedLocations.reduce(async (memo, { fips: savedFips, zip }) => {
-        console.log(`%c${savedFips}`, 'color: green; border: yellow 1px solid');
-        await memo;
-        // ignore '00000'/'usa' locations
-        if (savedFips === '00000') return;
-        const { data } = await fetchTrendFromFips(savedFips);
-        if (!data) return;
-        const [d] = data;
-        console.log(`%c🟡 ${savedFips} ${d.name}`, 'color: goldenrod');
-        list.push(readyLocation(d, zip));
-      }, undefined);
-      // try to remove 00000/usa locations from list
-      setMyLocations(list.filter((x) => x.fips !== '00000'));
-    };
-    if (savedLocations.length) {
-      f();
-    }
-  }, [savedLocations, setMyLocations]);
-
   // My State Stats
   useEffect(() => {
     setMyStateStats(stateStats.find((x) => x.state_id === myState));
@@ -543,45 +463,6 @@ function App() {
 
   const handleCloseSnack = () => {
     setErrorMessage('');
-  };
-
-  const addToMyLocations = (thisLocation) => {
-    const { fips: localFips } = thisLocation;
-    if (!localFips) return;
-    const index = myLocations.findIndex((x) => x.fips === localFips);
-    if (index < 0) {
-      if (myLocations.length >= 11) {
-        // console.log('LIST FULL');
-        setErrorMessage('Tracked county list is full. Please remove an entry to add a new county.');
-        return;
-      }
-
-      setSavedLocations([
-        ...myLocations,
-        {
-          ...thisLocation,
-          zip: location,
-          name: removeDouble(thisLocation.name),
-        },
-      ]);
-    } else {
-      setErrorMessage('This location is already tracked.');
-    }
-  };
-
-  const removeFromMyLocations = (removedFips) => {
-    const index = myLocations.findIndex((x) => x.fips === removedFips);
-    if (index >= 0) {
-      // console.log(`%cDELETING ${removedFips}`, 'color: red');
-      if (myLocations.length === 1) {
-        setSavedLocations(emptyArray);
-        setMyLocations(emptyArray);
-      } else {
-        const a = myLocations.slice(0, index);
-        const b = myLocations.slice(index + 1);
-        setSavedLocations([...a, ...b]);
-      }
-    }
   };
 
   const MemoFeed = useMemo(() => <Feed data={{ myState, headlines, loadingZip }} />, [
@@ -621,85 +502,83 @@ function App() {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-    <Suspense fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <AppBar position="sticky">
+          <Toolbar>
+            <Hidden only="xs">
+              <input
+                type="image"
+                className={`${classes.clickMe} ${classes.logo}`}
+                src={Logo}
+                alt="TISTA Logo"
+                onClick={() => {
+                  goToLevel('usa');
+                }}
+                onKeyDown={() => {
+                  goToLevel('usa');
+                }}
+              />
+            </Hidden>
+            <Typography variant="h5" className={classes.title}>
+              ● COVID-19 Tracker
+            </Typography>
 
-
-      <AppBar position="sticky">
-        <Toolbar>
-          <Hidden only="xs">
-            <input
-              type="image"
-              className={`${classes.clickMe} ${classes.logo}`}
-              src={Logo}
-              alt="TISTA Logo"
-              onClick={() => {
-                goToLevel('usa');
-              }}
-              onKeyDown={() => {
-                goToLevel('usa');
-              }}
-            />
-          </Hidden>
-          <Typography variant="h5" className={classes.title}>
-            ● COVID-19 Tracker
-          </Typography>
-
-          <IconButton
-            className={classes.menuButton}
-            onClick={handleGeoToggle}
-            color={canUseGeo ? 'inherit' : 'default'}
-          >
-            <MyLocationIcon />
-          </IconButton>
-
-          <div className={classes.search}>
-            <ZipInput
-              onChange={handleLocationChange}
-              onInputChange={handleLocationInputChange}
-              // onClick={handleFocusInput}
-              inputValue={location}
-              options={zipOptions}
-              textFieldParams={{
-                placeholder: 'Enter zip code',
-                classes: {
-                  root: classes.inputRoot,
-                },
-              }}
-            />
-            {loadingZip && <LinearProgress color="secondary" className="progress" />}
-          </div>
-          <Hidden mdDown>
-            <Link
-              href="http://www.tistacares.com"
-              target="_blank"
-              rel="noopener"
-              variant="body1"
-              className={classes.caresLink}
-              style={{
-                fontSize: '12px',
-                textAlign: 'center',
-                padding: '8px 16px',
-              }}
+            <IconButton
+              className={classes.menuButton}
+              onClick={handleGeoToggle}
+              color={canUseGeo ? 'inherit' : 'default'}
             >
-              <img src={TistaCares50} alt="Tista Cares" style={{ height: 40 }} />
-              <div>www.tistacares.com</div>
-            </Link>
-          </Hidden>
-          <Hidden lgUp>
-            <Link
-              href="http://www.tistacares.com"
-              target="_blank"
-              rel="noopener"
-              variant="body1"
-              className={classes.caresLink}
-              style={{ fontSize: '12px', textAlign: 'center' }}
-            >
-              <img src={TistaCares25} alt="Tista Cares" />
-              <div>tistacares.com</div>
-            </Link>
-          </Hidden>
-        </Toolbar>
-      </AppBar>
+              <MyLocationIcon />
+            </IconButton>
+
+            <div className={classes.search}>
+              <ZipInput
+                onChange={handleLocationChange}
+                onInputChange={handleLocationInputChange}
+                // onClick={handleFocusInput}
+                inputValue={location}
+                options={zipOptions}
+                textFieldParams={{
+                  placeholder: 'Enter zip code',
+                  classes: {
+                    root: classes.inputRoot,
+                  },
+                }}
+              />
+              {loadingZip && <LinearProgress color="secondary" className="progress" />}
+            </div>
+            <Hidden mdDown>
+              <Link
+                href="http://www.tistacares.com"
+                target="_blank"
+                rel="noopener"
+                variant="body1"
+                className={classes.caresLink}
+                style={{
+                  fontSize: '12px',
+                  textAlign: 'center',
+                  padding: '8px 16px',
+                }}
+              >
+                <img src={TistaCares50} alt="Tista Cares" style={{ height: 40 }} />
+                <div>www.tistacares.com</div>
+              </Link>
+            </Hidden>
+            <Hidden lgUp>
+              <Link
+                href="http://www.tistacares.com"
+                target="_blank"
+                rel="noopener"
+                variant="body1"
+                className={classes.caresLink}
+                style={{ fontSize: '12px', textAlign: 'center' }}
+              >
+                <img src={TistaCares25} alt="Tista Cares" />
+                <div>tistacares.com</div>
+              </Link>
+            </Hidden>
+          </Toolbar>
+        </AppBar>
       </Suspense>
 
       <Snackbar
@@ -717,7 +596,7 @@ function App() {
         <Grid container spacing={1} justify="space-between">
           <Grid item container xs={12} justify="center">
             <Suspense fallback={fallback}>
-              <CdcNotice zones={metroZones} />
+              <BannerNotice />
             </Suspense>
           </Grid>
 
@@ -808,35 +687,6 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
             </Grid>
-
-            <Visible condition={level !== 'usa'}>
-              {/* Don't show trends at USA level */}
-              <Grid item xs={12}>
-                <ErrorBoundary>
-                  <Suspense fallback={fallback}>
-                    <HistoricRates
-                      level={level}
-                      location={[countyStats, myStateStats]}
-                      historic={historic}
-                    />
-                  </Suspense>
-                </ErrorBoundary>
-              </Grid>
-            </Visible>
-          </Grid>
-
-          <Grid item xs={12}>
-            <ErrorBoundary>
-              <Suspense fallback={fallback}>
-                <LocationsTable
-                  data={myLocations}
-                  addFunction={addToMyLocations}
-                  removeFunction={removeFromMyLocations}
-                  thisLocation={countyStats}
-                  navigate={createAndNavigate}
-                />
-              </Suspense>
-            </ErrorBoundary>
           </Grid>
 
           <Grid item xs={12}>

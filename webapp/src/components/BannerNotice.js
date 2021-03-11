@@ -6,7 +6,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
 
-import Link from '@material-ui/core/Link';
 import IconButton from '@material-ui/core/IconButton';
 import { makeStyles } from '@material-ui/core/styles';
 import Visible from './Visible';
@@ -26,9 +25,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CdcNotice = ({ zones = [] }) => {
+const BannerNotice = () => {
   const classes = useStyles();
-  const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage('learnMetro', true);
+  const [localNoticeOpen, setLocalNoticeOpen] = useLocalStorage('showNotice', true);
   const [noticeOpen, setNoticeOpen] = useState(localNoticeOpen);
 
   useEffect(() => {
@@ -43,23 +42,25 @@ const CdcNotice = ({ zones = [] }) => {
             <NewReleasesIcon style={{ color: '#222' }} fontSize="large" />
           </ListItemIcon>
           <ListItemText variant="h6" component="p" align="center">
-            {'Select metropolitan area statistics are now available! '}
-            {zones.map((zone, index) => (
-              <span key={zone.name}>
-                {index === zones.length - 1 ? '& ' : ''}
-                <Link
-                  href={`/#/fips-${zone.fips}`}
-                  rel="noopener noreferrer"
-                  underline="always"
-                  classes={{
-                    root: classes.link,
-                  }}
-                >
-                  {zone.short_name}
-                </Link>
-                {index === zones.length - 1 ? '.' : ', '}
-              </span>
-            ))}
+            Many data-providing services have retired, so we have removed the features that relied
+            on them: The
+            {' '}
+            <i>My Locations Table</i>
+            {' '}
+            and
+            {' '}
+            <i>Historic Trends Graph</i>
+            . We have also
+            removed
+            {' '}
+            <i>Active Cases, Recoveries,</i>
+            {' '}
+            and
+            {' '}
+            <i>Hospitalizations</i>
+            {' '}
+            data for each
+            location.
           </ListItemText>
           <ListItemIcon>
             <IconButton onClick={() => setNoticeOpen(false)}>
@@ -72,4 +73,4 @@ const CdcNotice = ({ zones = [] }) => {
   );
 };
 
-export default CdcNotice;
+export default BannerNotice;
