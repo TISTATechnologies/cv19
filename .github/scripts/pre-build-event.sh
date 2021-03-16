@@ -7,15 +7,17 @@ GH_NOTIFICATION_LAMBDA_NAME="${GH_NOTIFICATION_LAMBDA_NAME}"
 GH_NOTIFICATION_LAMBDA_KEY="${GH_NOTIFICATION_LAMBDA_KEY}"
 ACTION=${1:-"new"}
 EVENT_NAME=$(echo "${GITHUB_REPOSITORY:-"repo"}/${GITHUB_WORKFLOW:-"workflow"}/${GITHUB_EVENT_NAME:-"event"}" | sed 's/ /_/g')
-LOG_FILE="./${GH_NOTIFICATION_LAMBDA_NAME}.out"
+LOG_FILE="./${GH_NOTIFICATION_LAMBDA_NAME}.out.json"
 
 echo "Send pre-build notificatio: ${EVENT_NAME}"
 echo "GitHub runner public IP: ${SOURCE_IP}"
 if [ -z "${SOURCE_IP}" ]; then echo "Error get public IP address"; exit 1; fi
 
 echo "Log file: ${LOG_FILE}"
-aws lambda invoke --function-name "${GH_NOTIFICATION_LAMBDA_NAME}" "${LOG_FILE}" \
-    --payload "{\"name\": \"${EVENT_NAME}\",\"key\": \"${GH_NOTIFICATION_LAMBDA_KEY}\", \"source\": \"${SOURCE_IP}\", \"action\": \"${ACTION}\"}"
+aws lambda invoke --function-name "${GH_NOTIFICATION_LAMBDA_NAME}" \
+    --cli-binary-format raw-in-base64-out \
+    --payload "{\"name\": \"${EVENT_NAME}\",\"key\": \"${GH_NOTIFICATION_LAMBDA_KEY}\", \"source\": \"${SOURCE_IP}\", \"action\": \"${ACTION}\"}" \
+    "${LOG_FILE}"
 if [ -f "${LOG_FILE}" ]; then
     cat "${LOG_FILE}"; echo "";
     if [ -n "$(grep "errorMessage" "${LOG_FILE}")" ]; then exit 1; fi
