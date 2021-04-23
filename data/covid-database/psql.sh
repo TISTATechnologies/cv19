@@ -6,7 +6,7 @@
 # #############################################################################
 wd="$(dirname "${0}")/../.."
 . "${wd}/scripts/load.env" "${wd}" || exit 1
-app=pgcli
+app=${PSQLAPP:-"pgcli"}
 if ! which ${app} >/dev/null; then app=psql; fi
 
 echo "Connection string is postres://${PGUSER}:****@${PGHOST}:${PGPORT}/${PGDATABASE}?schema=${PGSCHEMA}"

@@ -4,6 +4,8 @@
 # Usage: migrate-db <init|update|refresh-data|help>
 # #############################################################################
 
+export PSQLAPP=psql
+
 start_migration() {
     cd "$(dirname "$0")/../.."
     prg_dir=${PWD}
