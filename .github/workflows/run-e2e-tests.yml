@@ -36,7 +36,7 @@ jobs:
   test-server:
     name: Run e2e tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: tests/e2e
