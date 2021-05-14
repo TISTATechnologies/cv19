@@ -162,8 +162,8 @@ export async function fetchHistoric(fips) {
 
 export async function fetchAidData() {
   try {
-    if (internal) {
-      const response = await fetch(`${internal}/aidData.json`);
+    if (covid) {
+      const response = await fetch(`${covid}/aidData.json`);
       const data = await response.json();
       if (data.message) return { error: data.message };
       return { data };
