@@ -564,7 +564,7 @@ const LocalStatsTable = ({
         </Grid>
         <Grid container item xs={12} justify="space-between" style={{ paddingTop: '8px' }}>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body2">{updatedTimeFormat(lastUpdated)}</Typography>
+            <Typography variant="body2" id={`${level}-lastUpdated`}>{updatedTimeFormat(lastUpdated)}</Typography>
           </Grid>
           <Grid item xs>
             <Typography variant="body2" align="right">
