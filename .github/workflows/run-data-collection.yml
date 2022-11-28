@@ -14,7 +14,7 @@ jobs:
   update-data:
     name: Collect and Update data
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       DEBUG: ${{ secrets.DEBUG }}
       BUILD_LOG: ./build-${{ github.run_id }}.log
